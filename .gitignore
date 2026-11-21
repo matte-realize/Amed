@@ -6,4 +6,3 @@ __pycache__/
 .DS_Store
 node_modules/
 data/raw/
-data/eval/stress_variants/

@@ -30,7 +30,7 @@
   "plans": [
     {
       "plan_id": "cc5k_1041",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1041.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_1041.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.25,
@@ -68,7 +68,7 @@
     },
     {
       "plan_id": "cc5k_11260",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11260.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_11260.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.8182,
@@ -106,7 +106,7 @@
     },
     {
       "plan_id": "cc5k_1140",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1140.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_1140.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.5556,
@@ -144,7 +144,7 @@
     },
     {
       "plan_id": "cc5k_1141",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1141.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_1141.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.625,
@@ -182,7 +182,7 @@
     },
     {
       "plan_id": "cc5k_11485",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11485.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_11485.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.375,
@@ -220,7 +220,7 @@
     },
     {
       "plan_id": "cc5k_11527",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11527.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_11527.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.5,
@@ -258,7 +258,7 @@
     },
     {
       "plan_id": "cc5k_11565",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11565.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_11565.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.8889,
@@ -296,7 +296,7 @@
     },
     {
       "plan_id": "cc5k_11573",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11573.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_11573.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.5,
@@ -334,7 +334,7 @@
     },
     {
       "plan_id": "cc5k_11578",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11578.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_11578.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.3333,
@@ -372,7 +372,7 @@
     },
     {
       "plan_id": "cc5k_1165",
-      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1165.png",
+      "image_path": "data/eval/cubicasa_10/images/cc5k_1165.png",
       "baseline": {
         "room_detection_rate": 1.0,
         "room_precision": 0.2,

@@ -64,11 +64,21 @@ Evaluated against 10 unseen architectural floor plans from `CubiCasa5K` (`Trista
 ```bash
 cp .env.example .env   # add GEMINI_API_KEY
 uv sync
-.venv/bin/pytest -v
-PYTHONPATH=src .venv/bin/uvicorn hospital_twin.app:app --reload --port 8000
+uv run pytest -v
+PYTHONPATH=src uv run python -m uvicorn hospital_twin.app:app --reload --port 8000
 ```
 
-Open `http://127.0.0.1:8000`.
+Open `http://127.0.0.1:8000`. Without a `GEMINI_API_KEY`, use **Demo map** or the walkthrough's *Pre-traced* mode.
+
+## Using the App
+
+| Tab | What it's for |
+| --- | --- |
+| **Overview** | What Amed answers for facilities, finance and nursing, the robot catalog with 3D models, and one-click examples. |
+| **See it work** | A guided run of the real tool on a sample unit: read the plan → double-check it → check the robot fits → describe a shift → run it with and without robots → try a bad day → show eval accuracy. Every step calls the live API. |
+| **Try it** | The engine. Left panel: unit, fleet, shift and run controls. Center: 3D/2D viewport (audit or side-by-side shift). Right: outcome, room autonomy, custody log, stress sweep. Bottom: shift timeline. |
+
+Frontend: `src/hospital_twin/static/index.html` (markup + Three.js app) and `static/amed.css` (chart-paper theme).
 
 ## API Endpoints
 
@@ -81,6 +91,7 @@ Open `http://127.0.0.1:8000`.
 | `POST` | `/api/review-unit` | Apply staff room and doorway overrides to an extracted `UnitMap` |
 | `POST` | `/api/ems-feed` | Generate an EMS arrival pre-staging dispatch plan from an incoming signal |
 | `POST` | `/api/coalition-surge` | Evaluate regional coalition surge balancing across units |
+| `GET` | `/api/eval` | Aggregate extraction accuracy from the last eval run (one pass vs. verified) |
 | `GET` | `/api/robots` | List supported existing and custom courier robot profiles |
 | `GET` | `/api/struggles` | List modeled hospital logistics pain points and operational blockers |
 
