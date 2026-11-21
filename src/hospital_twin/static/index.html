@@ -5661,22 +5661,44 @@
     // The landing page only needs numbers, so it asks the API directly and never builds 3D.
     async function bootLandingComparison() {
       const planId = state.selectedPlanId;
+      const land = document.getElementById("cmpLanding");
       if (!planId) return;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 25000);
+      const fail = () => {
+        if (land && !state.landingComparison) {
+          land.innerHTML = `<span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
+            <p class="cmp-ctx">Sample shift unavailable right now</p>
+            <p class="cmp-verdict sm">Open <b>See it work</b> to run the same comparison live.</p>`;
+        }
+      };
+      // Show a saved run of the same sample shift instantly, then refresh it live.
+      try {
+        const saved = await fetch("/static/landing_sample.json").then((r) => (r.ok ? r.json() : null));
+        if (saved && !state.landingComparison) {
+          state.landingComparison = saved;
+          state.landingPlanName = saved._sample?.plan_name || "Sample unit";
+          renderLandingComparison();
+        }
+      } catch { /* the live run below still fills it */ }
+      if (state.landingComparison && state.landingComparison._sample?.plan_id !== planId) state.landingComparison = null;
       try {
         const ex = await fetch("/api/extract", {
+          signal: ctrl.signal,
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ use_fallback: true, plan_id: planId }),
         }).then((r) => r.json());
-        if (!ex.unit_map) return;
+        if (!ex.unit_map) { fail(); return; }
         const sim = await fetch("/api/simulate", {
+          signal: ctrl.signal,
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ unit_map: ex.unit_map, run_description: els.runDesc.value.trim(), num_robots: 2, robot_profile_id: "aethon_tug", shift_hours: 8, scenario_mode: "chaotic", seed: 42 }),
         });
-        if (!sim.ok) return;
+        if (!sim.ok) { fail(); return; }
         state.landingComparison = await sim.json();
         state.landingPlanName = state.plans.find((p) => p.id === planId)?.name || "Sample unit";
         renderLandingComparison();
-      } catch { /* landing numbers are optional */ }
+      } catch { fail(); } finally { clearTimeout(timer); }
     }
 
     // Build the engine's unit the first time someone opens it (or starts the walkthrough).
