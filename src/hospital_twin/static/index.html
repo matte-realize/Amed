@@ -2227,6 +2227,77 @@
           <p class="lp-target-desc" style="margin:0;">Run multi-seed stress sweeps for STAT surges, pharmacy delays, staffing gaps, and robot outages, then export an after-action report.</p>
         </div>
       </div>
+
+      <div style="margin-top:26px;">
+        <div class="amed-section-label">Ready-to-Run Engine Examples — Click Any Case to Launch in the 3D Engine</div>
+        <div class="struggles-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr));">
+          <article class="struggle-card">
+            <div>
+              <div class="struggle-title">1. Standard Med-Surg Unit</div>
+              <p class="struggle-desc">2× Aethon TUG + 3-Bay Pod handling routine pharmacy, specimen, and supply runs across a 10-room unit.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="struggle-meta">Plan: Sample Unit · Mode: Routine · 2 Robots</div>
+              <button type="button" class="btn-simulate-struggle" data-struggle-plan="sample_unit" data-struggle-count="2" data-struggle-scenario="routine" data-struggle-robot="aethon_tug" data-struggle-ems="false" data-struggle-runs="pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly">Run Example →</button>
+            </div>
+          </article>
+
+          <article class="struggle-card">
+            <div>
+              <div class="struggle-title">2. Narrow-Door ICU Wing</div>
+              <p class="struggle-desc">2× Amed Slim Rover (0.72m) clearing narrow isolation airlocks that block standard 0.90m couriers.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="struggle-meta">Plan: ICU Wing · Mode: Chaotic · 2 Robots</div>
+              <button type="button" class="btn-simulate-struggle" data-struggle-plan="icu_wing" data-struggle-count="2" data-struggle-scenario="chaotic" data-struggle-robot="amed_narrow_rover" data-struggle-ems="false" data-struggle-runs="pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly">Run Example →</button>
+            </div>
+          </article>
+
+          <article class="struggle-card">
+            <div>
+              <div class="struggle-title">3. Mass-Casualty EMS Pre-Staging</div>
+              <p class="struggle-desc">2× Amed Pre-Stage Cart with EMS advance signals cutting STAT surge latency by 70%.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="struggle-meta">Plan: ICU Wing · Mode: Surge + EMS · 2 Robots</div>
+              <button type="button" class="btn-simulate-struggle" data-struggle-plan="icu_wing" data-struggle-count="2" data-struggle-scenario="surge" data-struggle-robot="amed_prestage_pod" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 15 minutes, pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes">Run Example →</button>
+            </div>
+          </article>
+
+          <article class="struggle-card">
+            <div>
+              <div class="struggle-title">4. Mid-Shift Robot Outage</div>
+              <p class="struggle-desc">2× Diligent Moxi cobots under a mid-shift outage, demonstrating safe fallback to nurses.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="struggle-meta">Plan: Sample Unit · Mode: Robot Failure · 2 Robots</div>
+              <button type="button" class="btn-simulate-struggle" data-struggle-plan="sample_unit" data-struggle-count="2" data-struggle-scenario="robot_failure" data-struggle-robot="diligent_moxi" data-struggle-ems="false" data-struggle-runs="pharmacy pickup every 20 minutes, supply restock every 45 minutes, lab specimen drop hourly">Run Example →</button>
+            </div>
+          </article>
+
+          <article class="struggle-card">
+            <div>
+              <div class="struggle-title">5. Pharmacy Prep Bottleneck</div>
+              <p class="struggle-desc">2× Amed 6-DOF Med-Prep Arm accelerating urgent medication compounding &amp; specimen handoffs.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="struggle-meta">Plan: Sample Unit · Mode: Pharmacy Delay · 2 Robots</div>
+              <button type="button" class="btn-simulate-struggle" data-struggle-plan="sample_unit" data-struggle-count="2" data-struggle-scenario="pharmacy_delay" data-struggle-robot="amed_compounding_arm" data-struggle-ems="false" data-struggle-runs="STAT epinephrine &amp; pharmacy pickup every 15 minutes, lab specimen drop every 30 minutes">Run Example →</button>
+            </div>
+          </article>
+
+          <article class="struggle-card">
+            <div>
+              <div class="struggle-title">6. High-Frequency Lab Surge</div>
+              <p class="struggle-desc">Pneumatic Tube Hybrid handling 10-minute specimen surges while nurses cover bulky supply restocks.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="struggle-meta">Plan: ICU Wing · Mode: Surge · 2 Robots</div>
+              <button type="button" class="btn-simulate-struggle" data-struggle-plan="icu_wing" data-struggle-count="2" data-struggle-scenario="surge" data-struggle-robot="pneumatic_tube" data-struggle-ems="false" data-struggle-runs="lab specimen drop every 10 minutes, pharmacy pickup every 20 minutes, supply restock twice a shift">Run Example →</button>
+            </div>
+          </article>
+        </div>
+      </div>
     </section>
 
     <!-- Hairline Market Research Benchmark Strip -->
@@ -6119,10 +6190,23 @@
 
     document.querySelectorAll(".btn-simulate-struggle").forEach((btn) => {
       btn.addEventListener("click", async () => {
+        const plan = btn.dataset.strugglePlan;
+        const count = Number(btn.dataset.struggleCount || 2);
         const scenario = btn.dataset.struggleScenario;
         const robot = btn.dataset.struggleRobot;
         const useEms = btn.dataset.struggleEms === "true";
         const runs = btn.dataset.struggleRuns;
+        if (plan && els.planSelect) {
+          els.planSelect.value = plan;
+          state.selectedPlanId = plan;
+          state.unitMap = null;
+        }
+        if (count >= 1 && count <= 3) {
+          state.numRobots = count;
+          els.robotCountGroup.querySelectorAll("button").forEach((b) => {
+            b.classList.toggle("active", Number(b.dataset.robots) === count);
+          });
+        }
 
         if (scenario) {
           state.scenarioMode = scenario;
