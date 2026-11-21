@@ -314,3 +314,54 @@ def test_autonomy_aware_routing_and_handoff():
     assert comp.nurse_minutes_saved > 0
     assert comp.robot_assisted.nurse_minutes_walked > 0
 
+
+def test_chaotic_and_surge_scenarios_deterministic_and_multi_robot():
+    unit = _make_sample_unit(meters_per_pixel=0.05)
+    schedule = [
+        ScheduledRun(
+            run_type="pharmacy_pickup",
+            origin="med_room",
+            destination="nurse_station",
+            frequency_minutes=30.0,
+        ),
+        ScheduledRun(
+            run_type="lab_specimen_drop",
+            origin="nurse_station",
+            destination="lab_drop",
+            frequency_minutes=60.0,
+        ),
+    ]
+
+    chaotic_a = simulate_shift(
+        unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="chaotic", seed=101
+    )
+    chaotic_b = simulate_shift(
+        unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="chaotic", seed=101
+    )
+    chaotic_diff_seed = simulate_shift(
+        unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="chaotic", seed=202
+    )
+    assert chaotic_a == chaotic_b
+    assert chaotic_a.robot_assisted.events != chaotic_diff_seed.robot_assisted.events
+    assert chaotic_a.assumptions["scenario_mode"] == "chaotic"
+    assert chaotic_a.assumptions["stat_trips"] > 0
+    assert chaotic_a.robot_assisted.total_trips > 24
+
+    surge_1 = simulate_shift(
+        unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="surge", seed=77
+    )
+    surge_3 = simulate_shift(
+        unit, schedule, shift_hours=8.0, num_robots=3, scenario_mode="surge", seed=77
+    )
+    assert surge_1.assumptions["scenario_mode"] == "surge"
+    assert surge_1.assumptions["stat_trips"] > chaotic_a.assumptions["stat_trips"]
+    assert surge_3.robot_assisted.total_trips == surge_1.robot_assisted.total_trips
+
+    # Multiple robots mitigate surge wait times and dispatch across robot-1..robot-3
+    assert surge_3.robot_assisted.avg_delivery_wait_s <= surge_1.robot_assisted.avg_delivery_wait_s
+    assert surge_3.assumptions["max_wait_s"] <= surge_1.assumptions["max_wait_s"]
+    assert surge_3.assumptions["p95_wait_s"] <= surge_1.assumptions["p95_wait_s"]
+    active_robots = {e.agent_id for e in surge_3.robot_assisted.events if e.agent_role == "robot"}
+    assert len(active_robots) >= 2
+
+
