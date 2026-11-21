@@ -101,7 +101,7 @@ def test_robotics_catalog_struggles_and_endpoints():
     from hospital_twin.simulator import simulate_shift
     from hospital_twin.schemas import ScheduledRun
 
-    assert len(ROBOT_CATALOG) == 6
+    assert len(ROBOT_CATALOG) == 7
     assert len(HOSPITAL_STRUGGLES) >= 4
     assert get_robot_profile("amed_narrow_rover").clearance_m == 0.72
     assert get_robot_profile("nonexistent").id == "aethon_tug"
@@ -122,9 +122,9 @@ def test_robotics_catalog_struggles_and_endpoints():
     client = TestClient(app)
     robots_res = client.get("/api/robots")
     assert robots_res.status_code == 200
-    assert len(robots_res.json()["robots"]) == 6
+    assert len(robots_res.json()["robots"]) == 7
     robots = robots_res.json()["robots"]
-    assert len(robots) == 6
+    assert len(robots) == 7
     for r in robots:
         for field in ("design_notes", "cost_estimate_usd", "why_helpful", "dimensions"):
             assert isinstance(r.get(field), str) and r[field].strip(), f"{r.get('id')} missing {field}"
@@ -191,3 +191,34 @@ def test_mixed_fleet_runs_distinct_custom_robots():
     profiles_used = {e.robot_profile_id for e in comp.robot_assisted.events if e.agent_role == "robot"}
     assert "amed_compounding_arm" in profiles_used
     assert len(profiles_used) >= 2
+
+
+def test_readiness_research_gap_and_additional_stress_modes():
+    from hospital_twin.app import app
+    from hospital_twin.schemas import ScheduledRun
+    from hospital_twin.simulator import simulate_shift
+    from hospital_twin.world_model import build_autonomy_plan, check_unit_readiness
+
+    unit = _make_sample_unit()
+    for d in unit.doors:
+        if d.id == "d2":
+            d.width_m = 0.80
+            d.robot_passable = False
+
+    plan = build_autonomy_plan(unit)
+    assert any(rec.category == "research_gap" for rec in plan)
+
+    report = check_unit_readiness(unit)
+    assert report.total_items == 5
+    assert len(report.flagged_items) >= 1
+
+    client = TestClient(app)
+    res = client.post("/api/readiness", json=unit.model_dump())
+    assert res.status_code == 200
+    assert res.json()["total_items"] == 5
+
+    sched = [ScheduledRun(run_type="pharmacy_pickup", origin="med_room", destination="nurse_station", frequency_minutes=120.0)]
+    ca = simulate_shift(unit, sched, shift_hours=8.0, num_robots=1, scenario_mode="cardiac_arrest", seed=3)
+    cq = simulate_shift(unit, sched, shift_hours=8.0, num_robots=1, scenario_mode="contamination_quarantine", seed=3)
+    assert ca.robot_assisted.total_trips == 4
+    assert cq.robot_assisted.total_trips == 4

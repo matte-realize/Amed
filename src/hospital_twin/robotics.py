@@ -174,6 +174,24 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
             "IV prep, and specimen rack handoffs."
         ),
     ),
+    "alta_transfer_robot": RobotProfile(
+        id="alta_transfer_robot",
+        name="ALTA Patient-Transfer Robot",
+        vendor="ALTA (Lahey Reference)",
+        is_custom=False,
+        speed_mps=0.65,
+        clearance_m=0.95,
+        length_m=1.15,
+        compartments=1,
+        handoff_seconds=25.0,
+        supported_runs=["supply_restock"],
+        dimensions="115 cm L x 68 cm W x 135 cm H",
+        cost_estimate_usd="~$85k-$120k unit",
+        design_notes="Dual-actuator patient-lift and transfer mobile platform for corridor and room-entry safety testing.",
+        why_helpful="Tests whether patient-transfer robotics can safely clear unit doorways and turn radii before deployment.",
+        solves_problem="Patient handling and safe transfer",
+        description="Patient-handling mobile platform for doorway clearance and corridor safety testing.",
+    ),
 }
 
 HOSPITAL_STRUGGLES: list[dict[str, str]] = [
@@ -238,7 +256,7 @@ HOSPITAL_STRUGGLES: list[dict[str, str]] = [
             "lab specimen drop from nurse station to lab drop every 15 minutes; "
             "supply restock from supply room to nurse station every 20 minutes"
         ),
-    },
+},
 ]
 
 

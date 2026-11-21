@@ -26,6 +26,7 @@ from hospital_twin.schemas import (
     CoalitionSurgeRequest,
     EmsArrivalSignal,
     EmsDispatchPlan,
+    ReadinessReport,
     SimulationComparison,
     StressTestReport,
     UnitMap,
@@ -62,6 +63,8 @@ class SimulateRequest(BaseModel):
         "pharmacy_delay",
         "staffing_gap",
         "crash_cart_missing",
+        "cardiac_arrest",
+        "contamination_quarantine",
     ] = "chaotic"
     seed: int = 42
     ems_preposition: bool = False
@@ -83,6 +86,8 @@ class StressSweepRequest(BaseModel):
         "pharmacy_delay",
         "staffing_gap",
         "crash_cart_missing",
+        "cardiac_arrest",
+        "contamination_quarantine",
     ] = "surge"
 
 
@@ -406,6 +411,13 @@ async def coalition_surge(req: CoalitionSurgeRequest) -> CoalitionSurgeReport:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Coalition surge evaluation failed: {exc}") from exc
+
+
+@app.post("/api/readiness", response_model=ReadinessReport)
+async def readiness_check(unit: UnitMap) -> ReadinessReport:
+    from hospital_twin.world_model import check_unit_readiness
+
+    return check_unit_readiness(unit)
 
 
 if __name__ == "__main__":

@@ -42,6 +42,8 @@ ScenarioMode = Literal[
     "pharmacy_delay",
     "staffing_gap",
     "crash_cart_missing",
+    "cardiac_arrest",
+    "contamination_quarantine",
 ]
 
 
@@ -196,6 +198,14 @@ def _generate_trip_requests(
                     if run.run_type == "supply_restock"
                     else 0.0
                 )
+            elif scenario_mode == "cardiac_arrest":
+                arrival_s = t
+                speed_factor = 1.15 if robot_route.agent_role == "robot" else 1.05
+                delay_s = rng.uniform(30.0, 90.0) if run.run_type == "pharmacy_pickup" else 0.0
+            elif scenario_mode == "contamination_quarantine":
+                arrival_s = t
+                speed_factor = rng.uniform(0.80, 1.0)
+                delay_s = rng.uniform(45.0, 120.0) if rng.random() < 0.35 else 0.0
             else:
                 jitter = rng.uniform(-0.20 * period_s, 0.25 * period_s)
                 arrival_s = min(max(0.0, t + jitter), max(0.0, shift_duration_s - 1.0))

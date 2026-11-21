@@ -223,3 +223,19 @@ class RobotProfile(BaseModel):
     cost_estimate_usd: str = ""
     why_helpful: str = ""
     dimensions: str = ""
+
+
+class InventoryItem(BaseModel):
+    id: str
+    name: str
+    location_room_id: str
+    category: Literal["crash_cart", "defibrillator", "suction", "oxygen", "rfid_med_kit"]
+    status: Literal["ready", "expired", "misplaced", "low_battery"]
+    detail: str = ""
+
+
+class ReadinessReport(BaseModel):
+    total_items: int
+    ready_count: int
+    flagged_items: list[InventoryItem]
+    summary: str
