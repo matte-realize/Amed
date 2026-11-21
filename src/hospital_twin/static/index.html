@@ -127,17 +127,43 @@
       flex-wrap: wrap;
     }
 
-    /* Control Ribbon */
+    /* Control Ribbon — Two Clean Aligned Rows */
     .control-ribbon {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 10px 14px;
+      overflow: hidden;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
+    }
+    .ribbon-row {
+      display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      gap: 10px 14px;
+      padding: 9px 14px;
+      flex-wrap: wrap;
+    }
+    .ribbon-row + .ribbon-row {
+      border-top: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    .row-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: var(--primary-soft);
+      border: 1px solid #99f6e4;
+      border-radius: 6px;
+      height: 26px;
+      padding: 0 8px;
+      white-space: nowrap;
     }
 
     .control-group {
@@ -148,7 +174,7 @@
     }
     .divider {
       width: 1px;
-      height: 28px;
+      height: 24px;
       background: var(--border);
     }
 
@@ -158,34 +184,39 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--muted);
+      white-space: nowrap;
     }
 
     select, input[type="text"], textarea {
+      height: 34px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 0 10px;
       font-size: 13px;
       font-family: inherit;
       color: var(--text);
-      background: var(--surface-alt);
+      background: var(--surface);
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
     select:focus, input[type="text"]:focus, textarea:focus {
       border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
       background: #fff;
     }
 
     .btn {
+      height: 34px;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       border: 1px solid var(--border);
       background: var(--surface);
       color: var(--text);
       font-weight: 600;
-      font-size: 13px;
-      padding: 6px 12px;
+      font-size: 12.5px;
+      padding: 0 12px;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.15s;
@@ -198,6 +229,15 @@
     .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+    .btn.has-file {
+      background: var(--primary-soft);
+      border-color: #2dd4bf;
+      color: var(--primary);
+    }
+    .btn.has-file:hover:not(:disabled) {
+      background: #99f6e4;
+      border-color: var(--primary);
     }
     .btn-primary {
       background: var(--primary);
@@ -212,6 +252,8 @@
       background: var(--accent);
       border-color: var(--accent);
       color: #fff;
+      padding: 0 15px;
+      box-shadow: 0 1px 4px rgba(37, 99, 235, 0.25);
     }
     .btn-accent:hover:not(:disabled) {
       background: #1d4ed8;
@@ -228,22 +270,29 @@
     }
 
     .segmented {
+      height: 34px;
       display: inline-flex;
+      align-items: stretch;
       border: 1px solid var(--border);
       border-radius: 8px;
       overflow: hidden;
-      background: var(--surface-alt);
+      background: var(--surface);
     }
     .segmented button {
       border: none;
       background: transparent;
-      padding: 5px 10px;
+      padding: 0 11px;
       font-size: 12px;
       font-weight: 600;
       color: var(--muted);
       cursor: pointer;
       border-right: 1px solid var(--border);
       transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .segmented button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
     .segmented button:last-child { border-right: none; }
     .segmented button.active {
@@ -258,17 +307,21 @@
       background: #0f766e;
       color: #fff;
     }
+    .segmented.stage-toggle button.active {
+      background: #2563eb;
+      color: #fff;
+    }
 
     .run-input-wrap {
       display: flex;
       align-items: center;
-      gap: 6px;
-      flex: 1 1 340px;
-      min-width: 260px;
+      gap: 8px;
+      flex: 1 1 320px;
+      min-width: 240px;
     }
     .run-input-wrap input {
       flex: 1;
-      min-width: 180px;
+      min-width: 160px;
     }
 
     .status-banner {
@@ -382,22 +435,27 @@
     }
     .autonomy-highlights {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 10px;
       margin-top: 2px;
     }
     .highlight-card {
+      min-width: 0;
       background: var(--surface);
       border: 1px solid var(--border);
       border-left: 4px solid var(--primary);
       border-radius: 10px;
       padding: 10px 12px;
       cursor: pointer;
-      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
     }
     .highlight-card:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow);
+      border-color: #cbd5e1;
     }
     .highlight-card.tier-autonomous { border-left-color: #10b981; }
     .highlight-card.tier-assisted { border-left-color: #f59e0b; }
@@ -411,14 +469,18 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      margin-bottom: 4px;
     }
     .highlight-card .hc-title {
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .highlight-card .hc-pill {
+      flex-shrink: 0;
+      white-space: nowrap;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
@@ -433,16 +495,19 @@
     .highlight-card.tier-human_only .hc-pill { background: #ffe4e6; color: #9f1239; }
     .highlight-card.tier-shift-summary .hc-pill { background: #dbeafe; color: #1e40af; }
     .highlight-card .hc-reason {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--muted);
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     .canvas-wrap {
       position: relative;
       flex: 1;
-      min-height: 450px;
-      background: radial-gradient(circle at 50% 35%, #1e293b 0%, #0b1120 100%);
+      height: clamp(460px, 56vh, 660px);
+      min-height: 460px;
+      background: radial-gradient(circle at 50% 35%, #17253b 0%, #0b1120 74%);
+      border: 1px solid #1e293b;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 24px rgba(15, 23, 42, 0.12);
       border-radius: 10px;
       overflow: hidden;
       display: grid;
@@ -470,16 +535,18 @@
       position: absolute;
       top: 12px;
       left: 12px;
-      width: 295px;
+      width: 290px;
       max-width: calc(100% - 24px);
-      background: rgba(15, 23, 42, 0.92);
+      max-height: calc(100% - 58px);
+      overflow-y: auto;
+      background: rgba(11, 17, 32, 0.92);
       backdrop-filter: blur(10px);
       color: #f8fafc;
-      border: 1px solid rgba(148, 163, 184, 0.32);
+      border: 1px solid rgba(148, 163, 184, 0.34);
       border-radius: 10px;
       padding: 11px 13px;
       z-index: 15;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
       font-size: 12px;
     }
     .inspector-top {
@@ -580,16 +647,17 @@
 
     .dual-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 12px;
       flex: 1;
     }
-    @media (max-width: 960px) {
+    @media (max-width: 1024px) {
       .dual-grid { grid-template-columns: 1fr; }
       .divider { display: none; }
     }
 
     .sim-card {
+      min-width: 0;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -602,16 +670,17 @@
     .sim-metrics {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
     }
     .metric-pill {
       background: var(--surface-alt);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px 9px;
-      font-size: 12px;
+      border-radius: 7px;
+      padding: 3px 8px;
+      font-size: 11.5px;
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
     .metric-pill strong {
       font-weight: 700;
@@ -624,7 +693,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 8px 14px;
+      padding: 9px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -736,62 +805,76 @@
       </div>
     </header>
 
-    <!-- Compact Control Ribbon -->
+    <!-- Two-Row Control Ribbon -->
     <section class="control-ribbon">
-      <!-- Step 1 -->
-      <div class="control-group">
-        <label class="inline-label" for="planSelect">Plan</label>
-        <select id="planSelect"></select>
-        <label class="btn" for="fileUpload" title="Upload PNG or JPG floor plan">
-          Upload Plan
-          <input type="file" id="fileUpload" accept="image/png,image/jpeg,image/webp" class="hidden" />
-        </label>
-        <label class="btn" for="specUpload" id="specUploadLabel" title="Attach supporting facility spec PDF, TXT, or CSV">
-          + Spec Doc
-          <input type="file" id="specUpload" accept=".pdf,.txt,.md,.csv,.json" class="hidden" />
-        </label>
-        <button class="btn btn-primary" id="mapBtn">Map Unit</button>
-        <button class="btn" id="fallbackBtn" title="Load pre-traced demo unit">Demo Map</button>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- Step 2 -->
-      <div class="run-input-wrap">
-        <label class="inline-label" for="runDesc">Runs</label>
-        <input
-          type="text"
-          id="runDesc"
-          value="pharmacy pickup every 30 minutes, lab specimen drop hourly, supply restock twice a shift"
-          placeholder="e.g. pharmacy pickup every 30 min, specimens hourly..."
-        />
-        <button class="btn btn-mic" id="micBtn" title="Speak run schedule (Web Speech API)">Mic</button>
-      </div>
-
-      <div class="control-group">
-        <label class="inline-label" for="scenarioSelect">Scenario</label>
-        <select id="scenarioSelect" title="Hospital shift turbulence & STAT burst intensity">
-          <option value="routine">Routine</option>
-          <option value="chaotic" selected>Chaotic (STAT Surges)</option>
-          <option value="surge">Mass Surge</option>
-        </select>
-        <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll random seed for chaotic/surge shifts">🎲 #42</button>
-
-        <label class="inline-label">Robots</label>
-        <div class="segmented" id="robotCountGroup">
-          <button type="button" class="active" data-robots="1">1</button>
-          <button type="button" data-robots="2">2</button>
-          <button type="button" data-robots="3">3</button>
+      <!-- Row 1: Step 1 (Floor Plan & Spec) + Stage View Switcher -->
+      <div class="ribbon-row">
+        <div class="control-group">
+          <span class="row-tag">Step 1</span>
+          <label class="inline-label" for="planSelect">Plan</label>
+          <select id="planSelect"></select>
+          <label class="btn" for="fileUpload" title="Upload PNG or JPG floor plan">
+            Upload Plan
+            <input type="file" id="fileUpload" accept="image/png,image/jpeg,image/webp" class="hidden" />
+          </label>
+          <label class="btn" for="specUpload" id="specUploadLabel" title="Attach supporting facility spec PDF, TXT, or CSV">
+            <span id="specUploadText">+ Spec Doc</span>
+            <input type="file" id="specUpload" accept=".pdf,.txt,.md,.csv,.json" class="hidden" />
+          </label>
+          <button class="btn btn-primary" id="mapBtn">Map Unit</button>
+          <button class="btn" id="fallbackBtn" title="Load pre-traced demo unit">Demo Map</button>
         </div>
 
-        <label class="inline-label" for="shiftHours">Shift</label>
-        <select id="shiftHours">
-          <option value="4">4h</option>
-          <option value="8" selected>8h</option>
-          <option value="12">12h</option>
-        </select>
+        <div class="control-group">
+          <label class="inline-label">Stage</label>
+          <div class="segmented stage-toggle" id="stageModeGroup" title="Switch between Single 3D Unit Audit and Side-by-Side 3D Shift Simulation">
+            <button type="button" class="active" data-stage="audit">Unit Audit</button>
+            <button type="button" data-stage="sim" id="stageSimBtn" disabled>Shift Sim</button>
+          </div>
+        </div>
+      </div>
 
-        <button class="btn btn-accent" id="runSimBtn" disabled>Run Shift</button>
+      <!-- Row 2: Step 2 (Schedule, Scenario, Seed, Fleet & Run Shift) -->
+      <div class="ribbon-row">
+        <div class="run-input-wrap">
+          <span class="row-tag">Step 2</span>
+          <label class="inline-label" for="runDesc">Runs</label>
+          <input
+            type="text"
+            id="runDesc"
+            value="pharmacy pickup every 30 minutes, lab specimen drop hourly, supply restock twice a shift"
+            placeholder="e.g. pharmacy pickup every 30 min, specimens hourly..."
+          />
+          <button class="btn btn-mic" id="micBtn" title="Speak run schedule (Web Speech API)">Mic</button>
+        </div>
+
+        <div class="control-group">
+          <label class="inline-label" for="scenarioSelect">Scenario</label>
+          <select id="scenarioSelect" title="Hospital shift turbulence & STAT burst intensity">
+            <option value="routine">Routine</option>
+            <option value="chaotic" selected>Chaotic (STAT Surges)</option>
+            <option value="surge">Mass Surge</option>
+          </select>
+          <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll random seed for chaotic/surge shifts">🎲 #42</button>
+
+          <div class="divider"></div>
+
+          <label class="inline-label">Robots</label>
+          <div class="segmented" id="robotCountGroup">
+            <button type="button" class="active" data-robots="1">1</button>
+            <button type="button" data-robots="2">2</button>
+            <button type="button" data-robots="3">3</button>
+          </div>
+
+          <label class="inline-label" for="shiftHours">Shift</label>
+          <select id="shiftHours">
+            <option value="4">4h</option>
+            <option value="8" selected>8h</option>
+            <option value="12">12h</option>
+          </select>
+
+          <button class="btn btn-accent" id="runSimBtn" disabled>Run Shift</button>
+        </div>
       </div>
     </section>
 
@@ -926,6 +1009,7 @@
     const state = {
       viewMode: "3d",         // "3d" | "2d"
       colorMode: "autonomy",  // "autonomy" | "room_type"
+      stagePanel: "audit",    // "audit" | "sim"
       threeReady: false,
       plans: [],
       selectedPlanId: null,
@@ -954,6 +1038,8 @@
     const els = {
       colorModeGroup: document.getElementById("colorModeGroup"),
       viewModeGroup: document.getElementById("viewModeGroup"),
+      stageModeGroup: document.getElementById("stageModeGroup"),
+      stageSimBtn: document.getElementById("stageSimBtn"),
       planSelect: document.getElementById("planSelect"),
       fileUpload: document.getElementById("fileUpload"),
       mapBtn: document.getElementById("mapBtn"),
@@ -2872,11 +2958,46 @@
       }, 85);
     }
 
+    function syncStageButtons() {
+      const hasSim = Boolean(state.comparison);
+      if (els.stageSimBtn) els.stageSimBtn.disabled = !hasSim;
+      if (els.stageModeGroup) {
+        els.stageModeGroup.querySelectorAll("button[data-stage]").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.stage === state.stagePanel);
+        });
+      }
+    }
+
+    function setStagePanel(panel) {
+      if (panel === "sim" && !state.comparison) return;
+      state.stagePanel = panel;
+      if (panel === "audit") {
+        if (state.playing) {
+          state.playing = false;
+          els.playPauseBtn.textContent = "Play";
+        }
+        els.singleView.classList.remove("hidden");
+        els.dualView.classList.add("hidden");
+        els.playbackBar.classList.add("hidden");
+        els.assumptionsBar.classList.add("hidden");
+      } else {
+        els.singleView.classList.add("hidden");
+        els.dualView.classList.remove("hidden");
+        els.playbackBar.classList.remove("hidden");
+        els.assumptionsBar.classList.remove("hidden");
+      }
+      syncStageButtons();
+      applyViewVisibility();
+    }
+
     async function extractUnit(useFallback = false) {
       hideBanner();
       if (state.rafId) cancelAnimationFrame(state.rafId);
       state.playing = false;
+      state.comparison = null;
+      state.stagePanel = "audit";
       state.selectedSelection = null;
+      syncStageButtons();
       renderInspectorCards();
       els.singleView.classList.remove("hidden");
       els.dualView.classList.add("hidden");
@@ -3014,6 +3135,8 @@
 
         state.comparison = data;
         state.simVersion++;
+        state.stagePanel = "sim";
+        syncStageButtons();
         els.singleView.classList.add("hidden");
         els.dualView.classList.remove("hidden");
         els.playbackBar.classList.remove("hidden");
@@ -3102,6 +3225,14 @@
       applyViewVisibility();
     });
 
+    if (els.stageModeGroup) {
+      els.stageModeGroup.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-stage]");
+        if (!btn || btn.disabled) return;
+        setStagePanel(btn.dataset.stage);
+      });
+    }
+
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-close-inspector]")) {
         setSelection(null);
@@ -3126,6 +3257,8 @@
 
     els.planSelect.addEventListener("change", async () => {
       state.comparison = null;
+      state.stagePanel = "audit";
+      syncStageButtons();
       await previewSelectedPlan();
       if (state.selectedPlanId) {
         extractUnit(true);
@@ -3136,6 +3269,9 @@
       if (!file) return;
       state.uploadedFile = file;
       state.selectedPlanId = null;
+      state.comparison = null;
+      state.stagePanel = "audit";
+      syncStageButtons();
       const url = URL.createObjectURL(file);
       state.bgImage = await loadImageFromUrl(url);
       state.bgVersion++;
@@ -3150,12 +3286,19 @@
     });
     const specUploadEl = document.getElementById("specUpload");
     const specUploadLabelEl = document.getElementById("specUploadLabel");
+    const specUploadTextEl = document.getElementById("specUploadText");
     if (specUploadEl) {
       specUploadEl.addEventListener("change", (e) => {
         const f = e.target.files[0];
         state.uploadedSpecFile = f || null;
         if (specUploadLabelEl) {
-          specUploadLabelEl.childNodes[0].textContent = f ? `Spec: ${f.name.slice(0, 14)} ` : "+ Spec Doc ";
+          specUploadLabelEl.classList.toggle("has-file", Boolean(f));
+          specUploadLabelEl.title = f
+            ? `Attached spec: ${f.name}`
+            : "Attach supporting facility spec PDF, TXT, or CSV";
+        }
+        if (specUploadTextEl) {
+          specUploadTextEl.textContent = f ? `✓ ${f.name.slice(0, 14)}` : "+ Spec Doc";
         }
       });
     }
@@ -3239,6 +3382,8 @@
       if (state.rafId) cancelAnimationFrame(state.rafId);
       state.playing = false;
       state.comparison = null;
+      state.stagePanel = "audit";
+      syncStageButtons();
       els.dualView.classList.add("hidden");
       els.playbackBar.classList.add("hidden");
       els.assumptionsBar.classList.add("hidden");
