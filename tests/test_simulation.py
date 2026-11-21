@@ -457,6 +457,50 @@ def test_world_model_stress_sweep_autonomy_plan_and_failure_modes():
     assert categories["med_room"] == "redesign_process"
     assert len(report.ranked_bottlenecks) >= 1
     assert "ASPR-Style After-Action Summary" in report.after_action_summary
+    assert "# After-Action Exercise Report" in report.after_action_markdown
+
+
+def test_ems_preposition_staffing_gap_crash_cart_and_calibration():
+    from hospital_twin.schemas import CalibrationInput
+    from hospital_twin.world_model import calibrate_from_drill
+
+    unit = _make_sample_unit(meters_per_pixel=0.05)
+    schedule = [
+        ScheduledRun(
+            run_type="pharmacy_pickup",
+            origin="med_room",
+            destination="nurse_station",
+            frequency_minutes=60.0,
+        ),
+        ScheduledRun(
+            run_type="supply_restock",
+            origin="supply_room",
+            destination="nurse_station",
+            frequency_minutes=120.0,
+        ),
+    ]
+
+    sg = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="staffing_gap", seed=5)
+    cc = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="crash_cart_missing", seed=5)
+    assert sg.robot_assisted.total_trips == 12
+    assert cc.robot_assisted.total_trips == 12
+
+    surge_no_ems = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="surge", seed=9, ems_preposition=False)
+    surge_ems = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="surge", seed=9, ems_preposition=True)
+    assert surge_ems.robot_assisted.avg_delivery_wait_s <= surge_no_ems.robot_assisted.avg_delivery_wait_s
+
+    cal = calibrate_from_drill(
+        CalibrationInput(
+            observed_nurse_speed_mps=1.15,
+            observed_robot_speed_mps=0.72,
+            observed_handoff_seconds=25.0,
+            drill_notes="Goldstein mock drill",
+        )
+    )
+    assert cal.nurse_speed_mps == 1.15
+    assert cal.robot_speed_mps == 0.72
+    assert cal.handoff_seconds == 25.0
+    assert "Goldstein mock drill" in cal.delta_summary
 
 
 

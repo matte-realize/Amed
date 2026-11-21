@@ -856,7 +856,13 @@
             <option value="surge">Mass Surge</option>
             <option value="robot_failure">Robot Failure (Fallback)</option>
             <option value="pharmacy_delay">Pharmacy Delay</option>
+            <option value="staffing_gap">Staffing Gap</option>
+            <option value="crash_cart_missing">Crash Cart Missing</option>
           </select>
+          <label class="inline-label" style="display:flex; align-items:center; gap:4px; cursor:pointer;" title="Pre-position supplies from advance EMS signals (reduces STAT surge latency by 70%)">
+            <input type="checkbox" id="emsPrepositionToggle" />
+            <span>EMS Pre-Stage</span>
+          </label>
           <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll random seed for chaotic/surge shifts">🎲 #42</button>
 
           <div class="divider"></div>
@@ -997,7 +1003,10 @@
       <section class="assumptions-bar hidden" id="worldModelSection" style="flex-direction:column; align-items:stretch; gap:8px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
           <strong>World Model Stress Sweep &amp; Autonomy Plan</strong>
-          <span class="badge saved" id="tippingPointBadge">Tipping Point</span>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="badge saved" id="tippingPointBadge">Tipping Point</span>
+            <button type="button" class="btn hidden" id="downloadAarBtn" style="padding:4px 10px; font-size:11px;">Download After-Action (.md)</button>
+          </div>
         </div>
         <div id="worldModelBody" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; font-size:12px;"></div>
       </section>
@@ -1087,6 +1096,8 @@
       worldModelSection: document.getElementById("worldModelSection"),
       tippingPointBadge: document.getElementById("tippingPointBadge"),
       worldModelBody: document.getElementById("worldModelBody"),
+      emsPrepositionToggle: document.getElementById("emsPrepositionToggle"),
+      downloadAarBtn: document.getElementById("downloadAarBtn"),
       assumptionsBar: document.getElementById("assumptionsBar"),
       assumptionsList: document.getElementById("assumptionsList"),
       threeSingle: document.getElementById("threeSingle"),
@@ -3180,6 +3191,7 @@
             shift_hours: Number(els.shiftHours.value),
             scenario_mode: els.scenarioSelect ? els.scenarioSelect.value : state.scenarioMode,
             seed: state.seed,
+            ems_preposition: Boolean(els.emsPrepositionToggle && els.emsPrepositionToggle.checked),
           }),
         });
         const data = await res.json();
@@ -3254,6 +3266,18 @@
 
         els.worldModelSection.classList.remove("hidden");
         els.tippingPointBadge.textContent = rep.tipping_point;
+        if (els.downloadAarBtn && rep.after_action_markdown) {
+          els.downloadAarBtn.classList.remove("hidden");
+          els.downloadAarBtn.onclick = () => {
+            const blob = new Blob([rep.after_action_markdown], { type: "text/markdown" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `after_action_${rep.scenario_mode}.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+          };
+        }
         const sweepHtml = rep.sweep.map((p) =>
           `<div><strong>${p.num_robots} Robot${p.num_robots > 1 ? "s" : ""}:</strong> saved ${p.mean_nurse_minutes_saved}m · p95 wait ${p.mean_p95_wait_s}s · ${p.max_flagged_exceptions} >10m flags</div>`
         ).join("");

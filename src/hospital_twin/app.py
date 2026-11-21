@@ -18,7 +18,13 @@ try:
 except ImportError:
     pass
 
-from hospital_twin.schemas import SimulationComparison, StressTestReport, UnitMap
+from hospital_twin.schemas import (
+    CalibrationInput,
+    CalibrationResult,
+    SimulationComparison,
+    StressTestReport,
+    UnitMap,
+)
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = PACKAGE_DIR / "static"
@@ -39,15 +45,35 @@ class SimulateRequest(BaseModel):
     run_description: str = Field(min_length=1)
     num_robots: int = Field(default=1, ge=1, le=3)
     shift_hours: float = Field(default=8.0, gt=0.0, le=24.0)
-    scenario_mode: Literal["routine", "chaotic", "surge", "robot_failure", "pharmacy_delay"] = "chaotic"
+    scenario_mode: Literal[
+        "routine",
+        "chaotic",
+        "surge",
+        "robot_failure",
+        "pharmacy_delay",
+        "staffing_gap",
+        "crash_cart_missing",
+    ] = "chaotic"
     seed: int = 42
+    ems_preposition: bool = False
+    nurse_speed_mps: float = Field(default=1.2, gt=0.1, le=5.0)
+    robot_speed_mps: float = Field(default=0.76, gt=0.1, le=5.0)
+    handoff_seconds: float = Field(default=20.0, ge=0.0, le=300.0)
 
 
 class StressSweepRequest(BaseModel):
     unit_map: UnitMap
     run_description: str = Field(min_length=1)
     shift_hours: float = Field(default=8.0, gt=0.0, le=24.0)
-    scenario_mode: Literal["routine", "chaotic", "surge", "robot_failure", "pharmacy_delay"] = "surge"
+    scenario_mode: Literal[
+        "routine",
+        "chaotic",
+        "surge",
+        "robot_failure",
+        "pharmacy_delay",
+        "staffing_gap",
+        "crash_cart_missing",
+    ] = "surge"
 
 
 def _list_demo_plans() -> list[dict[str, str]]:
@@ -252,8 +278,12 @@ async def simulate(req: SimulateRequest) -> SimulationComparison:
                 schedule,
                 shift_hours=req.shift_hours,
                 num_robots=req.num_robots,
+                nurse_speed_mps=req.nurse_speed_mps,
+                robot_speed_mps=req.robot_speed_mps,
+                handoff_seconds=req.handoff_seconds,
                 scenario_mode=req.scenario_mode,
                 seed=req.seed,
+                ems_preposition=req.ems_preposition,
             )
         except TypeError:
             comparison = simulate_shift(
@@ -294,6 +324,13 @@ async def stress_test(req: StressSweepRequest) -> StressTestReport:
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Stress sweep failed: {exc}") from exc
+
+
+@app.post("/api/calibrate", response_model=CalibrationResult)
+async def calibrate(req: CalibrationInput) -> CalibrationResult:
+    from hospital_twin.world_model import calibrate_from_drill
+
+    return calibrate_from_drill(req)
 
 
 if __name__ == "__main__":

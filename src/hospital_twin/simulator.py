@@ -33,7 +33,15 @@ DEFAULT_ROBOT_LENGTH_M = 0.965  # Aethon TUG specification: 96.5 cm
 DEFAULT_HANDOFF_SECONDS = 20.0  # 20s badge-and-unlock handoff at every load and delivery
 UNCOLLECTED_FLAG_SECONDS = 600.0  # 10-minute uncollected delivery exception threshold
 POD_COMPARTMENTS = 3  # pharmacy, specimens, supplies
-ScenarioMode = Literal["routine", "chaotic", "surge", "robot_failure", "pharmacy_delay"]
+ScenarioMode = Literal[
+    "routine",
+    "chaotic",
+    "surge",
+    "robot_failure",
+    "pharmacy_delay",
+    "staffing_gap",
+    "crash_cart_missing",
+]
 
 
 def _format_shift_time(seconds: float) -> str:
@@ -168,6 +176,18 @@ def _generate_trip_requests(
                 delay_s = (
                     rng.uniform(60.0, 180.0)
                     if run.run_type == "pharmacy_pickup"
+                    else 0.0
+                )
+            elif scenario_mode == "staffing_gap":
+                arrival_s = t
+                speed_factor = rng.uniform(0.85, 1.05)
+                delay_s = rng.uniform(15.0, 45.0) if (0.35 * shift_duration_s <= t <= 0.65 * shift_duration_s) else 0.0
+            elif scenario_mode == "crash_cart_missing":
+                arrival_s = t
+                speed_factor = rng.uniform(0.85, 1.05)
+                delay_s = (
+                    rng.uniform(90.0, 210.0)
+                    if run.run_type == "supply_restock"
                     else 0.0
                 )
             else:
@@ -542,6 +562,7 @@ def simulate_shift(
     robot_clearance_m: float = DEFAULT_ROBOT_CLEARANCE_M,
     scenario_mode: ScenarioMode = "routine",
     seed: int = 42,
+    ems_preposition: bool = False,
 ) -> SimulationComparison:
     """Simulate a hospital shift in nurse-only and robot-assisted modes using SimPy."""
     if shift_hours <= 0:
@@ -566,6 +587,19 @@ def simulate_shift(
         scenario_mode=scenario_mode,
         seed=seed,
     )
+    if ems_preposition:
+        # Advance EMS signals pre-stage carts/meds before arrival, cutting STAT surge delays by 70%
+        requests = [
+            _TripRequest(
+                arrival_time_s=req.arrival_time_s,
+                nurse_route=req.nurse_route,
+                robot_route=req.robot_route,
+                speed_factor=req.speed_factor,
+                delay_s=round(req.delay_s * 0.3, 3) if req.is_stat else req.delay_s,
+                is_stat=req.is_stat,
+            )
+            for req in requests
+        ]
 
     nurse_only = _run_single_mode(
         requests=requests,

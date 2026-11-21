@@ -8,13 +8,20 @@ from hospital_twin.routing import DEFAULT_ROBOT_CLEARANCE_M
 from hospital_twin.schemas import (
     AutonomyRecommendation,
     BottleneckItem,
+    CalibrationInput,
+    CalibrationResult,
     ScheduledRun,
     SimulationComparison,
     StressTestReport,
     StressTestSweepPoint,
     UnitMap,
 )
-from hospital_twin.simulator import ScenarioMode, simulate_shift
+from hospital_twin.simulator import (
+    DEFAULT_HANDOFF_SECONDS,
+    DEFAULT_ROBOT_SPEED_MPS,
+    ScenarioMode,
+    simulate_shift,
+)
 
 
 def build_autonomy_plan(
@@ -189,6 +196,27 @@ def run_stress_sweep(
         f"{sum(1 for a in autonomy_plan if a.category == 'keep_human')} human-only zones."
     )
 
+    sweep_rows = "\n".join(
+        f"| {p.num_robots} | {p.mean_nurse_minutes_saved:.1f} min | {p.mean_p95_wait_s:.1f}s | {p.max_flagged_exceptions} |"
+        for p in sweep_points
+    )
+    bn_rows = "\n".join(
+        f"{b.rank}. **{b.source}** ({b.impact_minutes:.1f} min) — {b.detail}"
+        for b in bottlenecks
+    ) or "- None detected."
+    plan_rows = "\n".join(
+        f"- **{a.target_label}** (`{a.category}`): {a.rationale} -> *{a.action}*"
+        for a in autonomy_plan
+    )
+    after_action_md = (
+        f"# After-Action Exercise Report ({scenario_mode.upper()})\n\n"
+        f"- **Runs Evaluated:** {runs_evaluated} ({len(seeds)} seeds x 1-3 robots)\n"
+        f"- **Tipping Point:** {tipping}\n\n"
+        f"## Fleet Sweep\n| Robots | Mean Nurse Time Saved | Mean p95 Wait | Max >10m Flags |\n| ---: | ---: | ---: | ---: |\n{sweep_rows}\n\n"
+        f"## Ranked Bottlenecks\n{bn_rows}\n\n"
+        f"## Autonomy Plan\n{plan_rows}\n"
+    )
+
     return StressTestReport(
         scenario_mode=scenario_mode,
         runs_evaluated=runs_evaluated,
@@ -197,4 +225,30 @@ def run_stress_sweep(
         autonomy_plan=autonomy_plan,
         ranked_bottlenecks=bottlenecks,
         after_action_summary=after_action,
+        after_action_markdown=after_action_md,
+    )
+
+
+def calibrate_from_drill(cal: CalibrationInput) -> CalibrationResult:
+    """Recalibrate world model timing parameters from observed mock-drill measurements."""
+    nurse_speed = cal.observed_nurse_speed_mps if cal.observed_nurse_speed_mps is not None else 1.2
+    robot_speed = cal.observed_robot_speed_mps if cal.observed_robot_speed_mps is not None else DEFAULT_ROBOT_SPEED_MPS
+    handoff_s = cal.observed_handoff_seconds if cal.observed_handoff_seconds is not None else DEFAULT_HANDOFF_SECONDS
+
+    deltas: list[str] = []
+    if cal.observed_nurse_speed_mps is not None:
+        deltas.append(f"nurse_speed: 1.20 -> {nurse_speed:.2f} m/s")
+    if cal.observed_robot_speed_mps is not None:
+        deltas.append(f"robot_speed: {DEFAULT_ROBOT_SPEED_MPS:.2f} -> {robot_speed:.2f} m/s")
+    if cal.observed_handoff_seconds is not None:
+        deltas.append(f"handoff: {DEFAULT_HANDOFF_SECONDS:.0f}s -> {handoff_s:.0f}s")
+    summary = ", ".join(deltas) if deltas else "No parameter changes; baseline defaults retained."
+    if cal.drill_notes:
+        summary += f" ({cal.drill_notes})"
+
+    return CalibrationResult(
+        nurse_speed_mps=round(nurse_speed, 3),
+        robot_speed_mps=round(robot_speed, 3),
+        handoff_seconds=round(handoff_s, 3),
+        delta_summary=summary,
     )

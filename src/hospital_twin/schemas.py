@@ -137,3 +137,18 @@ class StressTestReport(BaseModel):
     autonomy_plan: list[AutonomyRecommendation]
     ranked_bottlenecks: list[BottleneckItem]
     after_action_summary: str
+    after_action_markdown: str = ""
+
+
+class CalibrationInput(BaseModel):
+    observed_nurse_speed_mps: Optional[float] = Field(default=None, gt=0.1, le=5.0)
+    observed_robot_speed_mps: Optional[float] = Field(default=None, gt=0.1, le=5.0)
+    observed_handoff_seconds: Optional[float] = Field(default=None, ge=0.0, le=300.0)
+    drill_notes: str = ""
+
+
+class CalibrationResult(BaseModel):
+    nurse_speed_mps: float
+    robot_speed_mps: float
+    handoff_seconds: float
+    delta_summary: str
