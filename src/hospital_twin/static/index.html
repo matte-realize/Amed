@@ -31,14 +31,14 @@
           <path d="M2 24h6l2-4 3 8 2-5h15" stroke="#cf3f55" stroke-width="1.5" fill="none"/>
         </svg>
         <span class="brand-title">Amed</span>
-        <span class="brand-sub">Hospital logistics world model</span>
+        <span class="brand-sub">Robot planning for hospitals</span>
       </a>
       <div class="nav-tabs" role="tablist" aria-label="Application sections">
         <button type="button" class="nav-tab active" data-page-tab="overview" role="tab" aria-selected="true"><span class="n">01</span>Overview</button>
-        <button type="button" class="nav-tab" data-page-tab="demo" role="tab" aria-selected="false"><span class="n">02</span>Live walkthrough</button>
-        <button type="button" class="nav-tab" data-page-tab="engine" role="tab" aria-selected="false"><span class="n">03</span>Engine</button>
+        <button type="button" class="nav-tab" data-page-tab="demo" role="tab" aria-selected="false"><span class="n">02</span>See it work</button>
+        <button type="button" class="nav-tab" data-page-tab="engine" role="tab" aria-selected="false"><span class="n">03</span>Try it</button>
       </div>
-      <button type="button" class="nav-cta" id="launchTwinBtn">Open engine →</button>
+      <button type="button" class="nav-cta" id="launchTwinBtn">Try your floor plan →</button>
     </div>
   </nav>
 
@@ -46,26 +46,26 @@
   <div id="tabOverview" class="page-tab" data-tab-panel="overview">
     <header class="lp-hero" id="amedLandingHero">
       <div class="lp-hero-copy">
-        <span class="eyebrow"><b>Gemini 4</b> · Hospital robotics</span>
-        <h1>Test hospital robots on your floor plan <em>before</em> you buy one.</h1>
-        <p>Drop in a unit floor plan. Amed reads every room and doorway, checks which ones a courier robot can actually fit through, and simulates a full nursing shift with and without the fleet.</p>
+        <span class="eyebrow">For hospital operations &amp; facilities teams</span>
+        <h1>Know what your building needs <em>before</em> you buy a robot.</h1>
+        <p>Upload the floor plan of any unit. Amed shows which doors and hallways a delivery robot can use, what you would have to widen or move, and how much walking a fleet takes off your nurses every shift.</p>
         <div class="lp-cta">
-          <button type="button" class="lp-btn primary lg" id="heroWalkthroughBtn">Run the live walkthrough</button>
-          <button type="button" class="lp-btn lg" id="heroLaunchEngineBtn">Open the engine</button>
+          <button type="button" class="lp-btn primary lg" id="heroWalkthroughBtn">See it run on a sample unit</button>
+          <button type="button" class="lp-btn lg" id="heroLaunchEngineBtn">Try your own floor plan</button>
         </div>
         <ol class="lp-seq" id="heroSeq" aria-label="How Amed works">
-          <li><span class="n">01</span>Read plan</li>
-          <li><span class="n">02</span>Verify doors</li>
-          <li><span class="n">03</span>Parse shift</li>
-          <li><span class="n">04</span>Simulate</li>
-          <li><span class="n">05</span>Stress test</li>
+          <li><span class="n">01</span>Upload a plan</li>
+          <li><span class="n">02</span>Find problem doors</li>
+          <li><span class="n">03</span>Describe a shift</li>
+          <li><span class="n">04</span>Compare with robots</li>
+          <li><span class="n">05</span>Test a bad day</li>
         </ol>
-        <p class="lp-proof">Evaluated on <b>10 unseen CubiCasa5K plans</b> · door precision 95% → <b>100%</b> with Decision-API verification</p>
+        <p class="lp-proof">Tested on <b>10 real floor plans</b> it had never seen. Every doorway it reported was a real door.</p>
       </div>
 
       <figure class="lp-hero-visual sheet" style="margin:0;">
         <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
-        <span class="sheet-tag">Sheet A-01 · Med-surg unit · 1:100</span>
+        <span class="sheet-tag">Sample · Medical-surgical unit</span>
         <svg viewBox="0 0 560 300" role="img" aria-label="Unit floor plan with a courier route and one blocked doorway">
           <g font-family="Geist Mono, ui-monospace, monospace" fill="none" stroke="#17262b">
             <rect x="20" y="16" width="520" height="252" stroke-width="2"/>
@@ -96,7 +96,7 @@
             <path d="M98 192 H116" stroke="#cf3f55"/>
           </g>
           <g font-family="Geist Mono, ui-monospace, monospace" font-size="9" fill="#cf3f55">
-            <text x="40" y="244">0.85 M DOOR · BLOCKED</text>
+            <text x="40" y="244">0.85 M DOOR · TOO NARROW</text>
           </g>
           <circle cx="107" cy="192" r="9" fill="none" stroke="#cf3f55" stroke-width="1">
             <animate attributeName="r" values="6;13;6" dur="1.6s" repeatCount="indefinite"/>
@@ -111,28 +111,43 @@
           <path d="M20 286 H200 l6 -10 6 18 6 -26 6 24 6 -6 H540" fill="none" stroke="#cf3f55" stroke-width="1.2"/>
         </svg>
         <dl class="lp-titleblock">
-          <div><dt>Doors</dt><dd>5 of 6 passable</dd></div>
-          <div><dt>Blocked</dt><dd class="bad">Patient 101</dd></div>
-          <div><dt>Fleet</dt><dd>Aethon TUG ×2</dd></div>
-          <div><dt>Status</dt><dd class="elec"><span class="lp-live">Simulating</span></dd></div>
+          <div><dt>Doors</dt><dd>5 of 6 fit</dd></div>
+          <div><dt>Needs work</dt><dd class="bad">Patient 101 door</dd></div>
+          <div><dt>Robots</dt><dd>2 delivery robots</dd></div>
+          <div><dt>Status</dt><dd class="elec"><span class="lp-live">Running a shift</span></dd></div>
         </dl>
       </figure>
     </header>
 
+    <!-- What you get -->
+    <section id="outcomes" class="lp-section">
+      <div class="lp-head">
+        <span class="eyebrow">What you walk away with</span>
+        <h2>A building plan and a business case, from one floor plan.</h2>
+        <p class="lp-lede">Facilities gets a list of what to change. Finance gets the hours saved and how many robots are worth buying. Nursing gets to see the shift before it happens.</p>
+      </div>
+      <ol class="lp-steps four">
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For facilities</span><h3>A door-by-door fix list</h3><p>Every doorway measured against the robot you picked, with the ones that are too narrow called out so you know exactly what to widen or re-hang.</p></div></li>
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For the floor</span><h3>Where robots can go</h3><p>Each room marked as robot-ready, needs a hand-off point, or staff only, so you can plan drop-off spots before anything is installed.</p></div></li>
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For finance</span><h3>Hours back, per shift</h3><p>Nurse walking time with and without robots on the same unit and the same orders, so the savings are about your building, not a brochure.</p></div></li>
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For planning</span><h3>How many robots to buy</h3><p>The same shift run with one, two and three robots on good days and bad, showing the point where adding another stops paying off.</p></div></li>
+      </ol>
+    </section>
+
     <!-- Robot hardware inspector -->
     <section id="robotShowcaseSection" class="lp-section">
       <div class="lp-head">
-        <span class="eyebrow"><b>02</b> · Fleet</span>
-        <h2>Six courier platforms, measured against your doorways.</h2>
-        <p class="lp-lede">Three commercial robots and three Amed concepts. Each one carries its real footprint, speed and minimum door clearance into the simulation.</p>
+        <span class="eyebrow">The robots</span>
+        <h2>Compare the robots you are actually considering.</h2>
+        <p class="lp-lede">Three robots hospitals buy today and three Amed designs for older buildings. Each one is modeled at its real size and speed, so a door that is too narrow here is too narrow on the floor.</p>
       </div>
       <div class="showcase-grid">
         <div class="showcase-viewer-card sheet">
           <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
-          <span class="sheet-tag">3D hardware turntable</span>
+          <span class="sheet-tag">3D model</span>
           <div class="showcase-viewer-head">
             <div>
-              <div class="t">Inspect the chassis</div>
+              <div class="t">Look at it from every side</div>
               <div class="s">Drag to orbit · scroll to zoom</div>
             </div>
             <button type="button" class="btn sm" id="showcaseAutoRotateBtn">Auto-rotate: on</button>
@@ -152,7 +167,7 @@
 
         <div class="showcase-spec-card sheet" id="robotSpecSheet">
           <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
-          <span class="sheet-tag">Spec sheet</span>
+          <span class="sheet-tag">Specs</span>
           <div class="spec-header">
             <div>
               <h3 class="spec-title" id="specRobotName">Aethon TUG + 3-Compartment Pod</h3>
@@ -161,14 +176,14 @@
             <span class="spec-badge" id="specVendorBadge">Aethon</span>
           </div>
           <div class="spec-grid">
-            <div class="spec-item"><div class="spec-lbl">Estimated cost</div><div class="spec-val" id="specCost">~$4,500/mo lease or $120k–$160k unit</div></div>
+            <div class="spec-item"><div class="spec-lbl">Typical cost</div><div class="spec-val" id="specCost">~$4,500/mo lease or $120k–$160k unit</div></div>
             <div class="spec-item"><div class="spec-lbl">Dimensions</div><div class="spec-val" id="specDimensions">96.5 cm L × 56 cm W × 112 cm H</div></div>
-            <div class="spec-item full"><div class="spec-lbl">Speed &amp; door clearance</div><div class="spec-val" id="specSpeedClearance">0.76 m/s cruise · 0.90m min door clearance · 20s handoff · 3 compartments</div></div>
-            <div class="spec-item full"><div class="spec-lbl">Engineering design</div><div class="spec-val" id="specDesign">Low-profile differential-drive AMR base with 270° LiDAR, top-mounted 3-compartment custodial pod, and badge-actuated locker doors.</div></div>
+            <div class="spec-item full"><div class="spec-lbl">Speed &amp; door width needed</div><div class="spec-val" id="specSpeedClearance">0.76 m/s cruise · 0.90m min door clearance · 20s handoff · 3 compartments</div></div>
+            <div class="spec-item full"><div class="spec-lbl">How it is built</div><div class="spec-val" id="specDesign">Low-profile differential-drive AMR base with 270° LiDAR, top-mounted 3-compartment custodial pod, and badge-actuated locker doors.</div></div>
             <div class="spec-item full"><div class="spec-lbl">Why it helps</div><div class="spec-val" id="specWhyHelpful">Eliminates 20–35 min of routine nurse walking per shift while maintaining chain-of-custody logs.</div></div>
           </div>
           <div class="spec-foot">
-            <button type="button" class="lp-btn primary" id="showcaseTestEngineBtn">Test in the engine →</button>
+            <button type="button" class="lp-btn primary" id="showcaseTestEngineBtn">Test it on a floor plan →</button>
           </div>
         </div>
       </div>
@@ -177,8 +192,8 @@
     <!-- Fleet selector -->
     <section id="fleet" class="lp-section">
       <div class="lp-head">
-        <span class="eyebrow"><b>03</b> · Pick a platform</span>
-        <h2>Choose the robot the engine simulates.</h2>
+        <span class="eyebrow">Pick one</span>
+        <h2>Choose a robot to test on your unit.</h2>
       </div>
       <div class="fleet-grid" id="landingFleetGrid">
         <button type="button" class="fleet-card active" data-robot-profile="aethon_tug">
@@ -189,9 +204,9 @@
               <circle cx="20" cy="43" r="3.5"/><circle cx="60" cy="43" r="3.5"/>
             </svg>
           </div>
-          <span class="fleet-card-tag">Commercial</span>
-          <div class="fleet-card-name">Aethon TUG + pod</div>
-          <div class="fleet-card-spec">0.76 m/s · 0.90 m doors · 3-bay pod</div>
+          <span class="fleet-card-tag">On the market</span>
+          <div class="fleet-card-name">Aethon TUG</div>
+          <div class="fleet-card-spec">Needs 0.90 m doors · 3 locked bins</div>
         </button>
         <button type="button" class="fleet-card" data-robot-profile="diligent_moxi">
           <div class="fleet-svg-wrap">
@@ -203,7 +218,7 @@
           </div>
           <span class="fleet-card-tag">Commercial</span>
           <div class="fleet-card-name">Diligent Moxi</div>
-          <div class="fleet-card-spec">0.90 m/s · 0.85 m doors · cobot arm</div>
+          <div class="fleet-card-spec">Needs 0.85 m doors · has an arm</div>
         </button>
         <button type="button" class="fleet-card" data-robot-profile="pneumatic_tube">
           <div class="fleet-svg-wrap">
@@ -213,8 +228,8 @@
             </svg>
           </div>
           <span class="fleet-card-tag">Commercial</span>
-          <div class="fleet-card-name">Pneumatic tube hybrid</div>
-          <div class="fleet-card-spec">3.50 m/s · specimens &amp; meds only</div>
+          <div class="fleet-card-name">Pneumatic tube</div>
+          <div class="fleet-card-spec">Fastest · small items only</div>
         </button>
         <button type="button" class="fleet-card" data-robot-profile="amed_prestage_pod">
           <div class="fleet-svg-wrap">
@@ -224,9 +239,9 @@
               <circle cx="18" cy="43" r="3.5"/><circle cx="62" cy="43" r="3.5"/>
             </svg>
           </div>
-          <span class="fleet-card-tag custom">Amed concept</span>
-          <div class="fleet-card-name">Amed pre-stage cart</div>
-          <div class="fleet-card-spec">1.10 m/s · 4-bay emergency staging</div>
+          <span class="fleet-card-tag custom">Amed design</span>
+          <div class="fleet-card-name">Amed emergency cart</div>
+          <div class="fleet-card-spec">Stages emergency supplies</div>
         </button>
         <button type="button" class="fleet-card" data-robot-profile="amed_narrow_rover">
           <div class="fleet-svg-wrap">
@@ -238,7 +253,7 @@
           </div>
           <span class="fleet-card-tag custom">Amed concept</span>
           <div class="fleet-card-name">Amed slim rover</div>
-          <div class="fleet-card-spec">0.85 m/s · fits 0.72 m legacy doors</div>
+          <div class="fleet-card-spec">Fits 0.72 m doors in older wings</div>
         </button>
       </div>
     </section>
@@ -246,48 +261,48 @@
     <!-- Why it matters -->
     <section id="research" class="lp-section" aria-label="Hospital logistics benchmarks">
       <div class="lp-head">
-        <span class="eyebrow"><b>04</b> · Why it matters</span>
-        <h2>Minutes lost to walking are minutes lost at the bedside.</h2>
+        <span class="eyebrow">Why it matters</span>
+        <h2>Every trip down the hall is time away from a patient.</h2>
       </div>
       <div class="lp-stats">
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">30.1%</div><div class="lp-stat-lbl">In-hospital cardiac arrests with delayed defibrillation</div></div>
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">0.95 / min</div><div class="lp-stat-lbl">Pediatric survival risk ratio per minute of epinephrine delay</div></div>
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">$661k</div><div class="lp-stat-lbl">Average diagnostic-delay malpractice indemnity</div></div>
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">~10,000 / wk</div><div class="lp-stat-lbl">Medication orders at a typical 200-bed hospital</div></div>
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">30.1%</div><div class="lp-stat-lbl">of in-hospital cardiac arrests see a delay before defibrillation</div></div>
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">−5% / min</div><div class="lp-stat-lbl">lower survival for every minute a child’s epinephrine is delayed</div></div>
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">$661k</div><div class="lp-stat-lbl">average malpractice payout for a delayed diagnosis</div></div>
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">~10,000 / wk</div><div class="lp-stat-lbl">medication orders a week at a typical 200-bed hospital</div></div>
       </div>
     </section>
 
     <section id="targets" class="lp-section">
       <div class="lp-head">
-        <span class="eyebrow"><b>05</b> · What it answers</span>
-        <h2>Three questions a hospital asks before buying a robot.</h2>
+        <span class="eyebrow">Before you sign</span>
+        <h2>Three questions to answer before a purchase order.</h2>
       </div>
       <div class="lp-targets-grid" id="amedHeroBody">
         <div class="lp-target-col">
-          <span class="lp-target-kicker">01 · Nurse time</span>
-          <h3 class="lp-target-title">How much walking does a fleet take off nurses?</h3>
-          <p class="lp-target-desc">Move pharmacy, specimen and supply runs onto couriers with 20 s badge-and-unlock handoffs, and measure the minutes recovered.</p>
-          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-scenario="staffing_gap" data-struggle-robot="aethon_tug" data-struggle-ems="false" data-struggle-runs="supply restock every 45 minutes, lab specimen drop hourly, pharmacy pickup every 30 minutes">Run with Aethon TUG →</button>
+          <span class="lp-target-kicker">01 · Staff time</span>
+          <h3 class="lp-target-title">How many nurse hours does it give back?</h3>
+          <p class="lp-target-desc">See how much walking moves off nurses when robots take the pharmacy, lab and supply runs, shift by shift.</p>
+          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-scenario="staffing_gap" data-struggle-robot="aethon_tug" data-struggle-ems="false" data-struggle-runs="supply restock every 45 minutes, lab specimen drop hourly, pharmacy pickup every 30 minutes">Try it with a TUG →</button>
         </div>
         <div class="lp-target-col">
-          <span class="lp-target-kicker">02 · Building fit</span>
-          <h3 class="lp-target-title">Will it fit through our doors?</h3>
-          <p class="lp-target-desc">Check whether standard 0.90 m couriers clear your unit, or whether a slim 0.72 m rover is needed for legacy wings.</p>
-          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-scenario="pharmacy_delay" data-struggle-robot="amed_narrow_rover" data-struggle-ems="false" data-struggle-runs="STAT epinephrine &amp; pharmacy pickup every 15 minutes, lab specimen drop hourly">Run with slim rover →</button>
+          <span class="lp-target-kicker">02 · The building</span>
+          <h3 class="lp-target-title">What would we have to rebuild?</h3>
+          <p class="lp-target-desc">Find every door and hallway a robot cannot get through, and see whether widening a door or choosing a slimmer robot is the cheaper fix.</p>
+          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-scenario="pharmacy_delay" data-struggle-robot="amed_narrow_rover" data-struggle-ems="false" data-struggle-runs="STAT epinephrine &amp; pharmacy pickup every 15 minutes, lab specimen drop hourly">Try it with a slim robot →</button>
         </div>
         <div class="lp-target-col">
-          <span class="lp-target-kicker">03 · Surge readiness</span>
-          <h3 class="lp-target-title">Does it hold up on a surge day?</h3>
-          <p class="lp-target-desc">Use advance EMS signals to pre-position carts and meds before surge patients arrive, then stress-test the fleet.</p>
-          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-scenario="crash_cart_missing" data-struggle-robot="amed_prestage_pod" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Run with pre-stage cart →</button>
+          <span class="lp-target-kicker">03 · Busy days</span>
+          <h3 class="lp-target-title">Does it still work on our worst day?</h3>
+          <p class="lp-target-desc">Run the same unit through a patient surge, a staffing gap or a robot breakdown and see where the plan stops working.</p>
+          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-scenario="crash_cart_missing" data-struggle-robot="amed_prestage_pod" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Try a surge day →</button>
         </div>
       </div>
     </section>
 
     <footer class="lp-foot" style="margin-top:96px;">
       <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="29" stroke="currentColor" stroke-width="1.5"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" stroke="currentColor" stroke-width="1.5"/></svg><span class="brand-title">Amed</span></span>
-      <span>Gemini 4 Neon · Gemini 4 Hydrogen · Gemini Decision 1</span>
-      <span>Logistics only · no clinical advice</span>
+      <span>Built with Gemini 4</span>
+      <span>Plans deliveries and building changes. Not clinical advice.</span>
     </footer>
   </div>
 
@@ -295,14 +310,14 @@
   <div id="tabDemo" class="page-tab hidden" data-tab-panel="demo">
     <section class="lp-section" style="padding-top:64px;">
       <div class="lp-head">
-        <span class="eyebrow"><b>Live</b> · Walkthrough</span>
-        <h2>Watch the whole product run, end to end.</h2>
-        <p class="lp-lede">Not a video. This drives the real engine: live Gemini 4 calls read the plan, Decision 1 verifies it, Hydrogen parses the shift, the simulator runs nurse-only against robot-assisted, and the fleet gets stress-tested. Every number you see is computed on the spot.</p>
+        <span class="eyebrow">See it work</span>
+        <h2>Follow one unit from floor plan to purchase decision.</h2>
+        <p class="lp-lede">Press start and Amed runs the real tool on a sample unit, one step at a time. It reads the plan, flags the doors that need work, runs a normal shift with and without robots, then tries a bad day. The numbers are worked out as you watch.</p>
       </div>
 
       <div class="wt-launch sheet">
         <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
-        <span class="sheet-tag">Run setup</span>
+        <span class="sheet-tag">Setup</span>
         <div class="wt-launch-row">
           <label class="wt-field"><span>Floor plan</span><select id="wtPlanSelect"></select></label>
           <label class="wt-field"><span>Robot</span>
@@ -311,35 +326,37 @@
               <option value="diligent_moxi">Diligent Moxi</option>
               <option value="amed_narrow_rover">Amed slim rover 0.72 m</option>
               <option value="amed_prestage_pod">Amed pre-stage cart</option>
+              <option value="amed_compounding_arm">Amed 6-DOF compounding arm</option>
+              <option value="mixed_fleet">All robotics (mixed fleet — 3 custom robots)</option>
             </select>
           </label>
-          <label class="wt-field"><span>Extraction</span>
+          <label class="wt-field"><span>Read the plan</span>
             <div class="segmented" id="wtModeGroup">
-              <button type="button" class="active" data-wt-mode="live">Live Gemini</button>
-              <button type="button" data-wt-mode="offline">Pre-traced</button>
+              <button type="button" class="active" data-wt-mode="live">Live (Gemini)</button>
+              <button type="button" data-wt-mode="offline">Pre-traced (offline)</button>
             </div>
           </label>
-          <button type="button" class="lp-btn primary lg" id="wtStartBtn">Start walkthrough →</button>
+          <button type="button" class="lp-btn primary lg" id="wtStartBtn">Start →</button>
         </div>
       </div>
 
       <ol class="wt-plan" aria-label="Walkthrough steps">
-        <li><span class="n">01</span><b>Load the unit</b><span>Floor plan image + facility spec</span></li>
-        <li><span class="n">02</span><b>Read rooms &amp; doors</b><span class="m">gemini-4-neon</span></li>
-        <li><span class="n">03</span><b>Verify every crop</b><span class="m">gemini-decision-1</span></li>
-        <li><span class="n">04</span><b>Fit the robot</b><span>Door clearance vs chassis</span></li>
-        <li><span class="n">05</span><b>Parse the shift</b><span class="m">gemini-4-hydrogen</span></li>
-        <li><span class="n">06</span><b>Simulate the shift</b><span>Nurse-only vs robot-assisted</span></li>
-        <li><span class="n">07</span><b>Stress-test</b><span>Seeds × fleet sizes</span></li>
-        <li><span class="n">08</span><b>Show the proof</b><span>Eval on 10 unseen plans</span></li>
+        <li><span class="n">01</span><b>Open the floor plan</b><span>Any unit, any hospital</span></li>
+        <li><span class="n">02</span><b>Find rooms &amp; doors</b><span class="m">gemini-4-neon</span></li>
+        <li><span class="n">03</span><b>Double-check them</b><span class="m">gemini-decision-1</span></li>
+        <li><span class="n">04</span><b>Will the robot fit?</b><span>Door by door</span></li>
+        <li><span class="n">05</span><b>Describe the shift</b><span class="m">gemini-4-hydrogen</span></li>
+        <li><span class="n">06</span><b>Run it twice</b><span>Nurses only vs with robots</span></li>
+        <li><span class="n">07</span><b>Try a bad day</b><span>Surges, breakdowns</span></li>
+        <li><span class="n">08</span><b>How accurate is it?</b><span>Tested on 10 new plans</span></li>
       </ol>
     </section>
 
     <section class="lp-section">
       <div class="lp-head">
-        <span class="eyebrow"><b>More</b> · Scenarios</span>
-        <h2>Or jump straight to a scenario.</h2>
-        <p class="lp-lede">Each one loads a unit, sets the fleet and the shift, and runs the simulation in the engine.</p>
+        <span class="eyebrow">Ready-made examples</span>
+        <h2>Or start from a situation you recognize.</h2>
+        <p class="lp-lede">Each example sets up a unit, a robot and a shift, then runs it.</p>
       </div>
       <div class="case-grid">
         <article class="case-card">
@@ -388,75 +405,93 @@
     </section>
   </div>
 
-  <!-- TAB 3: ENGINE -->
+  <!-- TAB 3: ENGINE (editor layout: toolbar / properties / viewport / results / timeline) -->
   <div id="tabEngine" class="page-tab hidden" data-tab-panel="engine">
-    <div class="app-shell" id="workspaceRoot">
-      <header class="topbar">
-        <div class="tb grow">
-          <span class="k">Engine</span>
-          <span class="v">Hospital robotics simulation</span>
+    <div class="engine" id="workspaceRoot">
+
+      <!-- Toolbar -->
+      <header class="eng-toolbar topbar">
+        <div class="eng-tb-group">
+          <span class="eng-doc"><span class="k">Unit</span><span class="v" id="mapTitle">Unit floor plan</span></span>
+          <span class="badge" id="extractBadge">No unit mapped</span>
+          <span class="badge hidden" id="verifyBadge"></span>
         </div>
-        <div class="tb">
-          <span class="k">Status</span>
-          <span class="engine-status-badge" id="engineStatusBadge"><span class="engine-status-dot"></span>3D engine ready</span>
+        <div class="stepper" id="stepper">
+          <span class="step-pill active" data-step="1">01 Map</span>
+          <span class="step-pill" data-step="2">02 Configure</span>
+          <span class="step-pill" data-step="3">03 Simulate</span>
         </div>
-        <div class="stepper hidden" id="stepper">
-          <span class="step-pill active" data-step="1">1 · Map unit</span>
-          <span class="step-pill" data-step="2">2 · Describe runs</span>
-          <span class="step-pill" data-step="3">3 · Animate shift</span>
-        </div>
-        <div class="top-right">
-          <div class="segmented color-toggle" id="colorModeGroup" title="Color rooms by robot autonomy tier or by room type">
-            <button type="button" class="active" data-colormode="autonomy">Autonomy</button>
-            <button type="button" data-colormode="room_type">Room type</button>
+        <div class="eng-tb-group right">
+          <div class="segmented stage-toggle" id="stageModeGroup" title="Single-unit audit or side-by-side shift simulation">
+            <button type="button" class="active" data-stage="audit">Audit</button>
+            <button type="button" data-stage="sim" id="stageSimBtn" disabled>Shift sim</button>
           </div>
-          <div class="segmented view-toggle" id="viewModeGroup" title="Switch between the 3D twin and the 2D map">
+          <div class="segmented view-toggle" id="viewModeGroup" title="3D twin or 2D map">
             <button type="button" class="active" data-view="3d">3D</button>
             <button type="button" data-view="2d">2D</button>
           </div>
-          <div class="legend">
-            <span><span class="dot-swatch" style="background: var(--nurse);"></span>Nurse</span>
-            <span><span class="dot-swatch" style="background: var(--robot);"></span>Robot</span>
+          <div class="segmented color-toggle" id="colorModeGroup" title="Color rooms by autonomy tier or room type">
+            <button type="button" class="active" data-colormode="autonomy">Autonomy</button>
+            <button type="button" data-colormode="room_type">Rooms</button>
           </div>
           <button class="btn" id="resetBtn" title="Reset simulation view">Reset</button>
+          <span class="engine-status-badge" id="engineStatusBadge"><span class="engine-status-dot"></span>3D engine ready</span>
         </div>
       </header>
 
-      <section class="control-ribbon">
-        <div class="ribbon-row">
-          <div class="control-group">
-            <span class="row-tag">Unit</span>
-            <label class="inline-label" for="planSelect">Plan</label>
-            <select id="planSelect"></select>
-            <label class="btn" for="fileUpload" title="Upload a PNG or JPG floor plan">
-              Upload plan
+      <!-- Left: properties -->
+      <aside class="eng-panel eng-left" aria-label="Simulation setup">
+        <section class="eng-sec">
+          <h3 class="eng-sec-h"><span class="n">01</span>Unit</h3>
+          <label class="eng-field"><span>Floor plan</span><select id="planSelect"></select></label>
+          <div class="eng-row2">
+            <label class="btn" for="fileUpload" title="Upload a PNG or JPG floor plan">Upload plan
               <input type="file" id="fileUpload" accept="image/png,image/jpeg,image/webp" class="hidden" />
             </label>
             <label class="btn" for="specUpload" id="specUploadLabel" title="Attach a facility spec (PDF, TXT or CSV)">
               <span id="specUploadText">+ Spec doc</span>
               <input type="file" id="specUpload" accept=".pdf,.txt,.md,.csv,.json" class="hidden" />
             </label>
-            <button class="btn btn-primary" id="mapBtn">Map unit</button>
+          </div>
+          <div class="eng-row2">
+            <button class="btn btn-primary" id="mapBtn" title="Extract rooms and doors with Gemini 4 Neon, verify with Decision 1">Map unit</button>
             <button class="btn" id="fallbackBtn" title="Load the pre-traced demo unit">Demo map</button>
           </div>
-          <div class="control-group">
-            <label class="inline-label">Stage</label>
-            <div class="segmented stage-toggle" id="stageModeGroup" title="Switch between the single-unit audit and the side-by-side shift simulation">
-              <button type="button" class="active" data-stage="audit">Unit audit</button>
-              <button type="button" data-stage="sim" id="stageSimBtn" disabled>Shift sim</button>
+          <p class="eng-hint"><span class="m">gemini-4-neon</span> extracts · <span class="m">gemini-decision-1</span> verifies</p>
+        </section>
+
+        <section class="eng-sec">
+          <h3 class="eng-sec-h"><span class="n">02</span>Fleet</h3>
+          <label class="eng-field"><span>Platform</span>
+            <select id="robotProfileSelect" title="Courier platform">
+              <option value="aethon_tug" selected>Aethon TUG + pod</option>
+              <option value="diligent_moxi">Diligent Moxi</option>
+              <option value="pneumatic_tube">Pneumatic tube hybrid</option>
+              <option value="amed_prestage_pod">Amed pre-stage cart</option>
+              <option value="amed_narrow_rover">Amed slim rover 0.72 m</option>
+              <option value="amed_compounding_arm">Amed 6-DOF compounding arm</option>
+              <option value="mixed_fleet">All robotics (mixed fleet)</option>
+            </select>
+          </label>
+          <div class="eng-field inline"><span>Robots</span>
+            <div class="segmented" id="robotCountGroup">
+              <button type="button" data-robots="1">1</button>
+              <button type="button" class="active" data-robots="2">2</button>
+              <button type="button" data-robots="3">3</button>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="ribbon-row">
-          <div class="run-input-wrap">
-            <span class="row-tag">Shift</span>
-            <label class="inline-label" for="runDesc">Runs</label>
-            <input type="text" id="runDesc" value="pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly" placeholder="e.g. pharmacy pickup every 30 min, specimens hourly..." />
-            <button class="btn btn-mic" id="micBtn" title="Speak the run schedule (Web Speech API)">Mic</button>
-          </div>
-          <div class="control-group">
-            <label class="inline-label" for="scenarioSelect">Scenario</label>
+        <section class="eng-sec">
+          <h3 class="eng-sec-h"><span class="n">03</span>Shift</h3>
+          <label class="eng-field"><span>Runs · plain English or voice</span>
+            <div class="eng-runs">
+              <textarea id="runDesc" rows="3" placeholder="e.g. pharmacy pickup every 30 min, specimens hourly...">pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly</textarea>
+              <button class="btn btn-mic" id="micBtn" title="Speak the run schedule (Web Speech API)">Mic</button>
+            </div>
+          </label>
+          <p class="eng-hint"><span class="m">gemini-4-hydrogen</span> parses the schedule</p>
+          <label class="eng-field"><span>Scenario</span>
             <select id="scenarioSelect" title="Shift turbulence and STAT burst intensity">
               <option value="routine">Routine</option>
               <option value="chaotic" selected>Chaotic (STAT surges)</option>
@@ -466,71 +501,52 @@
               <option value="staffing_gap">Staffing gap</option>
               <option value="crash_cart_missing">Crash cart missing</option>
             </select>
-            <label class="inline-label" style="display:flex; align-items:center; gap:5px; cursor:pointer;" title="Pre-position supplies from advance EMS signals">
-              <input type="checkbox" id="emsPrepositionToggle" />
-              <span>EMS pre-stage</span>
+          </label>
+          <div class="eng-row2">
+            <label class="eng-field"><span>Length</span>
+              <select id="shiftHours"><option value="4">4 h</option><option value="8" selected>8 h</option><option value="12">12 h</option></select>
             </label>
-            <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll the random seed for chaotic and surge shifts">Seed #42</button>
-            <div class="divider"></div>
-            <label class="inline-label" for="robotProfileSelect">Fleet</label>
-            <select id="robotProfileSelect" title="Courier platform">
-              <option value="aethon_tug" selected>Aethon TUG + pod</option>
-              <option value="diligent_moxi">Diligent Moxi</option>
-              <option value="pneumatic_tube">Pneumatic tube hybrid</option>
-              <option value="amed_prestage_pod">Amed pre-stage cart</option>
-              <option value="amed_narrow_rover">Amed slim rover 0.72 m</option>
-              <option value="amed_compounding_arm">Amed 6-DOF compounding arm</option>
-            </select>
-            <label class="inline-label">Robots</label>
-            <div class="segmented" id="robotCountGroup">
-              <button type="button" data-robots="1">1</button>
-              <button type="button" class="active" data-robots="2">2</button>
-              <button type="button" data-robots="3">3</button>
-            </div>
-            <label class="inline-label" for="shiftHours">Shift</label>
-            <select id="shiftHours">
-              <option value="4">4h</option>
-              <option value="8" selected>8h</option>
-              <option value="12">12h</option>
-            </select>
-            <button class="btn btn-accent" id="runSimBtn" disabled>Run shift</button>
-            <button class="btn" id="stressSweepBtn" disabled title="Run a 15-run stress sweep (1–3 robots × 5 seeds)">Stress sweep</button>
+            <label class="eng-field"><span>Seed</span>
+              <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll the random seed">Seed #42</button>
+            </label>
+          </div>
+          <label class="eng-check" title="Pre-position supplies from advance EMS signals">
+            <input type="checkbox" id="emsPrepositionToggle" /><span>EMS pre-stage signals</span>
+          </label>
+        </section>
+
+        <section class="eng-sec">
+          <h3 class="eng-sec-h"><span class="n">04</span>Run</h3>
+          <button class="btn btn-accent eng-run" id="runSimBtn" disabled>Run shift</button>
+          <div class="eng-row2">
+            <button class="btn" id="stressSweepBtn" disabled title="15-run stress sweep: 1–3 robots × 5 seeds">Stress sweep</button>
             <button type="button" class="btn" id="calibrateBtn" title="Calibrate speeds and handoff time from mock-drill observations">Calibrate</button>
           </div>
-        </div>
-
-        <div class="calibration-panel hidden" id="calibrationPanel">
-          <label class="calibration-field"><span>Nurse speed (m/s)</span><input type="number" id="calNurseSpeed" value="1.2" step="0.05" min="0.2" max="5.0" /></label>
-          <label class="calibration-field"><span>Robot speed (m/s)</span><input type="number" id="calRobotSpeed" value="0.76" step="0.02" min="0.2" max="5.0" /></label>
-          <label class="calibration-field"><span>Handoff (s)</span><input type="number" id="calHandoffSeconds" value="20" step="1" min="0" max="300" /></label>
-          <label class="calibration-field"><span>Drill notes</span><input type="text" id="calDrillNotes" placeholder="e.g. Hallway B congestion" /></label>
-          <button type="button" class="btn btn-primary" id="applyCalibrationBtn">Apply calibration</button>
-          <span class="calibration-summary" id="calibrationSummary"></span>
-        </div>
-      </section>
-
-      <div class="status-banner" id="statusBanner">
-        <span id="statusText"></span>
-        <button class="btn hidden" id="bannerFallbackBtn">Load demo map</button>
-      </div>
-
-      <main class="stage">
-        <section class="single-canvas-card" id="singleView">
-          <div class="canvas-header">
-            <div class="canvas-title">
-              <span id="mapTitle">Unit floor plan</span>
-              <span class="badge" id="extractBadge">Select or upload a floor plan, then Map unit</span>
-            </div>
-            <div class="header-badges">
-              <div class="autonomy-summary-chip hidden" id="autonomySummaryChip"></div>
-              <div class="badge hidden" id="verifyBadge"></div>
-            </div>
+          <div class="calibration-panel hidden" id="calibrationPanel">
+            <label class="calibration-field"><span>Nurse m/s</span><input type="number" id="calNurseSpeed" value="1.2" step="0.05" min="0.2" max="5.0" /></label>
+            <label class="calibration-field"><span>Robot m/s</span><input type="number" id="calRobotSpeed" value="0.76" step="0.02" min="0.2" max="5.0" /></label>
+            <label class="calibration-field"><span>Handoff s</span><input type="number" id="calHandoffSeconds" value="20" step="1" min="0" max="300" /></label>
+            <label class="calibration-field"><span>Notes</span><input type="text" id="calDrillNotes" placeholder="e.g. Hallway B congestion" /></label>
+            <button type="button" class="btn btn-primary" id="applyCalibrationBtn">Apply</button>
+            <span class="calibration-summary" id="calibrationSummary"></span>
           </div>
+        </section>
+      </aside>
+
+      <!-- Center: viewport -->
+      <main class="eng-viewport stage">
+        <div class="status-banner" id="statusBanner">
+          <span id="statusText"></span>
+          <button class="btn sm hidden" id="bannerFallbackBtn">Load demo map</button>
+        </div>
+
+        <section class="single-canvas-card" id="singleView">
           <div class="canvas-wrap" id="singleWrap">
             <div class="three-mount" id="threeSingle"></div>
             <canvas class="canvas-2d hidden" id="mapCanvas"></canvas>
             <div class="inspector-card hidden" id="inspectorSingle"></div>
-            <div class="cam-hint" id="camHintSingle">Click a room or doorway to inspect · drag to orbit · scroll to zoom</div>
+            <div class="vp-label">Viewport · unit audit</div>
+            <div class="cam-hint" id="camHintSingle">Click a room or door to inspect · drag to orbit · scroll to zoom</div>
             <div class="cam-actions" id="camActionsSingle">
               <button type="button" class="cam-btn" data-cam="iso">Iso</button>
               <button type="button" class="cam-btn" data-cam="top">Top</button>
@@ -540,18 +556,13 @@
           </div>
         </section>
 
-        <section class="autonomy-highlights hidden" id="autonomyHighlights"></section>
-
         <section class="dual-grid hidden" id="dualView">
           <div class="sim-card">
             <div class="canvas-header">
-              <div class="canvas-title">
-                <span>Nurse-only</span>
-                <span class="badge nurse">0 robots</span>
-              </div>
+              <div class="canvas-title"><span class="dot-swatch" style="background:var(--nurse);"></span>Nurse-only <span class="badge nurse">0 robots</span></div>
               <div class="sim-metrics">
-                <span class="metric-pill">Walked <strong id="nurseWalkedLeft">0.0</strong> min</span>
-                <span class="metric-pill">Avg wait <strong id="waitLeft">0</strong>s</span>
+                <span class="metric-pill">Walked <strong id="nurseWalkedLeft">0.0</strong>m</span>
+                <span class="metric-pill">Wait <strong id="waitLeft">0</strong>s</span>
                 <span class="metric-pill">Peak <strong id="maxWaitLeft">0</strong>s</span>
                 <span class="metric-pill">Trips <strong id="tripsLeft">0</strong></span>
               </div>
@@ -560,21 +571,19 @@
               <div class="three-mount" id="threeLeft"></div>
               <canvas class="canvas-2d hidden" id="canvasLeft"></canvas>
               <div class="inspector-card hidden" id="inspectorDual"></div>
-              <div class="cam-hint" id="camHintDual">Synced 3D · click a room or door to inspect</div>
+              <div class="cam-hint" id="camHintDual">Synced cameras · click to inspect</div>
             </div>
           </div>
           <div class="sim-card">
             <div class="canvas-header">
-              <div class="canvas-title">
-                <span>Robot-assisted</span>
+              <div class="canvas-title"><span class="dot-swatch" style="background:var(--robot);"></span>Robot-assisted
                 <span class="badge ok" id="robotCountBadge">1 robot</span>
                 <span class="badge nurse hidden" id="statSurgeBadge">0 STAT</span>
-                <span class="badge saved" id="savedBadge">Saved: 0.0 nurse min</span>
               </div>
               <div class="sim-metrics">
-                <span class="metric-pill">Nurse walked <strong id="nurseWalkedRight">0.0</strong> min</span>
-                <span class="metric-pill">Robot travel <strong id="robotTravelRight">0.0</strong> min</span>
-                <span class="metric-pill">Avg wait <strong id="waitRight">0</strong>s</span>
+                <span class="metric-pill">Walked <strong id="nurseWalkedRight">0.0</strong>m</span>
+                <span class="metric-pill">Robot <strong id="robotTravelRight">0.0</strong>m</span>
+                <span class="metric-pill">Wait <strong id="waitRight">0</strong>s</span>
                 <span class="metric-pill">Peak <strong id="maxWaitRight">0</strong>s</span>
               </div>
             </div>
@@ -589,52 +598,72 @@
             </div>
           </div>
         </section>
+      </main>
 
-        <section class="playback-bar hidden" id="playbackBar">
+      <!-- Right: results -->
+      <aside class="eng-panel eng-right" aria-label="Results">
+        <section class="eng-sec">
+          <h3 class="eng-sec-h"><span class="n">R1</span>Outcome</h3>
+          <div class="eng-kpi">
+            <span class="badge saved" id="savedBadge">Saved: 0.0 nurse min</span>
+          </div>
+          <div class="autonomy-summary-chip hidden" id="autonomySummaryChip"></div>
+          <div class="legend">
+            <span><span class="dot-swatch" style="background: var(--nurse);"></span>Nurse</span>
+            <span><span class="dot-swatch" style="background: var(--robot);"></span>Robot</span>
+          </div>
+        </section>
+
+        <section class="eng-sec">
+          <h3 class="eng-sec-h"><span class="n">R2</span>Rooms &amp; autonomy</h3>
+          <div class="autonomy-highlights hidden" id="autonomyHighlights"></div>
+          <p class="eng-empty" id="autonomyEmpty">Map a unit to see which rooms a robot can serve.</p>
+        </section>
+
+        <section class="eng-sec hidden" id="custodyLogSection">
+          <h3 class="eng-sec-h"><span class="n">R3</span>Custody log <span class="badge ok" id="custodyCountBadge">0 handoffs</span></h3>
+          <div class="custody-log" id="custodyLogBody"></div>
+        </section>
+
+        <section class="eng-sec hidden" id="worldModelSection">
+          <h3 class="eng-sec-h"><span class="n">R4</span>Stress sweep</h3>
+          <div class="bar-head">
+            <span class="badge saved" id="tippingPointBadge">Tipping point</span>
+            <button type="button" class="btn sm hidden" id="downloadAarBtn">After-action .md</button>
+          </div>
+          <div class="sweep-grid" id="worldModelBody"></div>
+        </section>
+
+        <section class="eng-sec hidden" id="assumptionsBar">
+          <h3 class="eng-sec-h"><span class="n">R5</span>Assumptions</h3>
+          <div id="assumptionsList" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+          <span class="assumption-chip warn">Logistics only. Time saved is a scenario estimate, not clinical guidance.</span>
+        </section>
+      </aside>
+
+      <!-- Bottom: timeline -->
+      <footer class="eng-timeline">
+        <div class="playback-bar hidden" id="playbackBar">
           <button class="btn btn-primary" id="playPauseBtn">Pause</button>
           <button class="btn" id="restartBtn">Restart</button>
-          <input type="range" class="scrubber" id="scrubber" min="0" max="28800" value="0" step="10" />
           <span class="clock-readout" id="clockReadout">00:00 / 08:00</span>
+          <input type="range" class="scrubber" id="scrubber" min="0" max="28800" value="0" step="10" />
           <div class="segmented" id="speedGroup">
             <button type="button" data-speed="300">300×</button>
             <button type="button" data-speed="600">600×</button>
             <button type="button" class="active" data-speed="1200">1200×</button>
             <button type="button" data-speed="2400">2400×</button>
           </div>
-        </section>
-
-        <section class="assumptions-bar stack hidden" id="custodyLogSection">
-          <div class="bar-head">
-            <span class="bar-title">Custody log · 3-compartment pod · 20 s badge handoff</span>
-            <span class="badge ok" id="custodyCountBadge">0 handoffs · 0 exceptions</span>
-          </div>
-          <div class="custody-log" id="custodyLogBody"></div>
-        </section>
-
-        <section class="assumptions-bar stack hidden" id="worldModelSection">
-          <div class="bar-head">
-            <span class="bar-title">Stress sweep &amp; autonomy plan</span>
-            <div style="display:flex; gap:8px; align-items:center;">
-              <span class="badge saved" id="tippingPointBadge">Tipping point</span>
-              <button type="button" class="btn sm hidden" id="downloadAarBtn">Download after-action (.md)</button>
-            </div>
-          </div>
-          <div class="sweep-grid" id="worldModelBody"></div>
-        </section>
-
-        <section class="assumptions-bar hidden" id="assumptionsBar">
-          <strong>Stated assumptions · scenario estimate · logistics only</strong>
-          <div id="assumptionsList" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
-          <span class="assumption-chip warn">No clinical or patient-care tasks; time saved is a scenario estimate from stated assumptions</span>
-        </section>
-      </main>
+        </div>
+        <div class="eng-timeline-idle" id="timelineIdle">Timeline · run a shift to scrub through it</div>
+      </footer>
     </div>
   </div>
 
   <!-- Live walkthrough dock: persists across tabs while a walkthrough runs -->
   <aside class="wt-dock hidden" id="wtDock" aria-live="polite">
     <div class="wt-dock-head">
-      <span class="wt-dock-title"><span class="lp-live">Live walkthrough</span></span>
+      <span class="wt-dock-title"><span class="lp-live">Running on a sample unit</span></span>
       <span class="wt-dock-count mono" id="wtCount">0 / 8</span>
     </div>
     <ol class="wt-steps" id="wtSteps"></ol>
@@ -2790,11 +2819,12 @@
         });
       }
 
-      getOrCreateAgentMesh(key, role, agentId) {
-        const poolKey = role === "nurse" ? `nurse:${key}` : `robot:${key}:${state.robotProfileId}`;
+      getOrCreateAgentMesh(key, role, agentId, evProfileId = null) {
+        const activeProfile = evProfileId || state.robotProfileId;
+        const poolKey = role === "nurse" ? `nurse:${key}` : `robot:${key}:${activeProfile}`;
         if (this.agentPool.has(poolKey)) return this.agentPool.get(poolKey);
         const tag = role === "nurse" ? "Nurse" : ("R" + (agentId.replace(/\D/g, "") || "1"));
-        const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, state.robotProfileId);
+        const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, activeProfile);
         mesh.traverse((obj) => {
           if (obj.isMesh) {
             obj.castShadow = true;
@@ -2855,7 +2885,7 @@
             const pose = interpolatePolylinePose(ev.pixel_path, frac);
             const wPos = this.pxToWorld(pose.x, pose.y);
 
-            const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id);
+            const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id, ev.robot_profile_id);
             agentMesh.visible = true;
             const stridePhase = frac * Math.PI * 14;
             const bob = ev.agent_role === "nurse" ? Math.abs(Math.sin(stridePhase)) * 0.16 : 0;
@@ -3145,6 +3175,16 @@
         description: "Ultra-narrow twin-canister courier engineered for older hospital wings with 0.72m doorways.",
         design_notes: "Narrow-track differential base with dual vertical specimen/med canisters and top-mounted 360° solid-state LiDAR.",
         why_helpful: "Navigates legacy patient-room doorways (<0.85m) that block standard commercial AMRs.",
+      },
+      mixed_fleet: {
+        id: "mixed_fleet",
+        name: "All robotics (mixed fleet)",
+        vendor: "Amed + Commercial",
+        is_custom: true,
+        speed_mps: 1.05,
+        clearance_m: 0.72,
+        handoff_seconds: 11,
+        compartments: 3,
       },
       amed_compounding_arm: {
         id: "amed_compounding_arm",
@@ -4697,6 +4737,7 @@
       next: document.getElementById("wtNextBtn"),
       exit: document.getElementById("wtExitBtn"),
       start: document.getElementById("wtStartBtn"),
+      highlights: document.getElementById("autonomyHighlights"),
       plan: document.getElementById("wtPlanSelect"),
       robot: document.getElementById("wtRobotSelect"),
       modeGroup: document.getElementById("wtModeGroup"),
@@ -4760,7 +4801,7 @@
 
     const WT_STEPS = [
       {
-        title: "Load the unit",
+        title: "Open the floor plan",
         async run(token) {
           switchPageTab("engine");
           const planId = wtEls.plan.value || state.selectedPlanId;
@@ -4775,85 +4816,85 @@
           els.worldModelSection.classList.add("hidden");
           wtFocus(els.planSelect);
           const name = els.planSelect.options[els.planSelect.selectedIndex]?.textContent || "the unit";
-          wtSay(`Loading <b>${escapeHtml(name)}</b> and its facility spec. This is the only input Amed needs: a floor plan image.`);
+          wtSay(`Opening <b>${escapeHtml(name)}</b>. A floor plan image is all Amed needs to start.`);
           await wtWait(2600, token);
         },
       },
       {
-        title: "Read rooms & doors",
+        title: "Find rooms & doors",
         async run(token) {
           wtFocus(els.mapBtn);
           const t0 = performance.now();
           let fellBack = false;
           state.unitMap = null;
           if (wt.mode === "live") {
-            wtSay(`<span class="m">gemini-4-neon</span> is reading the plan image: room polygons, labels, fixtures, every doorway and its width in metres.`);
+            wtSay(`Reading the drawing: every room, what it is used for, and every doorway with its width. <span class="m">gemini-4-neon</span>`);
             await extractUnit(false);
             wtCheck(token);
             if (!state.unitMap) {
               fellBack = true;
-              wtSay(`The live call didn't return a unit (${escapeHtml(els.statusText.textContent || "no response")}). Falling back to the pre-traced unit so the walkthrough can continue.`);
+              wtSay(`The live read didn't come back (${escapeHtml(els.statusText.textContent || "no response")}), so we're using a traced copy of the same plan.`);
               await extractUnit(true);
             }
           } else {
-            wtSay(`Loading the pre-traced unit (the same schema <span class="m">gemini-4-neon</span> produces live).`);
+            wtSay(`Loading a traced copy of the plan, in the same format the live read produces.`);
             await extractUnit(true);
           }
           wtCheck(token);
           if (!state.unitMap) throw new Error("Could not load a unit map.");
           wtFocus(els.singleView);
           const u = state.unitMap;
-          wtSay(`${fellBack ? "Pre-traced unit loaded." : wt.mode === "live" ? "Extraction finished." : "Unit loaded."}
-            <span class="r">${u.rooms.length} rooms · ${u.doors.length} doorways · ${wtSecs(t0)} s</span>`);
+          wtSay(`${fellBack ? "Traced plan loaded." : "Plan read."}
+            <span class="r">Found ${u.rooms.length} rooms and ${u.doors.length} doorways in ${wtSecs(t0)} s</span>`);
           if (fellBack) wt.status[wt.idx] = "fallback";
           await wtWait(3800, token);
         },
       },
       {
-        title: "Verify every crop",
+        title: "Double-check them",
         async run(token) {
           wtFocus(els.verifyBadge);
           const v = state.verification || {};
           const kept = v.kept ?? state.unitMap.rooms.length;
           const dropped = v.dropped ?? 0;
           const conf = v.mean_confidence != null ? `${Math.round(v.mean_confidence * 100)}% mean confidence` : "confidence recorded per element";
-          wtSay(`<span class="m">gemini-decision-1</span> scores a crop of each detected room and door and prunes low-confidence ones before anything is simulated.
-            <span class="r">Kept ${kept} · dropped ${dropped} · ${conf}</span>`);
+          wtSay(`A second pass looks at each room and door up close and throws out anything it isn't sure about. <span class="m">gemini-decision-1</span>
+            <span class="r">Kept ${kept}, removed ${dropped} · ${conf}</span>`);
           await wtWait(4200, token);
         },
       },
       {
-        title: "Fit the robot",
+        title: "Will the robot fit?",
         async run(token) {
           const clearance = getActiveRobotClearanceM();
           const doors = state.unitMap.doors || [];
           const blocked = doors.filter((d) => typeof d.width_m === "number" && d.width_m < clearance);
           const robotName = wtEls.robot.options[wtEls.robot.selectedIndex].textContent;
-          wtFocus(els.autonomyHighlights.classList.contains("hidden") ? els.autonomySummaryChip : els.autonomyHighlights);
+          wtFocus(wtEls.highlights && !wtEls.highlights.classList.contains("hidden") ? wtEls.highlights : els.autonomySummaryChip);
           if (blocked[0] && typeof setSelection === "function") {
             try { setSelection({ kind: "door", id: blocked[0].id }); } catch { /* inspector is optional */ }
           }
-          wtSay(`${escapeHtml(robotName)} needs <b>${clearance.toFixed(2)} m</b> of door clearance. Each doorway is checked against it, and rooms are tiered autonomous, assisted or human-only.
-            <span class="r">${doors.length - blocked.length} of ${doors.length} doorways clear${blocked.length ? ` · blocked: ${blocked.slice(0, 4).map((d) => escapeHtml(d.id)).join(", ")}` : ""}</span>`);
+          wtSay(`${escapeHtml(robotName)} needs a <b>${clearance.toFixed(2)} m</b> doorway. Every door is checked, and each room is marked robot-ready, needs a hand-off, or staff only.
+            <span class="r">${doors.length - blocked.length} of ${doors.length} doors fit${blocked.length ? ` · too narrow: ${blocked.slice(0, 4).map((d) => escapeHtml(d.id)).join(", ")}` : ""}</span>`);
           await wtWait(5200, token);
           if (typeof setSelection === "function") { try { setSelection(null); } catch { /* ignore */ } }
         },
       },
       {
-        title: "Parse the shift",
+        title: "Describe the shift",
         async run(token) {
           wtFocus(els.runDesc);
-          wtSay(`A charge nurse describes the shift in plain English (or by voice). <span class="m">gemini-4-hydrogen</span> turns it into a structured run schedule.`);
+          wtSay(`A charge nurse types or says what a normal shift looks like. Amed turns it into a delivery schedule. <span class="m">gemini-4-hydrogen</span>`);
           await wtTypeInto(els.runDesc, WT_RUNS, token);
           await wtWait(1600, token);
         },
       },
       {
-        title: "Simulate the shift",
+        title: "Run it twice",
         async run(token) {
           wtFocus(els.runSimBtn);
           const t0 = performance.now();
-          wtSay(`Simulating an 8-hour shift twice on the same unit: nurses doing every run, then two robots taking the runs they can reach.`);
+          wtSay(`Playing out an 8-hour shift twice: once with nurses making every trip, once with two robots taking the trips they can reach.`);
           await runSimulation();
           wtCheck(token);
           if (!state.comparison) throw new Error("Simulation did not return a result.");
@@ -4861,30 +4902,30 @@
           const c = state.comparison;
           const n0 = c.nurse_only.nurse_minutes_walked;
           const n1 = c.robot_assisted.nurse_minutes_walked;
-          wtSay(`Left: nurse-only. Right: robot-assisted. Same unit, same orders, same seed.
-            <span class="r">Nurse walking ${n0.toFixed(0)} → ${n1.toFixed(0)} min · ${c.nurse_minutes_saved.toFixed(0)} min saved · ${c.robot_assisted.total_trips} robot trips · ${wtSecs(t0)} s</span>`);
+          wtSay(`Left: nurses only. Right: with robots. Same unit, same orders.
+            <span class="r">Nurse walking ${n0.toFixed(0)} → ${n1.toFixed(0)} min · ${c.nurse_minutes_saved.toFixed(0)} min back per shift · ${c.robot_assisted.total_trips} robot trips</span>`);
           await wtWait(9000, token);
         },
       },
       {
-        title: "Stress-test",
+        title: "Try a bad day",
         async run(token) {
           wtFocus(els.stressSweepBtn);
-          wtSay(`One good run proves nothing. Re-running across 1–3 robots × 5 random seeds under chaotic STAT surges to find where the fleet tips over.`);
+          wtSay(`One good shift isn't enough. Running busy shifts with urgent orders 15 times, with one, two and three robots, to see where it stops keeping up.`);
           await runStressSweep();
           wtCheck(token);
           if (els.worldModelSection.classList.contains("hidden")) throw new Error("Stress sweep did not return a report.");
           wtFocus(els.worldModelSection);
-          wtSay(`Sweep complete. Ranked bottlenecks and an autonomy plan (use robot / redesign process / keep human) come out of the same runs.
+          wtSay(`Done. You get the biggest slowdowns, ranked, and a plan for each task: give it to a robot, change the process, or keep it with staff.
             <span class="r">${escapeHtml(els.tippingPointBadge.textContent)}</span>`);
           await wtWait(7000, token);
         },
       },
       {
-        title: "Show the proof",
+        title: "How accurate is it?",
         async run(token) {
           wtFocus(null);
-          let html = `Evaluation on 10 CubiCasa5K plans the system never saw.`;
+          let html = `Tested on 10 real floor plans it had never seen.`;
           try {
             const res = await fetch("/api/eval");
             if (!res.ok) throw new Error();
@@ -4896,10 +4937,10 @@
               const d = v[key] - b[key];
               return `<div>${label}</div><div>${pct(b[key])}</div><div class="${d >= 0 ? "up" : "dn"}">${pct(v[key])}</div>`;
             };
-            html = `Evaluation on <b>${ev.num_plans} unseen CubiCasa5K plans</b>: single Neon call (baseline) vs Neon + Decision-1 verification.
-              <div class="wt-proof"><div class="h">Metric</div><div class="h">Baseline</div><div class="h">Verified</div>
-              ${row("Door precision", "door_precision")}${row("Door recall", "door_detection_rate")}${row("Room IoU", "mean_room_iou")}</div>
-              <span style="display:block;margin-top:8px;">Verification removes false doors but also drops real ones. That trade-off is what we're tuning next.</span>`;
+            html = `Tested on <b>${ev.num_plans} real floor plans</b> it had never seen, with and without the double-check step.
+              <div class="wt-proof"><div class="h">Measure</div><div class="h">One pass</div><div class="h">Checked</div>
+              ${row("Doors that are real", "door_precision")}${row("Doors found", "door_detection_rate")}${row("Room outline match", "mean_room_iou")}</div>
+              <span style="display:block;margin-top:8px;">The double-check removes every false door, but it also misses some real ones. That is what we are improving next.</span>`;
           } catch {
             html += ` <span class="r">Eval results are in data/eval/eval_results.json.</span>`;
           }
@@ -4933,7 +4974,7 @@
         wtEls.count.textContent = `${WT_STEPS.length} / ${WT_STEPS.length}`;
       } catch (err) {
         if (err instanceof WalkthroughCancelled) return;
-        wtSay(`Stopped: ${escapeHtml(err.message || "unexpected error")}. You can keep exploring the engine directly.`);
+        wtSay(`Stopped: ${escapeHtml(err.message || "unexpected error")}. You can keep using the tool directly.`);
       }
     }
 

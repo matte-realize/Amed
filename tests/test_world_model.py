@@ -174,3 +174,20 @@ def test_narrow_door_unlocked_by_slim_rover():
     rover_events = [e for e in rover_comp.robot_assisted.events if e.run_type == "supply_restock"]
     assert rover_events
     assert all(e.agent_role == "robot" for e in rover_events)
+
+
+def test_mixed_fleet_runs_distinct_custom_robots():
+    from hospital_twin.schemas import ScheduledRun
+    from hospital_twin.simulator import simulate_shift
+
+    unit = _make_sample_unit()
+    schedule = [
+        ScheduledRun(run_type="pharmacy_pickup", origin="med_room", destination="nurse_station", frequency_minutes=30.0),
+        ScheduledRun(run_type="lab_specimen_drop", origin="nurse_station", destination="lab_drop", frequency_minutes=30.0),
+        ScheduledRun(run_type="supply_restock", origin="supply_room", destination="nurse_station", frequency_minutes=30.0),
+    ]
+    comp = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=3, robot_profile_id="mixed_fleet")
+    assert comp.assumptions["robot_profile_id"] == "mixed_fleet"
+    profiles_used = {e.robot_profile_id for e in comp.robot_assisted.events if e.agent_role == "robot"}
+    assert "amed_compounding_arm" in profiles_used
+    assert len(profiles_used) >= 2

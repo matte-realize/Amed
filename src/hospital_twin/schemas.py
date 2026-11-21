@@ -74,6 +74,7 @@ class TripEvent(BaseModel):
     node_path: list[str]
     pixel_path: list[Point]
     batch_id: Optional[str] = None
+    robot_profile_id: Optional[str] = None
 
 
 class CustodyLogEntry(BaseModel):

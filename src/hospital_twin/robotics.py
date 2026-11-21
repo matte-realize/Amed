@@ -245,3 +245,14 @@ HOSPITAL_STRUGGLES: list[dict[str, str]] = [
 def get_robot_profile(robot_profile_id: str) -> RobotProfile:
     """Return the matching RobotProfile, defaulting to aethon_tug if unknown."""
     return ROBOT_CATALOG.get(robot_profile_id, ROBOT_CATALOG["aethon_tug"])
+
+
+MIXED_FLEET_ROLES: dict[str, str] = {
+    "robot-1": "amed_compounding_arm",
+    "robot-2": "amed_narrow_rover",
+    "robot-3": "amed_prestage_pod",
+}
+
+
+def get_mixed_fleet_profile_id(agent_id: str) -> str:
+    return MIXED_FLEET_ROLES.get(agent_id, "aethon_tug")

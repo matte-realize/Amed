@@ -10,7 +10,7 @@ from typing import Literal
 import networkx as nx
 import simpy
 
-from hospital_twin.robotics import get_robot_profile
+from hospital_twin.robotics import ALL_RUN_TYPES, get_mixed_fleet_profile_id, get_robot_profile
 from hospital_twin.routing import (
     DEFAULT_ROBOT_CLEARANCE_M,
     build_route_graph,
@@ -389,6 +389,7 @@ def _run_single_mode(
     robot_speed_mps: float,
     handoff_seconds: float = DEFAULT_HANDOFF_SECONDS,
     uncollected_flag_s: float = UNCOLLECTED_FLAG_SECONDS,
+    robot_profile_id: str = "aethon_tug",
 ) -> ShiftSummary:
     env = simpy.Environment()
     events: list[TripEvent] = []
@@ -516,6 +517,11 @@ def _run_single_mode(
                     node_path=route.node_path,
                     pixel_path=route.pixel_path,
                     batch_id=batch_id,
+                    robot_profile_id=(
+                        (get_mixed_fleet_profile_id(agent_id) if robot_profile_id == "mixed_fleet" else robot_profile_id)
+                        if role == "robot"
+                        else None
+                    ),
                 )
             )
 
@@ -574,13 +580,22 @@ def simulate_shift(
     robot_profile_id: str = "aethon_tug",
 ) -> SimulationComparison:
     """Simulate a hospital shift in nurse-only and robot-assisted modes using SimPy."""
+    is_mixed = robot_profile_id == "mixed_fleet"
     profile = get_robot_profile(robot_profile_id)
-    if robot_speed_mps == DEFAULT_ROBOT_SPEED_MPS:
-        robot_speed_mps = profile.speed_mps
-    if handoff_seconds == DEFAULT_HANDOFF_SECONDS:
-        handoff_seconds = profile.handoff_seconds
-    if robot_clearance_m == DEFAULT_ROBOT_CLEARANCE_M:
-        robot_clearance_m = profile.clearance_m
+    if is_mixed:
+        if robot_speed_mps == DEFAULT_ROBOT_SPEED_MPS:
+            robot_speed_mps = 1.05
+        if handoff_seconds == DEFAULT_HANDOFF_SECONDS:
+            handoff_seconds = 11.0
+        if robot_clearance_m == DEFAULT_ROBOT_CLEARANCE_M:
+            robot_clearance_m = 0.72
+    else:
+        if robot_speed_mps == DEFAULT_ROBOT_SPEED_MPS:
+            robot_speed_mps = profile.speed_mps
+        if handoff_seconds == DEFAULT_HANDOFF_SECONDS:
+            handoff_seconds = profile.handoff_seconds
+        if robot_clearance_m == DEFAULT_ROBOT_CLEARANCE_M:
+            robot_clearance_m = profile.clearance_m
 
     if shift_hours <= 0:
         raise ValueError("shift_hours must be positive.")
@@ -603,7 +618,7 @@ def simulate_shift(
         num_robots=num_robots,
         scenario_mode=scenario_mode,
         seed=seed,
-        supported_runs=profile.supported_runs,
+        supported_runs=list(ALL_RUN_TYPES) if is_mixed else profile.supported_runs,
     )
     if ems_preposition:
         # Advance EMS signals pre-stage carts/meds before arrival, cutting STAT surge delays by 70%
@@ -629,6 +644,7 @@ def simulate_shift(
         nurse_speed_mps=nurse_speed_mps,
         robot_speed_mps=robot_speed_mps,
         handoff_seconds=handoff_seconds,
+        robot_profile_id=robot_profile_id,
     )
     robot_assisted = _run_single_mode(
         requests=requests,
@@ -640,6 +656,7 @@ def simulate_shift(
         nurse_speed_mps=nurse_speed_mps,
         robot_speed_mps=robot_speed_mps,
         handoff_seconds=handoff_seconds,
+        robot_profile_id=robot_profile_id,
     )
 
     nurse_minutes_saved = round(
@@ -657,8 +674,8 @@ def simulate_shift(
         "shift_hours": shift_hours,
         "num_nurses": DEFAULT_NUM_NURSES,
         "num_robots": num_robots,
-        "robot_profile_id": profile.id,
-        "robot_profile_name": profile.name,
+        "robot_profile_id": "mixed_fleet" if is_mixed else profile.id,
+        "robot_profile_name": "All Robotics Mixed Fleet (6-DOF Arm + Slim Rover + Pre-Stage Cart)" if is_mixed else profile.name,
         "nurse_speed_mps": nurse_speed_mps,
         "robot_speed_mps": robot_speed_mps,
         "robot_length_m": profile.length_m,
