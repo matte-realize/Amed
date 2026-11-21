@@ -324,3 +324,38 @@ def test_floorplan_delegation_mobile_stationary_and_rd():
     res = client.post("/api/unit-audit", json=unit.model_dump())
     assert res.status_code == 200
     assert res.json()["stationary_count"] >= 2
+
+
+def test_managed_agent_audit_mocked_and_fallback(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+    from hospital_twin.app import app
+
+    unit = _make_sample_unit()
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    client = TestClient(app)
+    fb_res = client.post("/api/managed-agent/audit", json={"unit_map": unit.model_dump()})
+    assert fb_res.status_code == 200
+    assert fb_res.json()["mode"] == "fallback"
+
+    # Mocked client.agents.create + client.interactions.create
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    mock_client = MagicMock()
+    mock_client.agents.create.return_value = SimpleNamespace(id="agent-123", name="agents/agent-123")
+    mock_client.interactions.create.return_value = SimpleNamespace(
+        id="inter-456",
+        outputs=[SimpleNamespace(text='{"recommended_fleet": "mixed_fleet", "key_findings": ["Narrow door detected"], "action_items": ["Deploy Slim Rover"], "summary": "Use mixed_fleet"}')],
+    )
+    fake_genai = MagicMock()
+    fake_genai.Client.return_value = mock_client
+    monkeypatch.setitem(sys.modules, "google", SimpleNamespace(genai=fake_genai))
+    monkeypatch.setitem(sys.modules, "google.genai", fake_genai)
+
+    live_res = client.post("/api/managed-agent/audit", json={"unit_map": unit.model_dump()})
+    assert live_res.status_code == 200
+    body = live_res.json()
+    assert body["mode"] == "managed_agent"
+    assert body["agent_id"] == "agent-123"
+    assert body["interaction_id"] == "inter-456"
+    assert body["recommended_fleet"] == "mixed_fleet"

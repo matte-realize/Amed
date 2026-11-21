@@ -603,7 +603,8 @@
           <h3 class="eng-sec-h"><span class="n">04</span>Run</h3>
           <button class="btn btn-accent eng-run" id="runSimBtn" disabled>Run shift</button>
           <div class="eng-row2">
-            <button class="btn" id="stressSweepBtn" disabled title="15-run stress sweep: 1–3 robots × 5 seeds">Test bad days</button>
+            <button class="btn" id="managedAgentBtn" disabled title="Run Gemini Managed Agent (client.agents + client.interactions) to audit unit bottlenecks">Managed Agent</button>
+          <button class="btn" id="stressSweepBtn" disabled title="15-run stress sweep: 1–3 robots × 5 seeds">Test bad days</button>
             <button type="button" class="btn" id="calibrateBtn" title="Calibrate speeds and handoff time from mock-drill observations">Match a drill</button>
           </div>
           <div class="calibration-panel hidden" id="calibrationPanel">
@@ -4690,6 +4691,8 @@
 
         els.runSimBtn.disabled = false;
         if (els.stressSweepBtn) els.stressSweepBtn.disabled = false;
+        const mab = document.getElementById("managedAgentBtn");
+        if (mab) mab.disabled = false;
         loadUnitDelegation(state.unitMap);
         setStep(2);
         startRevealAnimation();
@@ -5085,6 +5088,45 @@
     els.bannerFallbackBtn.addEventListener("click", () => extractUnit(true));
     els.runSimBtn.addEventListener("click", runSimulation);
     if (els.stressSweepBtn) els.stressSweepBtn.addEventListener("click", runStressSweep);
+    const managedAgentBtn = document.getElementById("managedAgentBtn");
+    if (managedAgentBtn) {
+      managedAgentBtn.addEventListener("click", async () => {
+        if (!state.unitMap) return;
+        managedAgentBtn.disabled = true;
+        managedAgentBtn.textContent = "Agent auditing...";
+        try {
+          const res = await fetch("/api/managed-agent/audit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ unit_map: state.unitMap, comparison: state.comparison || null }),
+          });
+          const rep = await res.json();
+          if (!res.ok) throw new Error(rep.detail || "Managed agent audit failed.");
+          if (els.unitDelegationSection && els.unitDelegationBody && els.delegationSummaryBadge) {
+            els.unitDelegationSection.classList.remove("hidden");
+            els.delegationSummaryBadge.textContent = `${rep.mode} · ${rep.agent_id}`;
+            const findingsHtml = (rep.key_findings || []).map((f) => `<div>• ${f}</div>`).join("");
+            const actionsHtml = (rep.action_items || []).map((a) => `<div>→ ${a}</div>`).join("");
+            els.unitDelegationBody.innerHTML = `
+              <div style="padding:8px 10px; border:1px solid var(--line); border-radius:6px;">
+                <div style="font-weight:700; margin-bottom:4px;">Managed Agent Audit (${rep.interaction_id})</div>
+                <div><strong>Recommended Fleet:</strong> ${rep.recommended_fleet}</div>
+                <div style="margin-top:4px;">${findingsHtml}</div>
+              </div>
+              <div style="padding:8px 10px; border:1px solid var(--line); border-radius:6px;">
+                <div style="font-weight:700; margin-bottom:4px;">Recommended Actions</div>
+                ${actionsHtml}
+              </div>
+            `;
+          }
+        } catch (err) {
+          showBanner(err.message, "error");
+        } finally {
+          managedAgentBtn.disabled = false;
+          managedAgentBtn.textContent = "Managed Agent";
+        }
+      });
+    }
 
     async function applyCalibration() {
       if (!els.applyCalibrationBtn) return;
@@ -6443,14 +6485,21 @@
         const s = 2.6 / Math.max(size.x, size.y, size.z, 0.01);
         this.robot.scale.setScalar(s);
         this.scene.add(this.robot);
-        // Each direct child is a sub-assembly; explode them outward from the centre.
+        // Explode every individual part (not just top-level groups), so nested assemblies
+        // like the arm's joint chain fan out link by link. Each part moves away from the
+        // centre in proportion to its distance, converted into its parent's local frame.
+        this.robot.updateMatrixWorld(true);
         const center = new THREE.Box3().setFromObject(this.robot).getCenter(new THREE.Vector3());
-        this.parts = this.robot.children.map((child) => {
-          const c = new THREE.Box3().setFromObject(child).getCenter(new THREE.Vector3());
-          const dir = c.sub(center);
-          dir.y *= 1.4;
-          if (dir.lengthSq() < 1e-4) dir.set(0, 1, 0);
-          return { obj: child, home: child.position.clone(), dir: dir.normalize() };
+        const meshes = [];
+        this.robot.traverse((o) => { if (o.isMesh) meshes.push(o); });
+        this.parts = meshes.map((m) => {
+          const c = new THREE.Box3().setFromObject(m).getCenter(new THREE.Vector3());
+          const radial = c.clone().sub(center);
+          radial.y *= 1.3;
+          const unit = radial.lengthSq() > 1e-6 ? radial.clone().normalize() : new THREE.Vector3(0, 1, 0);
+          const worldOffset = radial.multiplyScalar(0.9).add(unit.multiplyScalar(0.35));
+          const toLocal = new THREE.Matrix3().setFromMatrix4(m.parent.matrixWorld.clone().invert());
+          return { obj: m, home: m.position.clone(), localOffset: worldOffset.applyMatrix3(toLocal) };
         });
         this.setExplode(this.explode);
         this.controls.autoRotate = true;
@@ -6458,9 +6507,8 @@
 
       setExplode(t) {
         this.explode = t;
-        const scale = this.robot ? this.robot.scale.x : 1;
         this.parts.forEach((p) => {
-          p.obj.position.copy(p.home).addScaledVector(p.dir, (t * 1.4) / scale);
+          p.obj.position.copy(p.home).addScaledVector(p.localOffset, t);
         });
       }
     }

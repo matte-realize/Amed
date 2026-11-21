@@ -455,6 +455,15 @@ async def unit_audit(unit: UnitMap) -> UnitDelegationReport:
     return analyze_floorplan_delegation(unit)
 
 
+@app.post("/api/managed-agent/audit")
+async def managed_agent_audit(request: Request) -> dict[str, Any]:
+    from hospital_twin.managed_agent import ManagedAgentAuditRequest, run_managed_agent_audit
+
+    body = await request.json()
+    req = ManagedAgentAuditRequest.model_validate(body)
+    return run_managed_agent_audit(req).model_dump()
+
+
 if __name__ == "__main__":
     import uvicorn
 
