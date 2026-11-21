@@ -48,26 +48,34 @@ def _pixel_distance(a: Point, b: Point) -> float:
     return math.hypot(b.x - a.x, b.y - a.y)
 
 
-def build_route_graph(unit: UnitMap) -> nx.Graph:
+def build_route_graph(unit: UnitMap, robot_only: bool = False) -> nx.Graph:
     """Build a NetworkX graph where rooms are nodes and doors are weighted edges.
 
     Edge weights are Euclidean pixel distances (room centroid -> door -> room centroid)
     multiplied by ``unit.meters_per_pixel``.
+
+    When ``robot_only=True``, rooms with ``autonomy_tier == "human_only"`` and
+    doors with ``robot_passable == False`` are excluded.
     """
     graph = nx.Graph()
     centroids: dict[str, Point] = {}
 
     for room in unit.rooms:
+        if robot_only and room.autonomy_tier == "human_only":
+            continue
         c = room_centroid(room)
         centroids[room.id] = c
         graph.add_node(
             room.id,
             label=room.label,
             type=room.type,
+            autonomy_tier=room.autonomy_tier,
             pos=(c.x, c.y),
         )
 
     for door in unit.doors:
+        if robot_only and not door.robot_passable:
+            continue
         u, v = door.rooms_connected
         if u == v or u not in centroids or v not in centroids:
             continue
@@ -88,6 +96,40 @@ def build_route_graph(unit: UnitMap) -> nx.Graph:
         )
 
     return graph
+
+
+def find_robot_handoff_node(unit: UnitMap, target_room_id: str) -> str | None:
+    """Find the nearest autonomous/assisted node connected to ``target_room_id``.
+
+    If ``target_room_id`` is already ``autonomous`` or ``assisted``, returns
+    ``target_room_id``. If ``target_room_id`` is ``human_only``, returns the
+    nearest reachable ``autonomous`` or ``assisted`` room ID, or ``None`` if none.
+    """
+    room_by_id = {r.id: r for r in unit.rooms}
+    target = room_by_id.get(target_room_id)
+    if target is None:
+        return None
+    if target.autonomy_tier != "human_only":
+        return target_room_id
+
+    full_graph = build_route_graph(unit, robot_only=False)
+    if target_room_id not in full_graph:
+        return None
+
+    distances = nx.single_source_dijkstra_path_length(
+        full_graph, target_room_id, weight="weight"
+    )
+    candidates = [
+        (dist, nid)
+        for nid, dist in distances.items()
+        if nid != target_room_id
+        and nid in room_by_id
+        and room_by_id[nid].autonomy_tier in ("autonomous", "assisted")
+    ]
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: item[0])
+    return candidates[0][1]
 
 
 def shortest_path_with_pixels(

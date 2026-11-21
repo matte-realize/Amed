@@ -9,7 +9,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from hospital_twin.routing import build_route_graph, room_centroid, shortest_path_with_pixels
+from hospital_twin.routing import (
+    build_route_graph,
+    find_robot_handoff_node,
+    room_centroid,
+    shortest_path_with_pixels,
+)
 from hospital_twin.schedule_parser import parse_run_description
 from hospital_twin.schemas import Door, Point, Room, ScheduledRun, UnitMap
 from hospital_twin.simulator import simulate_shift
@@ -252,3 +257,60 @@ def test_simulate_shift_nurse_vs_robots():
     assert comp_2.robot_assisted.avg_delivery_wait_s <= comp_1.robot_assisted.avg_delivery_wait_s
     assert comp_3.robot_assisted.avg_delivery_wait_s <= comp_2.robot_assisted.avg_delivery_wait_s
     assert comp_3.robot_assisted.avg_delivery_wait_s == 0.0
+
+
+def test_autonomy_aware_routing_and_handoff():
+    unit = _make_sample_unit(meters_per_pixel=0.05)
+    # Mark supply_room as human_only, and med_room's door (d2) as narrow / robot_passable=False
+    for room in unit.rooms:
+        if room.id == "supply_room":
+            room.autonomy_tier = "human_only"
+        elif room.id == "nurse_station":
+            room.autonomy_tier = "assisted"
+    for door in unit.doors:
+        if door.id == "d2":
+            door.width_m = 0.75
+            door.robot_passable = False
+
+    robot_graph = build_route_graph(unit, robot_only=True)
+    assert "supply_room" not in robot_graph.nodes
+    assert not robot_graph.has_edge("med_room", "corridor")
+    assert robot_graph.has_edge("nurse_station", "corridor")
+    assert robot_graph.has_edge("lab_drop", "corridor")
+
+    # Handoff for human_only supply_room should be corridor
+    assert find_robot_handoff_node(unit, "supply_room") == "corridor"
+    assert find_robot_handoff_node(unit, "lab_drop") == "lab_drop"
+    assert find_robot_handoff_node(unit, "nonexistent") is None
+
+    # Simulation:
+    # 1) supply_room (human_only) -> nurse_station (assisted): robot hands off at corridor -> nurse_station
+    # 2) med_room (blocked by narrow door d2) -> nurse_station: unreachable by robot, falls back to nurse
+    schedule = [
+        ScheduledRun(
+            run_type="supply_restock",
+            origin="supply_room",
+            destination="nurse_station",
+            frequency_minutes=240.0,
+        ),
+        ScheduledRun(
+            run_type="pharmacy_pickup",
+            origin="med_room",
+            destination="nurse_station",
+            frequency_minutes=240.0,
+        ),
+    ]
+    comp = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1)
+    assert comp.assumptions["autonomized_trips"] == 2
+    assert comp.assumptions["human_only_trips"] == 2
+    assert comp.robot_assisted.total_trips == 4
+
+    robot_events = [e for e in comp.robot_assisted.events if e.agent_role == "robot"]
+    nurse_events = [e for e in comp.robot_assisted.events if e.agent_role == "nurse"]
+    assert len(robot_events) == 2
+    assert len(nurse_events) == 2
+    assert all(e.node_path == ["corridor", "nurse_station"] for e in robot_events)
+    assert all(e.node_path == ["med_room", "corridor", "nurse_station"] for e in nurse_events)
+    assert comp.nurse_minutes_saved > 0
+    assert comp.robot_assisted.nurse_minutes_walked > 0
+
