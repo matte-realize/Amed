@@ -213,3 +213,84 @@ def design_custom_robots(unit: UnitMap, live: bool = True) -> RobotDesignReport:
         except Exception as exc:  # network, quota or schema errors fall back to the sized Amed designs
             logger.warning("Gemini 4 Carbon robot design failed, using fallback: %s", exc)
     return RobotDesignReport(source="fallback", constraints=c, designs=_fallback_designs(c))
+
+
+class DesignBrief(BaseModel):
+    """An engineer's scenario: what the robot must do and the limits it must meet."""
+
+    scenario: str = Field(min_length=3, max_length=2000)
+    max_width_m: float = Field(default=0.7, gt=0.2, le=2.0)
+    payload_kg: float = Field(default=30, ge=0, le=500)
+    target_unit_cost_usd: float = Field(default=15000, ge=0)
+    rooms: list[str] = Field(default_factory=list)
+
+
+class BriefDesignResult(BaseModel):
+    source: Literal["gemini", "draft"]
+    model: str = ""
+    design: RobotDesign
+
+
+def _pick_base(scenario: str) -> str:
+    t = scenario.lower()
+    if any(k in t for k in ("compound", "iv ", "syringe", "vial", "pharmac", "arm", "pick", "sort", "lab bench")):
+        return "amed_compounding_cell"
+    if any(k in t for k in ("crash", "code", "emergency", "blood", "trauma", "surge", "cart", "stage")):
+        return "amed_emergency_cart"
+    return "amed_slim_rover"
+
+
+def _draft_from_brief(unit: UnitMap, brief: DesignBrief) -> RobotDesign:
+    """Deterministic draft: closest Amed reference design, resized to the brief's limits."""
+    c = unit_constraints(unit)
+    base_id = _pick_base(brief.scenario)
+    base = next(d for d in _fallback_designs(c) if d.id == base_id)
+    mobile = base.base_model != "amed_compounding_arm"
+    width = min(base.width_m, brief.max_width_m - 0.08) if mobile else base.width_m
+    first = brief.scenario.strip().rstrip(".").split(".")[0][:140]
+    payload_scale = max(0.6, min(2.5, (brief.payload_kg or base.payload_kg) / max(base.payload_kg, 1)))
+    bom = [
+        b.model_copy(update={"unit_cost_usd": round(b.unit_cost_usd * (payload_scale if "motor" in b.part.lower() or "battery" in b.part.lower() or "frame" in b.part.lower() or "chassis" in b.part.lower() else 1), 0)})
+        for b in base.bom
+    ]
+    return base.model_copy(update={
+        "id": "brief_" + base_id,
+        "name": f"Custom {base.name.replace('Amed ', '')}",
+        "tagline": first + ".",
+        "rooms_served": brief.rooms or base.rooms_served,
+        "tasks": [first] + base.tasks[:2],
+        "why_custom": f"Drafted from your brief: {brief.max_width_m:.2f} m door limit, {brief.payload_kg:.0f} kg payload.",
+        "width_m": round(max(0.4, width), 2),
+        "min_door_m": round(max(0.4, width) + 0.08, 2) if mobile else base.min_door_m,
+        "payload_kg": brief.payload_kg or base.payload_kg,
+        "bom": bom,
+    })
+
+
+def design_from_brief(unit: UnitMap, brief: DesignBrief) -> BriefDesignResult:
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        try:
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(http_options=types.HttpOptions(timeout=45_000))
+            prompt = (
+                "You are a hospital robotics engineer. Design ONE robot for this scenario, written by an engineer:\n"
+                f"\"{brief.scenario}\"\n"
+                f"Hard limits: overall width <= {brief.max_width_m} m (it must pass these doors), payload >= {brief.payload_kg} kg, "
+                f"target unit cost at 1,000 units about ${brief.target_unit_cost_usd:,.0f}. Rooms it serves: {brief.rooms or 'any'}.\n"
+                f"Unit constraints: {unit_constraints(unit)}\n"
+                "Give a realistic bill of materials with mostly off-the-shelf parts and conservative 2026 USD prototype prices, "
+                "assembly hours, tooling cost for volume, buildability notes, safety standards to check and main risks. "
+                "base_model must be the closest of: amed_narrow_rover, amed_prestage_pod, amed_compounding_arm, diligent_moxi, aethon_tug."
+            )
+            response = client.models.generate_content(
+                model=CARBON_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(response_mime_type="application/json", response_schema=RobotDesign),
+            )
+            design = RobotDesign.model_validate_json(response.text)
+            return BriefDesignResult(source="gemini", model=CARBON_MODEL, design=design)
+        except Exception as exc:
+            logger.warning("Gemini 4 Carbon brief design failed, using draft: %s", exc)
+    return BriefDesignResult(source="draft", design=_draft_from_brief(unit, brief))

@@ -412,6 +412,41 @@
       </div>
 
       <div class="lab-constraints" id="labConstraints"></div>
+
+      <div class="lab-brief sheet">
+        <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
+        <span class="sheet-tag">Design brief · describe your case, AI designs the robot</span>
+        <div class="lab-brief-grid">
+          <label class="lab-brief-main"><span>What should the robot do?</span>
+            <textarea id="labBrief" rows="3" placeholder="e.g. Carry blood bags from the lab to the trauma bays during a mass-casualty surge, keep them cold, and fit through 0.8 m doors."></textarea>
+          </label>
+          <div class="lab-brief-chips">
+            <span>Start from:</span>
+            <button type="button" data-brief="Carry blood bags and trauma meds from the lab to the trauma bays during a mass-casualty surge, keeping blood cold and logging every handoff.">Blood runs in a surge</button>
+            <button type="button" data-brief="Check every crash cart on the unit each shift: count drawer contents, catch expired items and test the defibrillator battery, then report what is missing.">Crash cart checks</button>
+            <button type="button" data-brief="Restock patient-room supply cabinets overnight in an old wing with narrow doors, without waking patients.">Night restocking, narrow wing</button>
+            <button type="button" data-brief="Prepare and label IV antibiotic doses in the unit med room and weigh-check each one before the nurse picks it up.">IV dose prep</button>
+          </div>
+          <div class="lab-brief-limits">
+            <label><span>Door limit (m)</span><input type="number" id="labMaxW" step="0.01" min="0.4" max="2" /></label>
+            <label><span>Payload (kg)</span><input type="number" id="labPayload" value="30" step="5" min="0" max="500" /></label>
+            <label><span>Target cost at 1,000 ($)</span><input type="number" id="labCost" value="15000" step="500" min="0" /></label>
+          </div>
+          <div class="lab-brief-rooms" id="labRooms">
+            <span>Rooms</span>
+            <label><input type="checkbox" value="patient_room" checked /> Patient rooms</label>
+            <label><input type="checkbox" value="medication_room" /> Med room</label>
+            <label><input type="checkbox" value="supply_room" /> Supply room</label>
+            <label><input type="checkbox" value="lab_drop" /> Lab drop</label>
+            <label><input type="checkbox" value="corridor" /> Hallways</label>
+            <label><input type="checkbox" value="nurse_station" /> Nurse station</label>
+          </div>
+          <div class="lab-brief-go">
+            <button type="button" class="lp-btn primary" id="labBriefBtn">Design with AI →</button>
+            <span class="lab-source" id="labBriefStatus"></span>
+          </div>
+        </div>
+      </div>
       <div class="lab-picker" id="labPicker"></div>
 
       <div class="lab-main hidden" id="labMain">
@@ -641,13 +676,13 @@
           </div>
         </section>
 
-        <section class="dual-grid hidden" id="dualView">
+        <section class="dual-grid hidden" id="dualView" data-simview="robot">
           <div class="sim-card sim-card-overlay">
             <div class="canvas-header">
               <div class="segmented sim-view-toggle" id="simViewGroup" title="Show both runs on one floor plan, or one at a time">
-                <button type="button" class="active" data-simview="overlay">Overlay</button>
+                <button type="button" class="active" data-simview="robot">With robots</button>
                 <button type="button" data-simview="nurse">Nurses only</button>
-                <button type="button" data-simview="robot">With robots</button>
+                <button type="button" data-simview="overlay">Overlay both</button>
               </div>
               <div class="sim-legend">
                 <span class="ghost"><span class="dot-swatch" style="background:var(--nurse);"></span>Nurses-only run (faded)</span>
@@ -656,6 +691,7 @@
               </div>
               <span class="badge ok" id="robotCountBadge">1 robot</span>
               <span class="badge sim-robot-name" id="simRobotName"></span>
+              <span class="badge sim-live" id="simLiveJobs"></span>
               <span class="badge nurse hidden" id="statSurgeBadge">0 STAT</span>
             </div>
             <div class="sim-stats">
@@ -678,7 +714,7 @@
               <div class="three-mount" id="threeRight"></div>
               <canvas class="canvas-2d hidden" id="canvasRight"></canvas>
               <div class="inspector-card hidden" id="inspectorDual"></div>
-              <div class="cam-hint" id="camHintDual">Both runs on one plan · drag to move · right-drag to rotate · scroll to zoom</div>
+              <div class="cam-hint" id="camHintDual">Each robot shows its current job · drag to move · right-drag to rotate · scroll to zoom</div>
               <div class="cam-actions" id="camActionsDual">
                 <button type="button" class="cam-btn" data-cam="iso">Iso</button>
                 <button type="button" class="cam-btn" data-cam="top">Top</button>
@@ -823,7 +859,7 @@
       simTime: 0,
       playing: false,
       speed: 1200,
-      simView: "overlay",   // "overlay" | "nurse" | "robot"
+      simView: "robot",     // "overlay" | "nurse" | "robot"
       lastFrameTs: null,
       rafId: null,
       calibration: null,
@@ -3452,12 +3488,14 @@
         });
       }
 
-      getOrCreateAgentMesh(key, role, agentId, evProfileId = null, ghost = false) {
+      getOrCreateAgentMesh(key, role, agentId, evProfileId = null, ghost = false, runType = null) {
         const activeProfile = evProfileId || state.robotProfileId;
         const poolKey = (ghost ? "ghost:" : "") + (role === "nurse" ? `nurse:${key}` : `robot:${key}:${activeProfile}`);
         if (this.agentPool.has(poolKey)) return this.agentPool.get(poolKey);
         const ROBOT_SHORT = { aethon_tug: "TUG", diligent_moxi: "MOXI", pneumatic_tube: "TUBE", amed_prestage_pod: "CART", amed_narrow_rover: "SLIM", amed_compounding_arm: "ARM", amed_surgical_prep_bot: "PREP", alta_transfer_robot: "ALTA" };
-        const tag = role === "nurse" ? "Nurse" : `${ROBOT_SHORT[activeProfile] || "BOT"} ${agentId.replace(/\D/g, "") || "1"}`;
+        const JOB = { pharmacy_pickup: "Meds", lab_specimen_drop: "Lab", supply_restock: "Supplies" };
+        const job = JOB[runType] ? ` · ${JOB[runType]}` : "";
+        const tag = (role === "nurse" ? "Nurse" : `${ROBOT_SHORT[activeProfile] || "BOT"} ${agentId.replace(/\D/g, "") || "1"}`) + (ghost ? "" : job);
         const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, activeProfile);
         // Moving agents use a cheap contact shadow instead of the shadow map.
         mesh.traverse((obj) => {
@@ -3540,7 +3578,7 @@
             const pose = interpolatePolylinePose(ev.pixel_path, frac);
             const wPos = this.pxToWorld(pose.x, pose.y);
 
-            const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id, ev.robot_profile_id, !!ev._ghost);
+            const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id, ev.robot_profile_id, !!ev._ghost, ev.run_type);
             agentMesh.visible = true;
             const stridePhase = frac * Math.PI * 14;
             const bob = ev.agent_role === "nurse" ? Math.abs(Math.sin(stridePhase)) * 0.16 : 0;
@@ -4426,6 +4464,17 @@
 
       const use3D = state.viewMode === "3d" && state.threeReady;
       const viewSummary = getSimViewSummary(comp);
+      const liveEl = document.getElementById("simLiveJobs");
+      if (liveEl) {
+        let r = 0, n = 0;
+        const runEvents = state.simView === "nurse" ? comp.nurse_only.events : comp.robot_assisted.events;
+        for (const ev of runEvents) {
+          if (t >= ev.start_time_s && t <= ev.end_time_s) { if (ev.agent_role === "nurse") n++; else r++; }
+        }
+        liveEl.textContent = state.simView === "nurse"
+          ? `Right now: ${n} job${n === 1 ? "" : "s"} pulling nurses away`
+          : `Right now: ${r} job${r === 1 ? "" : "s"} by robots · ${n} by nurses`;
+      }
       if (use3D && twinRight) {
         twinRight.updateSimulationFrame(viewSummary, t, state.simView);
       } else {
@@ -5947,10 +5996,10 @@
           const n1 = c.robot_assisted.nurse_minutes_walked;
           wtFocus(document.getElementById("cmpEngine"));
           wtSay(`${cmpVerdict(buildComparison(c))}
-            <span class="r" style="color:var(--ink-3)">Both runs on one plan: faded red is the nurses-only shift, teal is the robots.</span>`);
+            <span class="r" style="color:var(--ink-3)">Each robot shows the job it is on; nurses stay with patients.</span>`);
           await wtWait(6500, token);
           wtFocus(els.dualView);
-          wtSay(`Both runs play on the same floor plan. Faded red: the nurses-only shift. Solid: the shift with robots. Same unit, same orders.
+          wtSay(`Robots split the work: each one shows the job it is on (meds, lab, supplies), while nurses stay with patients. Same unit, same orders.
             <span class="r">Nurse delivery trips ${buildComparison(c).a.nurseTrips} → ${buildComparison(c).b.nurseTrips} · ${buildComparison(c).b.robotTrips} handled by robots</span>`);
           await wtWait(9000, token);
         },
@@ -6163,13 +6212,25 @@
         </table>`;
     }
 
+    // Most delivery jobs running at the same moment in a run.
+    function peakConcurrent(events) {
+      const pts = [];
+      events.forEach((e) => { pts.push([e.start_time_s, 1]); pts.push([e.end_time_s, -1]); });
+      pts.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      let cur = 0, peak = 0;
+      pts.forEach(([, d]) => { cur += d; peak = Math.max(peak, cur); });
+      return peak;
+    }
+
     function reportFacts(c, m) {
       const log = c.robot_assisted.custody_log || [];
       const exceptions = log.filter((x) => x.flagged_uncollected).length;
       const stat = Number(c.assumptions?.stat_trips) || 0;
       const humanOnlyTrips = Number(c.assumptions?.human_only_trips) || m.b.nurseTrips;
       const staffRooms = (state.unitMap?.rooms || []).filter((r) => r.autonomy_tier === "human_only" && r.type !== "corridor").map((r) => r.label || r.id);
-      return { log, exceptions, stat, humanOnlyTrips, staffRooms };
+      const peak = peakConcurrent(c.robot_assisted.events);
+      const nurses = Number(c.assumptions?.num_nurses) || 2;
+      return { log, exceptions, stat, humanOnlyTrips, staffRooms, peak, nurses };
     }
 
     function renderLandingComparison() {
@@ -6223,6 +6284,7 @@
             ${cmpTypeTable(c)}
             <h4>2 · Where robots do better</h4>
             <ul>
+              ${f.peak > 1 ? `<li><b>Several jobs at once.</b> At the busiest moment ${f.peak} delivery jobs were running at the same time${f.peak > f.nurses ? `, more than the ${f.nurses} nurses on shift could cover without leaving patients` : ""}. Robots took them in parallel.</li>` : ""}
               <li><b>Every handoff is on record.</b> ${f.log.length} handoffs logged with who, when and where${f.exceptions ? `, ${f.exceptions} left uncollected over 10 min and flagged` : ", none left uncollected"}. Hand-carried deliveries leave no record.</li>
               <li><b>No one leaves the floor to fetch.</b> ${m.tripsOff} fewer times a nurse steps away from patients this shift.</li>
               ${f.stat ? `<li><b>Urgent orders keep moving.</b> ${f.stat} urgent orders were handled during the shift without pulling a nurse off the unit.</li>` : ""}
@@ -6497,7 +6559,7 @@
           const radial = c.clone().sub(center);
           radial.y *= 1.3;
           const unit = radial.lengthSq() > 1e-6 ? radial.clone().normalize() : new THREE.Vector3(0, 1, 0);
-          const worldOffset = radial.multiplyScalar(0.9).add(unit.multiplyScalar(0.35));
+          const worldOffset = radial.multiplyScalar(0.55).add(unit.multiplyScalar(0.3));
           const toLocal = new THREE.Matrix3().setFromMatrix4(m.parent.matrixWorld.clone().invert());
           return { obj: m, home: m.position.clone(), localOffset: worldOffset.applyMatrix3(toLocal) };
         });
@@ -6530,8 +6592,10 @@
           <span class="n">${String(i + 1).padStart(2, "0")}</span>
           <b>${escapeHtml(d.name)}</b>
           <span>${escapeHtml(d.tagline)}</span>
-          <span class="c">${labMoney(labUnitCost(d, 1000).total)} each at 1,000</span>
+          <span class="c">${labMoney(labUnitCost(d, 1000).total)} each at 1,000${d._source ? ` · <em>${escapeHtml(d._source)}</em>` : ""}</span>
         </button>`).join("");
+      const maxW = labEl("labMaxW");
+      if (maxW && !maxW.value && c.narrowest_door_m) maxW.value = Number(c.narrowest_door_m).toFixed(2);
       labEl("labEmpty").classList.add("hidden");
       labEl("labMain").classList.remove("hidden");
       labShowDesign(lab.idx);
@@ -6640,6 +6704,52 @@
     }
 
     labEl("labDesignBtn")?.addEventListener("click", labDesign);
+
+    // Design brief: an engineer describes the case and limits; Gemini 4 Carbon designs the robot.
+    document.querySelectorAll("[data-brief]").forEach((b) => b.addEventListener("click", () => {
+      labEl("labBrief").value = b.dataset.brief;
+      labEl("labBrief").focus();
+    }));
+    labEl("labBriefBtn")?.addEventListener("click", async () => {
+      const scenario = labEl("labBrief").value.trim();
+      const status = labEl("labBriefStatus");
+      if (scenario.length < 3) { status.textContent = "Describe what the robot should do first."; return; }
+      if (!state.unitMap) await extractUnit(true);
+      if (!state.unitMap) { status.textContent = "Load a unit first."; return; }
+      const btn = labEl("labBriefBtn");
+      btn.disabled = true;
+      btn.textContent = "Designing…";
+      status.innerHTML = `AI is designing a robot for your case <span class="m">(up to 45 s)</span>`;
+      const brief = {
+        scenario,
+        max_width_m: Number(labEl("labMaxW").value) || 0.8,
+        payload_kg: Number(labEl("labPayload").value) || 0,
+        target_unit_cost_usd: Number(labEl("labCost").value) || 0,
+        rooms: [...document.querySelectorAll("#labRooms input:checked")].map((x) => x.value),
+      };
+      try {
+        const res = await fetch("/api/robot-design-brief", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ unit_map: state.unitMap, brief }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Design failed");
+        const design = { ...data.design, _source: data.source === "gemini" ? "AI design" : "Draft from brief" };
+        if (!lab.report) lab.report = { source: "fallback", constraints: {}, designs: [] };
+        lab.report.designs.push(design);
+        lab.idx = lab.report.designs.length - 1;
+        labRender();
+        status.innerHTML = data.source === "gemini"
+          ? `Designed by <span class="m">${escapeHtml(data.model)}</span> from your brief`
+          : `AI didn't answer in time, so this is a draft: the closest Amed design resized to your limits`;
+        labEl("labMain").scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (err) {
+        status.textContent = `Could not design: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Design with AI →";
+      }
+    });
     labEl("labPicker")?.addEventListener("click", (e) => {
       const b = e.target.closest("[data-lab-idx]");
       if (b) labShowDesign(Number(b.dataset.labIdx));

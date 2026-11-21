@@ -170,6 +170,23 @@ def robot_designs(unit: UnitMap, live: bool = True) -> dict[str, Any]:
     return design_custom_robots(unit, live=live).model_dump()
 
 
+class BriefRequest(BaseModel):
+    unit_map: UnitMap
+    brief: dict[str, Any]
+
+
+@app.post("/api/robot-design-brief")
+def robot_design_brief(req: BriefRequest) -> dict[str, Any]:
+    """Design one robot from an engineer's written scenario and limits (Gemini 4 Carbon, draft fallback)."""
+    from hospital_twin.robot_designer import DesignBrief, design_from_brief
+
+    try:
+        brief = DesignBrief(**req.brief)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"Invalid brief: {exc}") from exc
+    return design_from_brief(req.unit_map, brief).model_dump()
+
+
 @app.get("/api/plans")
 async def list_plans() -> dict[str, list[dict[str, str]]]:
     return {"plans": _list_demo_plans()}
