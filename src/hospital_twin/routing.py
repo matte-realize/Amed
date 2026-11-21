@@ -82,7 +82,10 @@ def build_route_graph(
         )
 
     for door in unit.doors:
-        if robot_only and (not door.robot_passable or door.width_m < robot_clearance_m):
+        if robot_only and (
+            door.width_m < robot_clearance_m
+            or (not door.robot_passable and robot_clearance_m >= DEFAULT_ROBOT_CLEARANCE_M)
+        ):
             continue
         u, v = door.rooms_connected
         if u == v or u not in centroids or v not in centroids:

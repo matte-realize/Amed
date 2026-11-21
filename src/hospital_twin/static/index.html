@@ -1957,10 +1957,10 @@
 
     <!-- Two-Row Control Ribbon -->
     <section class="control-ribbon">
-      <!-- Row 1: Step 1 (Floor Plan & Spec) + Stage View Switcher -->
+      <!-- Row 1: Unit Blueprint & View Mode -->
       <div class="ribbon-row">
         <div class="control-group">
-          <span class="row-tag">Step 1</span>
+          <span class="row-tag">Unit</span>
           <label class="inline-label" for="planSelect">Plan</label>
           <select id="planSelect"></select>
           <label class="btn" for="fileUpload" title="Upload PNG or JPG floor plan">
@@ -1984,10 +1984,10 @@
         </div>
       </div>
 
-      <!-- Row 2: Step 2 (Schedule, Scenario, Seed, Fleet & Run Shift) -->
+      <!-- Row 2: Simulation Schedule, Scenario, Fleet & Run -->
       <div class="ribbon-row">
         <div class="run-input-wrap">
-          <span class="row-tag">Step 2</span>
+          <span class="row-tag">Simulation</span>
           <label class="inline-label" for="runDesc">Runs</label>
           <input
             type="text"
@@ -4064,7 +4064,8 @@
         doors.forEach((door) => {
           const dWorld = this.pxToWorld(door.position.x, door.position.y);
           const widthMeters = door.width_m ?? 1.0;
-          const passable = door.robot_passable !== false && widthMeters >= 0.90;
+          const minClearance = getActiveRobotClearanceM();
+          const passable = (door.robot_passable !== false || minClearance <= 0.75) && widthMeters >= minClearance;
           const isSelected = state.selectedSelection?.kind === "door" && state.selectedSelection?.id === door.id;
           const doorColor = passable ? 0x10b981 : 0xef4444;
 
@@ -4781,7 +4782,8 @@
 
       const doors = unit.doors.slice(0, maxDoors);
       doors.forEach((door) => {
-        const passable = door.robot_passable !== false && (door.width_m ?? 1.0) >= 0.90;
+        const minClearance = getActiveRobotClearanceM();
+        const passable = (door.robot_passable !== false || minClearance <= 0.75) && (door.width_m ?? 1.0) >= minClearance;
         const radius = Math.max(4, (door.width_m ?? 1.0) * 5.2);
         ctx.save();
         if (!passable) {
@@ -5743,14 +5745,25 @@
       });
     });
 
+    function getActiveRobotClearanceM() {
+      const profile = (state.robotCatalog && state.robotCatalog[state.robotProfileId])
+        || ROBOT_METADATA_FALLBACK[state.robotProfileId];
+      return profile && typeof profile.clearance_m === "number" ? profile.clearance_m : 0.90;
+    }
+
     function setRobotProfile(profileId, rerunIfLoaded = false) {
       if (!profileId) return;
       state.robotProfileId = profileId;
+      state.unitVersion++;
       if (els.robotProfileSelect) els.robotProfileSelect.value = profileId;
       if (els.landingFleetGrid) {
         els.landingFleetGrid.querySelectorAll(".fleet-card").forEach((card) => {
           card.classList.toggle("active", card.dataset.robotProfile === profileId);
         });
+      }
+      if (state.unitMap) {
+        if (state.comparison) renderSimulationFrame();
+        else drawSingleMap();
       }
       updateRobotSpecSheet(profileId);
       robotShowcase?.setRobot(profileId);
