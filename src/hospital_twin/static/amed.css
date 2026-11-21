@@ -786,3 +786,9 @@ body.wt-running .engine { margin-right: 0; }
 .whatif-out b { color: var(--ink); }
 .act-log li.emt { border-left-color: var(--warn); background: rgba(183, 121, 12, 0.06); }
 .act-log li.emt .who { color: var(--warn); }
+.act-log li.yield { border-left-color: #f59e0b; }
+.act-log li.yield .what { color: #b45309; }
+.roster { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.roster li { display: grid; grid-template-columns: 62px 1fr auto; gap: 8px; align-items: baseline; padding: 5px 8px; border-left: 3px solid var(--nurse); background: var(--paper); font-size: 12px; }
+.roster b { font-family: var(--mono); font-size: 10.5px; font-weight: 500; color: var(--nurse); }
+.roster em { font-style: normal; font-family: var(--mono); font-size: 10px; color: var(--ink-3); }

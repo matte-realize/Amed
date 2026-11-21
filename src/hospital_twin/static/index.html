@@ -707,6 +707,7 @@
               <div class="sim-legend">
                 <span class="ghost"><span class="dot-swatch" style="background:var(--nurse);"></span>Nurses-only run (faded)</span>
                 <span><span class="dot-swatch" style="background:var(--robot);"></span>Robots</span>
+                <span><span class="dot-swatch" style="background:#14b8a6;opacity:.45"></span>Robot vision · <span style="color:#d97706">amber = yielding</span></span>
                 <span><span class="dot-swatch" style="background:var(--nurse);"></span>Nurses, with robots</span>
               </div>
               <span class="badge ok" id="robotCountBadge">1 robot</span>
@@ -754,6 +755,11 @@
 
       <!-- Right: results -->
       <aside class="eng-panel eng-right" aria-label="Results">
+        <section class="eng-sec roster-sec">
+          <h3 class="eng-sec-h"><span class="n">R0</span>Where people are</h3>
+          <ul class="roster" id="rosterList"><li><span>Run a shift to track staff.</span></li></ul>
+        </section>
+
         <section class="eng-sec act-sec">
           <h3 class="eng-sec-h"><span class="n">R1</span>Live activity <span class="act-count" id="actCount"></span></h3>
           <div class="segmented act-filter" id="actFilter">
@@ -3539,6 +3545,19 @@
         const trueScale = (this.worldScale / mpp) / 2;
         mesh.scale.setScalar(Math.min(1.6, Math.max(0.6, trueScale)));
         if (!ghost) addContactShadow(mesh, role === "nurse" ? 0.8 : 1.2);
+        if (!ghost && role !== "nurse") {
+          // Sensor field: a 110° fan ~3 m ahead (models use 2 units per metre, forward is +Z).
+          const half = (55 * Math.PI) / 180;
+          const fan = new THREE.Mesh(
+            new THREE.CircleGeometry(8, 28, Math.PI * 1.5 - half, half * 2),
+            new THREE.MeshBasicMaterial({ color: 0x14b8a6, transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide })
+          );
+          fan.rotation.x = -Math.PI / 2;
+          fan.position.y = 0.06;
+          fan.renderOrder = -1;
+          mesh.add(fan);
+          mesh.userData.visionFan = fan;
+        }
         if (ghost) {
           mesh.traverse((obj) => {
             if (!obj.material) return;
@@ -3585,6 +3604,7 @@
         for (const m of this.agentPool.values()) m.visible = false;
         for (const r of this.ripplePool) r.visible = false;
         let rippleIdx = 0;
+        const seen = [];
 
         summary.events.forEach((ev, idx) => {
           const vis = this.tripVisuals[idx];
@@ -3623,6 +3643,7 @@
             if (Math.hypot(pose.dx, pose.dy) > 1e-4) {
               agentMesh.rotation.y = Math.atan2(pose.dx, pose.dy);
             }
+            if (!ev._ghost) seen.push({ mesh: agentMesh, robot: ev.agent_role !== "nurse", ev });
           } else if (vis && t - ev.end_time_s >= 0 && t - ev.end_time_s <= 25) {
             const age = (t - ev.end_time_s) / 25;
             if (ev._ghost) return;
@@ -3636,9 +3657,67 @@
           }
         });
 
+        if (sideTag !== "nurse") {
+          const busy = new Set(summary.events.filter((e) => e.agent_role === "nurse" && !e._ghost && t >= e.start_time_s && t <= e.end_time_s).map((e) => String(e.agent_id).replace(/\D/g, "") || "1"));
+          for (let k = 0; k < nurseCount(); k++) {
+            if (busy.has(String(k + 1))) continue;
+            const r = nurseRoundAt(k, t);
+            if (!r) continue;
+            const mesh = this.getOrCreateAgentMesh(`round${k}`, "nurse", `nurse_${k + 1}`, null, false, null);
+            mesh.visible = true;
+            const w = this.pxToWorld(r.px.x, r.px.y);
+            const phase = r.walking ? t * 0.9 : 0;
+            mesh.position.set(w.x, r.walking ? Math.abs(Math.sin(phase)) * 0.12 : 0, w.z);
+            if (Math.hypot(r.dir.x, r.dir.y) > 1e-3) mesh.rotation.y = Math.atan2(r.dir.x, r.dir.y);
+            seen.push({ mesh, robot: false, ev: { agent_role: "nurse", agent_id: `nurse_${k + 1}` } });
+          }
+        }
+        this.applyRobotVision(seen);
         this.stepFocusAnim(performance.now());
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
+      }
+
+      // Each robot checks its sensor fan for people and other robots; if someone is in it,
+      // the fan turns amber and the robot steps aside to pass instead of driving through.
+      applyRobotVision(seen) {
+        this.yielding = 0;
+        const range = 8;
+        seen.forEach((a) => {
+          if (!a.robot) return;
+          const fan = a.mesh.userData.visionFan;
+          const yaw = a.mesh.rotation.y;
+          const fx = Math.sin(yaw), fz = Math.cos(yaw);
+          const reach = range * a.mesh.scale.x;
+          let blocked = null;
+          seen.forEach((b) => {
+            if (b === a) return;
+            const dx = b.mesh.position.x - a.mesh.position.x;
+            const dz = b.mesh.position.z - a.mesh.position.z;
+            const d = Math.hypot(dx, dz);
+            if (d < 0.05 || d > reach) return;
+            if ((dx * fx + dz * fz) / d > Math.cos((55 * Math.PI) / 180)) blocked = b;
+          });
+          if (fan) {
+            fan.material.color.setHex(blocked ? 0xf59e0b : 0x14b8a6);
+            fan.material.opacity = blocked ? 0.32 : 0.16;
+          }
+          if (blocked) {
+            this.yielding++;
+            // Record the decision once per robot/other pair per ~5 simulated minutes.
+            state.yieldLog = state.yieldLog || [];
+            const who = typeof actWho === "function" ? actWho(a.ev) : "Robot";
+            const whom = typeof actWho === "function" ? actWho(blocked.ev) : "someone";
+            const key = `${who}|${whom}`;
+            const last = state.yieldLog.findLast?.((y) => y.key === key);
+            if (!last || state.simTime - last.t > 300) {
+              state.yieldLog.push({ key, t: state.simTime, who, text: `Saw ${whom} ahead, slowed and stepped aside` });
+            }
+            // Step to the right of travel by ~0.4 m while passing.
+            a.mesh.position.x += fz * 0.8 * a.mesh.scale.x;
+            a.mesh.position.z -= fx * 0.8 * a.mesh.scale.x;
+          }
+        });
       }
 
       renderOnce() {
@@ -4483,6 +4562,65 @@
       return comp._overlay;
     }
 
+    // ---- Nurses on rounds: where each nurse is at any moment of the shift ----
+    // Each nurse cycles through patient rooms and the nurse station in 6-minute slots,
+    // walking via the corridor for the first 45 s of each slot. Deterministic, so the 3D
+    // view, the roster and the log always agree.
+    const ROUND_SLOT = 360, ROUND_WALK = 45;
+    function roundsRooms() {
+      const rooms = state.unitMap?.rooms || [];
+      const stops = rooms.filter((r) => r.type === "patient_room");
+      const station = rooms.find((r) => r.type === "nurse_station");
+      if (station) stops.splice(Math.min(2, stops.length), 0, station);
+      return stops;
+    }
+    function nurseCount() {
+      return Math.max(1, Math.min(4, Number(state.comparison?.assumptions?.num_nurses) || 2));
+    }
+    function nurseRoundAt(k, t) {
+      const stops = roundsRooms();
+      if (!stops.length) return null;
+      const shifted = t + k * (ROUND_SLOT / 2);
+      const slot = Math.floor(shifted / ROUND_SLOT);
+      const into = shifted - slot * ROUND_SLOT;
+      const cur = stops[(slot + k * 2) % stops.length];
+      const prev = stops[(slot - 1 + k * 2 + stops.length * 4) % stops.length];
+      const a = room_centroid_px(prev), b = room_centroid_px(cur);
+      const corridor = (state.unitMap.rooms || []).find((r) => r.type === "corridor");
+      const c = corridor ? room_centroid_px(corridor) : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (into < ROUND_WALK) {
+        const f = into / ROUND_WALK;
+        const p = f < 0.5 ? { x: a.x + (c.x - a.x) * f * 2, y: a.y + (c.y - a.y) * f * 2 } : { x: c.x + (b.x - c.x) * (f - 0.5) * 2, y: c.y + (b.y - c.y) * (f - 0.5) * 2 };
+        const dir = f < 0.5 ? { x: c.x - a.x, y: c.y - a.y } : { x: b.x - c.x, y: b.y - c.y };
+        return { room: cur, walking: true, px: p, dir, since: t - into };
+      }
+      return { room: cur, walking: false, px: { x: b.x + 12 * (k ? 1 : -1), y: b.y + 8 }, dir: { x: 0, y: 1 }, since: t - into + ROUND_WALK };
+    }
+    function room_centroid_px(r) {
+      const pts = r.polygon || [];
+      const x = pts.reduce((s, p) => s + p.x, 0) / Math.max(1, pts.length);
+      const y = pts.reduce((s, p) => s + p.y, 0) / Math.max(1, pts.length);
+      return { x, y };
+    }
+    function roomActivity(r) {
+      return r.type === "nurse_station" ? "charting & handoffs" : "bedside care";
+    }
+
+    function renderRoster(t) {
+      const el = document.getElementById("rosterList");
+      if (!el || !state.unitMap) return;
+      const busy = new Set((state.comparison?.robot_assisted.events || []).filter((e) => e.agent_role === "nurse" && t >= e.start_time_s && t <= e.end_time_s).map((e) => String(e.agent_id).replace(/\D/g, "") || "1"));
+      const rows = [];
+      for (let k = 0; k < nurseCount(); k++) {
+        const id = String(k + 1);
+        if (busy.has(id)) { rows.push(`<li><b>Nurse ${id}</b><span>On a delivery run</span></li>`); continue; }
+        const r = nurseRoundAt(k, t);
+        if (!r) continue;
+        rows.push(`<li><b>Nurse ${id}</b><span>${r.walking ? "Walking to " : ""}${escapeHtml(r.room.label || r.room.id)}${r.walking ? "" : ` · ${roomActivity(r.room)}`}</span><em>since ${formatClock(Math.max(0, r.since))}</em></li>`);
+      }
+      el.innerHTML = rows.join("");
+    }
+
     // ---- Live activity log: what every robot and person is doing, newest first ----
     const ACT_JOB = { pharmacy_pickup: "meds", lab_specimen_drop: "a lab specimen", supply_restock: "supplies" };
     const ACT_SHORT = { aethon_tug: "TUG", diligent_moxi: "MOXI", pneumatic_tube: "TUBE", amed_prestage_pod: "CART", amed_narrow_rover: "SLIM", amed_compounding_arm: "ARM", amed_surgical_prep_bot: "PREP", alta_transfer_robot: "ALTA" };
@@ -4515,6 +4653,19 @@
           entries.push({ t: ev.end_time_s, role: ev.agent_role, who: actWho(ev), text: `Delivered ${job} to ${to}${w > 5 ? ` (waited ${w} s)` : ""}`, done: true });
         }
       });
+      if (actFilter !== "robot" && state.unitMap) {
+        for (let k = 0; k < nurseCount(); k++) {
+          for (let s0 = 0; s0 <= t + k * (ROUND_SLOT / 2); s0 += ROUND_SLOT) {
+            const at = s0 - k * (ROUND_SLOT / 2) + ROUND_WALK;
+            if (at < 0 || at > t) continue;
+            const r = nurseRoundAt(k, at + 1);
+            if (r) entries.push({ t: at, role: "nurse", who: `Nurse ${k + 1}`, text: `In ${r.room.label || r.room.id} for ${roomActivity(r.room)}` });
+          }
+        }
+      }
+      if (actFilter !== "nurse" && state.simView !== "nurse") {
+        (state.yieldLog || []).forEach((y) => { if (y.t <= t) entries.push({ t: y.t, role: "yield", who: y.who, text: y.text }); });
+      }
       if (state.emtCall && actFilter !== "nurse" && state.simView !== "nurse") {
         entries.push({ t: 0, role: "emt", who: "EMS radio", text: state.emtCall.text });
         if (state.emtCall.summary) entries.push({ t: 1, role: "emt", who: "Amed", text: state.emtCall.summary });
@@ -4529,7 +4680,7 @@
       if (countEl) countEl.textContent = `${robots} by robots · ${people} by people`;
       list.innerHTML = entries.length
         ? entries.slice(0, 60).map((e) => `
-            <li class="${e.role === "nurse" ? "nurse" : e.role === "emt" ? "emt" : "robot"}${e.done ? " done" : ""}">
+            <li class="${e.role === "nurse" ? "nurse" : e.role === "emt" ? "emt" : e.role === "yield" ? "yield" : "robot"}${e.done ? " done" : ""}">
               <span class="t">${formatClock(e.t)}</span>
               <span class="who">${escapeHtml(e.who)}</span>
               <span class="what">${escapeHtml(e.text)}</span>
@@ -4549,6 +4700,7 @@
       const use3D = state.viewMode === "3d" && state.threeReady;
       const viewSummary = getSimViewSummary(comp);
       renderActivityLog(state.simView === "nurse" ? comp.nurse_only.events : comp.robot_assisted.events, t);
+      renderRoster(t);
       const liveEl = document.getElementById("simLiveJobs");
       if (liveEl) {
         let r = 0, n = 0;
@@ -4556,9 +4708,10 @@
         for (const ev of runEvents) {
           if (t >= ev.start_time_s && t <= ev.end_time_s) { if (ev.agent_role === "nurse") n++; else r++; }
         }
+        const y = state.viewMode === "3d" && twinRight ? (twinRight.yielding || 0) : 0;
         liveEl.textContent = state.simView === "nurse"
           ? `Right now: ${n} job${n === 1 ? "" : "s"} pulling nurses away`
-          : `Right now: ${r} job${r === 1 ? "" : "s"} by robots · ${n} by nurses`;
+          : `Right now: ${r} job${r === 1 ? "" : "s"} by robots · ${n} by nurses${y ? ` · ${y} robot${y === 1 ? "" : "s"} yielding` : ""}`;
       }
       if (use3D && twinRight) {
         twinRight.updateSimulationFrame(viewSummary, t, state.simView);
@@ -4921,6 +5074,7 @@
 
         state.comparison = data;
         state.simVersion++;
+        state.yieldLog = [];
         state.stagePanel = "sim";
         syncStageButtons();
         els.singleView.classList.add("hidden");
