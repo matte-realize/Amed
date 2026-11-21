@@ -33,7 +33,7 @@ DEFAULT_ROBOT_LENGTH_M = 0.965  # Aethon TUG specification: 96.5 cm
 DEFAULT_HANDOFF_SECONDS = 20.0  # 20s badge-and-unlock handoff at every load and delivery
 UNCOLLECTED_FLAG_SECONDS = 600.0  # 10-minute uncollected delivery exception threshold
 POD_COMPARTMENTS = 3  # pharmacy, specimens, supplies
-ScenarioMode = Literal["routine", "chaotic", "surge"]
+ScenarioMode = Literal["routine", "chaotic", "surge", "robot_failure", "pharmacy_delay"]
 
 
 def _format_shift_time(seconds: float) -> str:
@@ -149,10 +149,27 @@ def _generate_trip_requests(
         period_s = max(60.0, run.frequency_minutes * 60.0)
         t = 0.0
         while t < shift_duration_s:
+            effective_robot_route = robot_route
             if scenario_mode == "routine":
                 arrival_s = t
                 speed_factor = 1.0
                 delay_s = 0.0
+            elif scenario_mode == "robot_failure":
+                arrival_s = t
+                speed_factor = rng.uniform(0.90, 1.10)
+                delay_s = 0.0
+                in_outage = 0.40 * shift_duration_s <= arrival_s <= 0.65 * shift_duration_s
+                if in_outage and (num_robots <= 1 or rng.random() < 0.5):
+                    # Safe degradation: robot blocked/offline, falls back to nurse
+                    effective_robot_route = nurse_route
+            elif scenario_mode == "pharmacy_delay":
+                arrival_s = t
+                speed_factor = rng.uniform(0.88, 1.12)
+                delay_s = (
+                    rng.uniform(60.0, 180.0)
+                    if run.run_type == "pharmacy_pickup"
+                    else 0.0
+                )
             else:
                 jitter = rng.uniform(-0.20 * period_s, 0.25 * period_s)
                 arrival_s = min(max(0.0, t + jitter), max(0.0, shift_duration_s - 1.0))
@@ -165,7 +182,7 @@ def _generate_trip_requests(
                 _TripRequest(
                     arrival_time_s=arrival_s,
                     nurse_route=nurse_route,
-                    robot_route=robot_route,
+                    robot_route=effective_robot_route,
                     speed_factor=speed_factor,
                     delay_s=delay_s,
                     is_stat=False,

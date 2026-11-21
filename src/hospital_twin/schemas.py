@@ -105,3 +105,35 @@ class SimulationComparison(BaseModel):
     nurse_only: ShiftSummary
     robot_assisted: ShiftSummary
     nurse_minutes_saved: float
+
+
+class AutonomyRecommendation(BaseModel):
+    target_id: str
+    target_label: str
+    category: Literal["use_robot", "redesign_process", "keep_human", "research_gap"]
+    rationale: str
+    action: str = ""
+
+
+class BottleneckItem(BaseModel):
+    rank: int
+    source: str
+    impact_minutes: float
+    detail: str
+
+
+class StressTestSweepPoint(BaseModel):
+    num_robots: int
+    mean_nurse_minutes_saved: float
+    mean_p95_wait_s: float
+    max_flagged_exceptions: int
+
+
+class StressTestReport(BaseModel):
+    scenario_mode: str
+    runs_evaluated: int
+    tipping_point: str
+    sweep: list[StressTestSweepPoint]
+    autonomy_plan: list[AutonomyRecommendation]
+    ranked_bottlenecks: list[BottleneckItem]
+    after_action_summary: str

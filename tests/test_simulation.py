@@ -416,4 +416,47 @@ def test_tug_pod_batching_door_clearance_and_custody_log():
     assert all(ev.batch_id == "POD-001" for ev in comp.robot_assisted.events)
 
 
+def test_world_model_stress_sweep_autonomy_plan_and_failure_modes():
+    from hospital_twin.world_model import run_stress_sweep
+
+    unit = _make_sample_unit(meters_per_pixel=0.05)
+    for room in unit.rooms:
+        if room.id == "supply_room":
+            room.autonomy_tier = "human_only"
+    for door in unit.doors:
+        if door.id == "d2":
+            door.width_m = 0.85
+
+    schedule = [
+        ScheduledRun(
+            run_type="pharmacy_pickup",
+            origin="med_room",
+            destination="nurse_station",
+            frequency_minutes=60.0,
+        ),
+        ScheduledRun(
+            run_type="lab_specimen_drop",
+            origin="nurse_station",
+            destination="lab_drop",
+            frequency_minutes=60.0,
+        ),
+    ]
+
+    # Safe degradation on robot_failure and pharmacy_delay
+    fail_comp = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="robot_failure", seed=7)
+    assert fail_comp.robot_assisted.total_trips == 16
+    pharm_comp = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1, scenario_mode="pharmacy_delay", seed=7)
+    assert pharm_comp.robot_assisted.total_trips == 16
+
+    report = run_stress_sweep(unit, schedule, shift_hours=8.0, scenario_mode="surge", seeds=(11, 22))
+    assert report.runs_evaluated == 6
+    assert len(report.sweep) == 3
+    assert len(report.autonomy_plan) == 4
+    categories = {rec.target_id: rec.category for rec in report.autonomy_plan}
+    assert categories["supply_room"] == "keep_human"
+    assert categories["med_room"] == "redesign_process"
+    assert len(report.ranked_bottlenecks) >= 1
+    assert "ASPR-Style After-Action Summary" in report.after_action_summary
+
+
 

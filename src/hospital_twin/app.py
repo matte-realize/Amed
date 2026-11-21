@@ -18,7 +18,7 @@ try:
 except ImportError:
     pass
 
-from hospital_twin.schemas import SimulationComparison, UnitMap
+from hospital_twin.schemas import SimulationComparison, StressTestReport, UnitMap
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = PACKAGE_DIR / "static"
@@ -39,8 +39,15 @@ class SimulateRequest(BaseModel):
     run_description: str = Field(min_length=1)
     num_robots: int = Field(default=1, ge=1, le=3)
     shift_hours: float = Field(default=8.0, gt=0.0, le=24.0)
-    scenario_mode: Literal["routine", "chaotic", "surge"] = "chaotic"
+    scenario_mode: Literal["routine", "chaotic", "surge", "robot_failure", "pharmacy_delay"] = "chaotic"
     seed: int = 42
+
+
+class StressSweepRequest(BaseModel):
+    unit_map: UnitMap
+    run_description: str = Field(min_length=1)
+    shift_hours: float = Field(default=8.0, gt=0.0, le=24.0)
+    scenario_mode: Literal["routine", "chaotic", "surge", "robot_failure", "pharmacy_delay"] = "surge"
 
 
 def _list_demo_plans() -> list[dict[str, str]]:
@@ -260,6 +267,33 @@ async def simulate(req: SimulateRequest) -> SimulationComparison:
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Simulation failed: {exc}") from exc
+
+
+@app.post("/api/stress-test", response_model=StressTestReport)
+async def stress_test(req: StressSweepRequest) -> StressTestReport:
+    from hospital_twin.schedule_parser import parse_run_description
+    from hospital_twin.world_model import run_stress_sweep
+
+    available_rooms = [room.id for room in req.unit_map.rooms]
+    if not available_rooms:
+        raise HTTPException(status_code=400, detail="UnitMap contains no rooms.")
+    try:
+        schedule = parse_run_description(req.run_description, available_rooms)
+        if not schedule:
+            raise HTTPException(
+                status_code=400,
+                detail="Could not parse any scheduled runs from the description.",
+            )
+        return run_stress_sweep(
+            unit=req.unit_map,
+            schedule=schedule,
+            shift_hours=req.shift_hours,
+            scenario_mode=req.scenario_mode,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Stress sweep failed: {exc}") from exc
 
 
 if __name__ == "__main__":

@@ -854,6 +854,8 @@
             <option value="routine">Routine</option>
             <option value="chaotic" selected>Chaotic (STAT Surges)</option>
             <option value="surge">Mass Surge</option>
+            <option value="robot_failure">Robot Failure (Fallback)</option>
+            <option value="pharmacy_delay">Pharmacy Delay</option>
           </select>
           <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll random seed for chaotic/surge shifts">🎲 #42</button>
 
@@ -874,6 +876,7 @@
           </select>
 
           <button class="btn btn-accent" id="runSimBtn" disabled>Run Shift</button>
+          <button class="btn" id="stressSweepBtn" disabled title="Run 15-run parallel stress sweep (1-3 robots x 5 seeds) for tipping points & autonomy plan">Stress Sweep</button>
         </div>
       </div>
     </section>
@@ -990,6 +993,15 @@
         <div id="custodyLogBody" style="max-height:130px; overflow-y:auto; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; display:flex; flex-direction:column; gap:4px;"></div>
       </section>
 
+      <!-- World Model Stress Sweep Report (Autonomy Plan, Tipping Points, Ranked Bottlenecks) -->
+      <section class="assumptions-bar hidden" id="worldModelSection" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+          <strong>World Model Stress Sweep &amp; Autonomy Plan</strong>
+          <span class="badge saved" id="tippingPointBadge">Tipping Point</span>
+        </div>
+        <div id="worldModelBody" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; font-size:12px;"></div>
+      </section>
+
       <!-- Stated Assumptions (Step 3) -->
       <section class="assumptions-bar hidden" id="assumptionsBar">
         <strong>Stated Assumptions (Scenario Estimate · Logistics Only):</strong>
@@ -1061,6 +1073,7 @@
       rerollSeedBtn: document.getElementById("rerollSeedBtn"),
       shiftHours: document.getElementById("shiftHours"),
       runSimBtn: document.getElementById("runSimBtn"),
+      stressSweepBtn: document.getElementById("stressSweepBtn"),
       resetBtn: document.getElementById("resetBtn"),
       statusBanner: document.getElementById("statusBanner"),
       statusText: document.getElementById("statusText"),
@@ -1071,6 +1084,9 @@
       custodyLogSection: document.getElementById("custodyLogSection"),
       custodyCountBadge: document.getElementById("custodyCountBadge"),
       custodyLogBody: document.getElementById("custodyLogBody"),
+      worldModelSection: document.getElementById("worldModelSection"),
+      tippingPointBadge: document.getElementById("tippingPointBadge"),
+      worldModelBody: document.getElementById("worldModelBody"),
       assumptionsBar: document.getElementById("assumptionsBar"),
       assumptionsList: document.getElementById("assumptionsList"),
       threeSingle: document.getElementById("threeSingle"),
@@ -3100,6 +3116,7 @@
         els.verifyBadge.classList.remove("hidden");
 
         els.runSimBtn.disabled = false;
+        if (els.stressSweepBtn) els.stressSweepBtn.disabled = false;
         setStep(2);
         startRevealAnimation();
       } catch (err) {
@@ -3207,7 +3224,65 @@
         showBanner(err.message, "error");
       } finally {
         els.runSimBtn.disabled = false;
+        if (els.stressSweepBtn) els.stressSweepBtn.disabled = false;
         els.runSimBtn.textContent = "Run Shift";
+      }
+    }
+
+    async function runStressSweep() {
+      if (!state.unitMap || !els.stressSweepBtn) return;
+      const desc = els.runDesc.value.trim();
+      if (!desc) {
+        showBanner("Please enter or speak a shift run description.", "error");
+        return;
+      }
+      els.stressSweepBtn.disabled = true;
+      els.stressSweepBtn.textContent = "Sweeping...";
+      try {
+        const res = await fetch("/api/stress-test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            unit_map: state.unitMap,
+            run_description: desc,
+            shift_hours: Number(els.shiftHours.value),
+            scenario_mode: els.scenarioSelect ? els.scenarioSelect.value : state.scenarioMode,
+          }),
+        });
+        const rep = await res.json();
+        if (!res.ok) throw new Error(rep.detail || "Stress sweep failed.");
+
+        els.worldModelSection.classList.remove("hidden");
+        els.tippingPointBadge.textContent = rep.tipping_point;
+        const sweepHtml = rep.sweep.map((p) =>
+          `<div><strong>${p.num_robots} Robot${p.num_robots > 1 ? "s" : ""}:</strong> saved ${p.mean_nurse_minutes_saved}m · p95 wait ${p.mean_p95_wait_s}s · ${p.max_flagged_exceptions} >10m flags</div>`
+        ).join("");
+        const bottleneckHtml = rep.ranked_bottlenecks.length
+          ? rep.ranked_bottlenecks.map((b) => `<div>#${b.rank} <strong>${b.source}</strong> (${b.impact_minutes}m)</div>`).join("")
+          : "<div>No significant bottlenecks detected.</div>";
+        const planCounts = { use_robot: 0, redesign_process: 0, keep_human: 0, research_gap: 0 };
+        rep.autonomy_plan.forEach((a) => { planCounts[a.category] = (planCounts[a.category] || 0) + 1; });
+
+        els.worldModelBody.innerHTML = `
+          <div style="background:rgba(15,23,42,0.55); padding:8px; border-radius:6px;">
+            <div style="font-weight:700; margin-bottom:4px; color:#93c5fd;">Fleet Sweep (${rep.runs_evaluated} parallel runs)</div>
+            ${sweepHtml}
+          </div>
+          <div style="background:rgba(15,23,42,0.55); padding:8px; border-radius:6px;">
+            <div style="font-weight:700; margin-bottom:4px; color:#fcd34d;">Ranked Bottlenecks</div>
+            ${bottleneckHtml}
+          </div>
+          <div style="background:rgba(15,23,42,0.55); padding:8px; border-radius:6px;">
+            <div style="font-weight:700; margin-bottom:4px; color:#34d399;">Autonomy Plan &amp; After-Action</div>
+            <div>Use Robot: ${planCounts.use_robot} · Redesign: ${planCounts.redesign_process} · Keep Human: ${planCounts.keep_human}</div>
+            <div style="margin-top:4px; color:#94a3b8;">${rep.after_action_summary}</div>
+          </div>
+        `;
+      } catch (err) {
+        showBanner(err.message, "error");
+      } finally {
+        els.stressSweepBtn.disabled = false;
+        els.stressSweepBtn.textContent = "Stress Sweep";
       }
     }
 
@@ -3343,6 +3418,7 @@
     els.fallbackBtn.addEventListener("click", () => extractUnit(true));
     els.bannerFallbackBtn.addEventListener("click", () => extractUnit(true));
     els.runSimBtn.addEventListener("click", runSimulation);
+    if (els.stressSweepBtn) els.stressSweepBtn.addEventListener("click", runStressSweep);
 
     els.micBtn.addEventListener("click", () => {
       if (!recognition) {
