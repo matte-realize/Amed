@@ -569,3 +569,42 @@ body.wt-running .engine { margin-right: 0; }
 @media (max-width: 600px) { .lp-steps.four { grid-template-columns: 1fr; } }
 .wt-steps li { padding: 4px 14px; }
 .badge.saved { white-space: normal; }
+
+/* ---------- nurses only vs with robots ---------- */
+.cmp-panel { padding: 28px 24px 24px; }
+.cmp-ctx { margin: 0 0 10px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.cmp-verdict { margin: 0 0 20px; font-size: 19px; line-height: 1.45; max-width: 70ch; color: var(--ink-2); }
+.cmp-verdict b { color: var(--ink); font-weight: 600; }
+.cmp-verdict.sm { font-size: 13px; margin-bottom: 4px; }
+.cmp-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 860px) { .cmp-grid { grid-template-columns: 1fr; } }
+.cmp-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.cmp-table th, .cmp-table td { padding: 8px 10px; border-bottom: 1px solid var(--rule); text-align: right; font-variant-numeric: tabular-nums; }
+.cmp-table th:first-child { text-align: left; font-weight: 400; color: var(--ink-2); }
+.cmp-table thead th { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--rule-2); }
+.cmp-table thead th:last-child { color: var(--accent); }
+.cmp-table td { font-family: var(--mono); color: var(--ink); }
+.cmp-table td.up { color: var(--ok); font-weight: 500; }
+.cmp-table td.dn { color: var(--bad); }
+.cmp-year { display: grid; gap: 0; border: 1px solid var(--rule-2); }
+.cmp-year > div { display: grid; padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+.cmp-year > div:last-child { border-bottom: 0; }
+.cmp-year .v { font-family: var(--display); font-size: 30px; line-height: 1.05; letter-spacing: -0.02em; color: var(--ok); }
+.cmp-year .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+.eng-right .cmp-table { font-size: 12px; }
+.eng-right .cmp-table th, .eng-right .cmp-table td { padding: 5px 4px; }
+.eng-right .cmp-year { margin-top: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.eng-right .cmp-year > div { padding: 8px; border-bottom: 0; border-right: 1px solid var(--rule); }
+.eng-right .cmp-year > div:last-child { border-right: 0; }
+.eng-right .cmp-year .v { font-size: 17px; }
+.eng-right .cmp-year .k { font-size: 9px; }
+.cmp-cost { margin-top: 10px; border: 1px solid var(--rule-2); padding: 10px; display: grid; gap: 8px; }
+.cmp-cost-in { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cmp-cost-in label { display: grid; gap: 4px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.cmp-cost-in input { height: 28px; width: 100%; font-size: 12px; }
+.cmp-cost-out { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cmp-cost-out > div { display: grid; }
+.cmp-cost-out .k { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.cmp-cost-out .v { font-family: var(--display); font-size: 18px; }
+.cmp-note { margin: 0; font-size: 11px; color: var(--ink-3); line-height: 1.45; }
+.eng-kpi { display: none; }

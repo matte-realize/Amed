@@ -119,6 +119,19 @@
       </figure>
     </header>
 
+    <!-- Nurses only vs with robots -->
+    <section id="compare" class="lp-section">
+      <div class="lp-head">
+        <span class="eyebrow">Nurses only vs. with robots</span>
+        <h2>The same shift, run twice on the same unit.</h2>
+        <p class="lp-lede">Once with nurses making every pharmacy, lab and supply trip themselves. Once with robots taking the trips they can reach. These numbers come from a live run of the engine, not a brochure.</p>
+      </div>
+      <div class="cmp-panel sheet" id="cmpLanding">
+        <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
+        <p class="cmp-ctx">Running a sample shift…</p>
+      </div>
+    </section>
+
     <!-- What you get -->
     <section id="outcomes" class="lp-section">
       <div class="lp-head">
@@ -603,7 +616,8 @@
       <!-- Right: results -->
       <aside class="eng-panel eng-right" aria-label="Results">
         <section class="eng-sec">
-          <h3 class="eng-sec-h"><span class="n">R1</span>Outcome</h3>
+          <h3 class="eng-sec-h"><span class="n">R1</span>Nurses only vs. with robots</h3>
+          <div id="cmpEngine"><p class="eng-empty">Run a shift to compare.</p></div>
           <div class="eng-kpi">
             <span class="badge saved" id="savedBadge">Saved: 0.0 nurse min</span>
           </div>
@@ -4075,6 +4089,7 @@
         });
 
         setStep(3);
+        renderComparisons();
         startPlayback(true);
       } catch (err) {
         showBanner(err.message, "error");
@@ -4902,6 +4917,11 @@
           const c = state.comparison;
           const n0 = c.nurse_only.nurse_minutes_walked;
           const n1 = c.robot_assisted.nurse_minutes_walked;
+          wtFocus(document.getElementById("cmpEngine"));
+          wtSay(`${cmpVerdict(buildComparison(c))}
+            <span class="r" style="color:var(--ink-3)">Left: nurses only. Right: with robots. Same unit, same orders.</span>`);
+          await wtWait(6500, token);
+          wtFocus(els.dualView);
           wtSay(`Left: nurses only. Right: with robots. Same unit, same orders.
             <span class="r">Nurse walking ${n0.toFixed(0)} → ${n1.toFixed(0)} min · ${c.nurse_minutes_saved.toFixed(0)} min back per shift · ${c.robot_assisted.total_trips} robot trips</span>`);
           await wtWait(9000, token);
@@ -5033,6 +5053,134 @@
         i = (i + 1) % (items.length + 1);
       }, 1400);
     })();
+
+    // =========================================================================
+    // NURSES ONLY vs WITH ROBOTS: full-shift comparison, yearly projection, cost
+    // =========================================================================
+    const CMP_DEFAULTS = { nurseRate: 45, leasePerMonth: 4500 };
+    const cmpInputs = { ...CMP_DEFAULTS };
+
+    function summarizeShift(summary) {
+      const nurse = summary.events.filter((e) => e.agent_role === "nurse");
+      const robot = summary.events.filter((e) => e.agent_role !== "nurse");
+      const waits = summary.events.map((e) => e.wait_time_s || 0);
+      return {
+        nurseTrips: nurse.length,
+        robotTrips: robot.length,
+        nurseKm: nurse.reduce((s, e) => s + (e.distance_m || 0), 0) / 1000,
+        nurseMin: summary.nurse_minutes_walked,
+        avgWait: summary.avg_delivery_wait_s,
+        maxWait: waits.length ? Math.max(...waits) : 0,
+      };
+    }
+
+    function buildComparison(c) {
+      const a = summarizeShift(c.nurse_only);
+      const b = summarizeShift(c.robot_assisted);
+      const hours = Number(c.assumptions?.shift_hours) || 8;
+      const shiftsPerYear = (24 / hours) * 365;
+      const robots = Number(c.assumptions?.num_robots) || c.robot_assisted.num_robots || 1;
+      const savedMin = c.nurse_minutes_saved;
+      const tripsOff = a.nurseTrips - b.nurseTrips;
+      return {
+        a, b, hours, robots, savedMin, tripsOff,
+        robotName: c.assumptions?.robot_profile_name || "robots",
+        scenario: String(c.assumptions?.scenario_mode || "routine"),
+        year: {
+          trips: tripsOff * shiftsPerYear,
+          km: (a.nurseKm - b.nurseKm) * shiftsPerYear,
+          hours: (savedMin / 60) * shiftsPerYear,
+        },
+      };
+    }
+
+    function fmtInt(n) { return Math.round(n).toLocaleString("en-US"); }
+    function fmtMoney(n) { return (n < 0 ? "−$" : "$") + fmtInt(Math.abs(n)); }
+
+    function cmpVerdict(m) {
+      const share = m.a.nurseTrips > 0 ? Math.round((m.tripsOff / m.a.nurseTrips) * 100) : 0;
+      const waitNote = m.b.avgWait > m.a.avgWait + 1
+        ? ` The trade-off: a delivery waits about ${Math.round(m.b.avgWait - m.a.avgWait)} s longer on average, because a nurse fetching it right away is quicker than waiting for a robot.`
+        : ` Deliveries arrive as fast as when nurses fetched them.`;
+      return `Robots took <b>${m.tripsOff} of ${m.a.nurseTrips} delivery trips</b> (${share}%) off nurses this shift: <b>${m.a.nurseKm.toFixed(1)} km</b> of walking down to ${m.b.nurseKm.toFixed(2)} km.${waitNote}`;
+    }
+
+    function cmpRows(m) {
+      const row = (label, x, y, unit, better) => {
+        const cls = x === y ? "" : better(x, y) ? "up" : "dn";
+        return `<tr><th>${label}</th><td>${x}${unit}</td><td class="${cls}">${y}${unit}</td></tr>`;
+      };
+      const lower = (x, y) => parseFloat(y) < parseFloat(x);
+      const higher = (x, y) => parseFloat(y) > parseFloat(x);
+      return `
+        <table class="cmp-table">
+          <thead><tr><th></th><th>Nurses only</th><th>With ${m.robots} robot${m.robots === 1 ? "" : "s"}</th></tr></thead>
+          <tbody>
+            ${row("Delivery trips nurses make", m.a.nurseTrips, m.b.nurseTrips, "", lower)}
+            ${row("Distance nurses walk", m.a.nurseKm.toFixed(2), m.b.nurseKm.toFixed(2), " km", lower)}
+            ${row("Nurse time spent walking", m.a.nurseMin.toFixed(0), m.b.nurseMin.toFixed(0), " min", lower)}
+            ${row("Trips handled by robots", m.a.robotTrips, m.b.robotTrips, "", higher)}
+            ${row("Average wait for a delivery", m.a.avgWait.toFixed(0), m.b.avgWait.toFixed(0), " s", lower)}
+            ${row("Longest wait", m.a.maxWait.toFixed(0), m.b.maxWait.toFixed(0), " s", lower)}
+          </tbody>
+        </table>`;
+    }
+
+    function cmpYear(m) {
+      return `
+        <div class="cmp-year">
+          <div><span class="v">${fmtInt(m.year.trips)}</span><span class="k">trips off nurses a year</span></div>
+          <div><span class="v">${fmtInt(m.year.km)} km</span><span class="k">less walking a year</span></div>
+          <div><span class="v">${fmtInt(m.year.hours)} h</span><span class="k">nurse time back a year</span></div>
+        </div>`;
+    }
+
+    function cmpCost(m) {
+      const value = m.year.hours * cmpInputs.nurseRate;
+      const cost = m.robots * cmpInputs.leasePerMonth * 12;
+      return `
+        <div class="cmp-cost">
+          <div class="cmp-cost-in">
+            <label>Nurse cost $/h <input type="number" min="0" step="1" data-cmp="nurseRate" value="${cmpInputs.nurseRate}" /></label>
+            <label>Lease $/robot/mo <input type="number" min="0" step="100" data-cmp="leasePerMonth" value="${cmpInputs.leasePerMonth}" /></label>
+          </div>
+          <div class="cmp-cost-out">
+            <div><span class="k">Nurse time freed / yr</span><span class="v">${fmtMoney(value)}</span></div>
+            <div><span class="k">${m.robots} robot lease${m.robots === 1 ? "" : "s"} / yr</span><span class="v">${fmtMoney(cost)}</span></div>
+          </div>
+          <p class="cmp-note">Counts walking time on this one unit only. A fleet shared across several units, or freed time spent on patient care, changes the math. Edit the rates to match your hospital.</p>
+        </div>`;
+    }
+
+    function renderComparisons() {
+      const c = state.comparison;
+      const land = document.getElementById("cmpLanding");
+      const eng = document.getElementById("cmpEngine");
+      if (!c) return;
+      const m = buildComparison(c);
+      const ctx = `${escapeHtml(els.mapTitle?.textContent || "Sample unit")} · ${m.hours}-hour shift · ${escapeHtml(m.scenario.replace(/_/g, " "))} day · ${escapeHtml(m.robotName)}`;
+      if (land) {
+        land.innerHTML = `
+          <p class="cmp-ctx">${ctx}</p>
+          <p class="cmp-verdict">${cmpVerdict(m)}</p>
+          <div class="cmp-grid">${cmpRows(m)}${cmpYear(m)}</div>`;
+      }
+      if (eng) {
+        eng.innerHTML = `<p class="cmp-verdict sm">${cmpVerdict(m)}</p>${cmpRows(m)}${cmpYear(m)}${cmpCost(m)}`;
+      }
+    }
+
+    document.addEventListener("input", (e) => {
+      const key = e.target?.dataset?.cmp;
+      if (!key) return;
+      const v = Number(e.target.value);
+      if (!Number.isFinite(v) || v < 0) return;
+      cmpInputs[key] = v;
+      const pos = e.target.selectionStart;
+      renderComparisons();
+      const again = document.querySelector(`#cmpEngine [data-cmp="${key}"]`);
+      if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch { /* number inputs */ } }
+    });
   </script>
 </body>
 </html>
