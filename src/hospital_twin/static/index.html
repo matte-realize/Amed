@@ -1674,7 +1674,7 @@
       <div class="nav-tabs" role="tablist" aria-label="Application Sections">
         <button type="button" class="nav-tab active" data-page-tab="overview" role="tab" aria-selected="true">Robotics &amp; Overview</button>
         <button type="button" class="nav-tab" data-page-tab="engine" role="tab" aria-selected="false">Simulation Engine</button>
-        <button type="button" class="nav-tab" data-page-tab="demo" role="tab" aria-selected="false">Walkthrough &amp; Demo</button>
+        <button type="button" class="nav-tab" data-page-tab="demo" role="tab" aria-selected="false">Demo &amp; Use Cases</button>
       </div>
       <button type="button" class="nav-cta" id="launchTwinBtn">Open Simulation Engine →</button>
     </div>
@@ -2208,23 +2208,23 @@
   <!-- TAB 3: WALKTHROUGH & DEMO -->
   <div id="tabDemo" class="page-tab hidden" data-tab-panel="demo">
     <section class="lp-section" style="padding-top:36px;">
-      <div class="amed-section-label">Guided Walkthrough</div>
-      <h2 style="margin:0 0 18px; font-size:24px; letter-spacing:-0.02em;">How the Hospital Robotics &amp; Logistics Simulation Engine Works</h2>
+      <div class="amed-section-label">Engine Demonstration</div>
+      <h2 style="margin:0 0 18px; font-size:24px; letter-spacing:-0.02em;">Ways to Use the Hospital Robotics Simulation Engine</h2>
       <div class="walkthrough-grid">
         <div class="walkthrough-card">
-          <div class="walkthrough-step">01 · Floor Plan &amp; Clearance</div>
-          <h3 class="lp-target-title">Extract Rooms &amp; Doorways</h3>
-          <p class="lp-target-desc" style="margin:0;">Select a VA / CubiCasa5K unit or upload your own floor plan. Every door width is measured against the selected robot chassis to flag narrow-door blockers in 3D.</p>
+          <div class="walkthrough-step">Fleet Sizing</div>
+          <h3 class="lp-target-title">Compare 1–3 Robots Side by Side</h3>
+          <p class="lp-target-desc" style="margin:0;">Benchmark Nurse-Only vs. Robot-Assisted shifts on any unit floor plan to see how many nurse walking minutes a 1–3 robot fleet recovers.</p>
         </div>
         <div class="walkthrough-card">
-          <div class="walkthrough-step">02 · Fleet &amp; Shift Runs</div>
-          <h3 class="lp-target-title">Configure Courier Logistics</h3>
-          <p class="lp-target-desc" style="margin:0;">Describe routine pharmacy, specimen, and supply runs in plain English, pick 1–3 robots, and toggle advance EMS surge pre-staging.</p>
+          <div class="walkthrough-step">Hardware Fit</div>
+          <h3 class="lp-target-title">Test Commercial vs. Custom Chassis</h3>
+          <p class="lp-target-desc" style="margin:0;">Switch between Aethon TUG (0.90m), Diligent Moxi (0.85m), and our Slim Rover (0.72m) to see which doors unlock in legacy wings.</p>
         </div>
         <div class="walkthrough-card">
-          <div class="walkthrough-step">03 · Side-by-Side Twin</div>
-          <h3 class="lp-target-title">Compare Nurse vs. Robot Shift</h3>
-          <p class="lp-target-desc" style="margin:0;">Watch Nurse-Only vs. Robot-Assisted playback side by side in 3D, inspect chain-of-custody logs, and run fleet stress sweeps to find tipping points.</p>
+          <div class="walkthrough-step">Stress Sweeps</div>
+          <h3 class="lp-target-title">Simulate Surges &amp; Failures</h3>
+          <p class="lp-target-desc" style="margin:0;">Run multi-seed stress sweeps for STAT surges, pharmacy delays, staffing gaps, and robot outages, then export an after-action report.</p>
         </div>
       </div>
     </section>
@@ -4038,7 +4038,7 @@
         const halfSpan = Math.max(worldH * margin, (worldW * margin) / aspect) * 0.5;
         const dist = Math.max(38, halfSpan / Math.tan(fovRad / 2));
         const dir = preset === "top"
-          ? new THREE.Vector3(0, 0.98, 0.16).normalize()
+          ? new THREE.Vector3(0, 0.99, 0.10).normalize()
           : new THREE.Vector3(0.18, 0.78, 0.60).normalize();
         const endCamPos = dir.multiplyScalar(preset === "top" ? dist * 0.96 : dist);
 
@@ -4068,7 +4068,7 @@
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(w, h, false);
         if (this.hasUnitLoaded && !this.hasValidFrame) {
-          this.fitCameraToUnit("iso", false);
+          this.fitCameraToUnit("top", false);
           this.hasValidFrame = true;
         }
       }
@@ -4144,7 +4144,7 @@
 
         this.hasUnitLoaded = true;
         if (!this.hasFramedUnit && this.mountEl.clientWidth > 220 && this.mountEl.clientHeight > 220) {
-          this.fitCameraToUnit("iso", false);
+          this.fitCameraToUnit("top", false);
           this.hasFramedUnit = true;
           this.hasValidFrame = true;
         }
