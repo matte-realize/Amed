@@ -191,6 +191,19 @@ class ScenarioPromptRequest(BaseModel):
     prompt: str = Field(min_length=3, max_length=1500)
 
 
+class EmtRadioRequest(BaseModel):
+    scenario_mode: str = "chaotic"
+    situation: str = ""
+
+
+@app.post("/api/emt-radio")
+def emt_radio(req: EmtRadioRequest) -> dict[str, str]:
+    """Generate a simulated EMS radio call for a scenario (Gemini 4 Hydrogen, template fallback)."""
+    from hospital_twin.scenario_prompt import emt_radio_for
+
+    return emt_radio_for(req.scenario_mode, req.situation)
+
+
 @app.post("/api/scenario-from-prompt")
 def scenario_from_prompt_route(req: ScenarioPromptRequest) -> dict[str, Any]:
     """Free-text 'what if' -> simulation settings (Gemini 4 Hydrogen, keyword fallback)."""

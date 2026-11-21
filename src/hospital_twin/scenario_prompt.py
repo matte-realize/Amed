@@ -37,6 +37,7 @@ class ScenarioSettings(BaseModel):
     shift_hours: int = Field(ge=1, le=24, description="Shift length in hours: 4, 8 or 12.")
     run_description: str = Field(min_length=5)
     understood_as: str = Field(description="One plain sentence describing how the prompt was interpreted.")
+    emt_radio: str = Field(default="", description="A short realistic EMS radio call to the hospital if patients are incoming, else empty.")
 
 
 class ScenarioResult(BaseModel):
@@ -92,6 +93,7 @@ def _keyword_settings(prompt: str) -> ScenarioSettings:
     }.get(mode, mode.replace("_", " "))
     return ScenarioSettings(
         scenario_mode=mode, num_robots=robots, robot_profile_id=robot, ems_preposition=ems,
+        emt_radio=_RADIO_TEMPLATES.get(mode, "").format(n=3 if mode == "catastrophic_mci" else 1, eta=4) if ems else "",
         shift_hours=hours, run_description=runs,
         understood_as=f"A {label} shift of {hours} hours with {robots} robot{'s' if robots > 1 else ''}"
         + (", using ambulance pre-alerts" if ems else "") + ".",
@@ -115,7 +117,10 @@ def scenario_from_prompt(prompt: str) -> ScenarioResult:
                 "amed_compounding_arm, amed_surgical_prep_bot, mixed_fleet. run_description lists delivery runs in "
                 "plain English with frequencies, e.g. 'pharmacy pickup every 20 minutes, lab specimen drop every 30 "
                 "minutes, supply restock hourly'; make it heavier for emergencies. understood_as is one plain "
-                "sentence for a hospital manager, no jargon.\n\nQuestion: " + prompt
+                "sentence for a hospital manager, no jargon. emt_radio: if patients are arriving by ambulance or the "
+                "situation is an emergency, write the EMS radio call the unit would hear (unit number, ETA in minutes, "
+                "patient count and condition, what to prepare), 1-2 sentences, radio style; otherwise an empty string."
+                "\n\nQuestion: " + prompt
             )
             response = client.models.generate_content(
                 model=HYDROGEN_MODEL,
@@ -128,3 +133,35 @@ def scenario_from_prompt(prompt: str) -> ScenarioResult:
         except Exception as exc:
             logger.warning("Gemini 4 Hydrogen scenario parse failed, using keywords: %s", exc)
     return ScenarioResult(source="keywords", settings=_keyword_settings(prompt))
+
+
+_RADIO_TEMPLATES = {
+    "catastrophic_mci": "Medic 14 to General, mass-casualty incident, bus rollover. Transporting first {n} patients, ETA {eta} minutes, two critical with chest trauma. Request trauma bay, blood, and crash cart ready.",
+    "surge": "Medic 7 to General, inbound with {n} patients from the flu surge, ETA {eta} minutes, one in respiratory distress. Request oxygen and a monitored bed.",
+    "cardiac_arrest": "Medic 3 to General, inbound with a patient in cardiac arrest, CPR in progress, ETA {eta} minutes. Have the crash cart, defibrillator and epinephrine at the door.",
+    "contamination_quarantine": "Medic 9 to General, transporting a patient with suspected infectious outbreak exposure, ETA {eta} minutes. Request an isolation room and protective gear at entry.",
+    "crash_cart_missing": "Medic 5 to General, inbound with an unstable cardiac patient, ETA {eta} minutes. Request crash cart and defibrillator ready on arrival.",
+}
+
+
+def emt_radio_for(scenario_mode: str, situation: str = "") -> dict[str, str]:
+    """A simulated EMS radio call for a scenario: Gemini 4 Hydrogen, template fallback."""
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        try:
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(http_options=types.HttpOptions(timeout=15_000))
+            ask = (
+                "Write the EMS radio call a hospital unit would hear for this situation. Radio style, 1-2 sentences: "
+                "unit number, ETA in minutes, patient count and condition, what to have ready. Plain text only.\n"
+                f"Scenario: {scenario_mode.replace('_', ' ')}. Situation: {situation or 'none given'}"
+            )
+            text = (client.models.generate_content(model=HYDROGEN_MODEL, contents=ask).text or "").strip()
+            if text:
+                return {"source": "gemini", "transcript": text[:600]}
+        except Exception as exc:
+            logger.warning("Gemini 4 Hydrogen EMT radio failed, using template: %s", exc)
+    tpl = _RADIO_TEMPLATES.get(scenario_mode, "Medic 12 to General, inbound with {n} patient, stable, ETA {eta} minutes. Request a bed and routine admission supplies.")
+    n = 3 if scenario_mode == "catastrophic_mci" else 2 if scenario_mode == "surge" else 1
+    return {"source": "template", "transcript": tpl.format(n=n, eta=4 if scenario_mode in ("cardiac_arrest", "catastrophic_mci") else 8)}

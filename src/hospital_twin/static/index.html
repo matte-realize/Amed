@@ -549,7 +549,9 @@
         </div>
         <div id="emtDispatchBar" style="flex-basis: 100%; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--rule);">
           <span class="mono" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3);">EMT Radio</span>
-          <button type="button" class="btn sm" id="emtMicBtn" title="Listen to live EMT radio via Web Speech API">Listen EMT Radio</button>
+          <button type="button" class="btn sm" id="emtGenBtn" title="Generate a realistic EMS radio call for the current scenario">New EMT call</button>
+          <button type="button" class="btn sm" id="emtPlayBtn" title="Play the radio call out loud">▶ Play</button>
+          <button type="button" class="btn sm" id="emtMicBtn" title="Speak or record a radio call with your microphone">Mic</button>
           <input type="text" id="emtTranscriptInput" value="Medic 14 inbound ETA 4 minutes, trauma patient, start IV fluids, stat epinephrine, blood draw, and prep OR surgical tray" placeholder="Live EMT dispatch transcript..." style="flex: 1 1 320px; min-width: 220px; font-size: 12px; padding: 4px 8px; border: 1px solid var(--rule-2); background: var(--paper-2); color: var(--ink);" />
           <button type="button" class="btn sm btn-primary" id="emtDispatchBtn">Coordinate Fleet</button>
           <span id="emtDispatchResult" class="mono" style="font-size: 11px; color: var(--accent);"></span>
@@ -4513,6 +4515,10 @@
           entries.push({ t: ev.end_time_s, role: ev.agent_role, who: actWho(ev), text: `Delivered ${job} to ${to}${w > 5 ? ` (waited ${w} s)` : ""}`, done: true });
         }
       });
+      if (state.emtCall && actFilter !== "nurse" && state.simView !== "nurse") {
+        entries.push({ t: 0, role: "emt", who: "EMS radio", text: state.emtCall.text });
+        if (state.emtCall.summary) entries.push({ t: 1, role: "emt", who: "Amed", text: state.emtCall.summary });
+      }
       const key = `${state.simVersion}:${state.simView}:${actFilter}:${entries.length}`;
       if (key === actKey) return;
       actKey = key;
@@ -4523,7 +4529,7 @@
       if (countEl) countEl.textContent = `${robots} by robots · ${people} by people`;
       list.innerHTML = entries.length
         ? entries.slice(0, 60).map((e) => `
-            <li class="${e.role === "nurse" ? "nurse" : "robot"}${e.done ? " done" : ""}">
+            <li class="${e.role === "nurse" ? "nurse" : e.role === "emt" ? "emt" : "robot"}${e.done ? " done" : ""}">
               <span class="t">${formatClock(e.t)}</span>
               <span class="who">${escapeHtml(e.who)}</span>
               <span class="what">${escapeHtml(e.text)}</span>
@@ -5338,11 +5344,11 @@
       };
       emtRecognition.onend = () => {
         els.emtMicBtn.classList.remove("listening");
-        els.emtMicBtn.textContent = "Listen EMT Radio";
+        els.emtMicBtn.textContent = "Mic";
       };
       emtRecognition.onerror = () => {
         els.emtMicBtn.classList.remove("listening");
-        els.emtMicBtn.textContent = "Listen EMT Radio";
+        els.emtMicBtn.textContent = "Mic";
       };
     }
 
@@ -5456,6 +5462,7 @@
         if (res.run_description && els.runDesc) {
           els.runDesc.value = res.run_description;
         }
+        state.emtCall = { text: transcript, summary: res.summary || "" };
 
         if (state.unitMap) {
           await runSimulation();
@@ -5707,6 +5714,41 @@
       });
     }
 
+    // ---- Simulated EMS radio: Gemini writes the call, the browser reads it aloud ----
+    function speakRadio(text) {
+      try {
+        if (!("speechSynthesis" in window) || !text) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 1.08; u.pitch = 0.85;
+        const play = document.getElementById("emtPlayBtn");
+        if (play) { play.textContent = "Playing…"; u.onend = u.onerror = () => { play.textContent = "▶ Play"; }; }
+        window.speechSynthesis.speak(u);
+      } catch { /* audio is optional */ }
+    }
+
+    async function newEmtCall(situation = "") {
+      const btn = document.getElementById("emtGenBtn");
+      if (btn) { btn.disabled = true; btn.textContent = "Writing call…"; }
+      try {
+        const res = await fetch("/api/emt-radio", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scenario_mode: els.scenarioSelect?.value || state.scenarioMode, situation }),
+        });
+        const data = await res.json();
+        if (data.transcript && els.emtTranscriptInput) els.emtTranscriptInput.value = data.transcript;
+        return data.transcript || "";
+      } catch { return ""; } finally {
+        if (btn) { btn.disabled = false; btn.textContent = "New EMT call"; }
+      }
+    }
+
+    document.getElementById("emtPlayBtn")?.addEventListener("click", () => speakRadio(els.emtTranscriptInput?.value.trim()));
+    document.getElementById("emtGenBtn")?.addEventListener("click", async () => {
+      const text = await newEmtCall(document.getElementById("whatIfInput")?.value.trim() || "");
+      if (text) { speakRadio(text); await coordinateEmtDispatch(); }
+    });
+
     // "What if": an unrehearsed prompt becomes simulation settings, shown back to the user.
     document.querySelectorAll("[data-whatif]").forEach((b) => b.addEventListener("click", () => {
       const box = document.getElementById("whatIfInput");
@@ -5745,7 +5787,16 @@
         els.runDesc.value = st.run_description;
         out.innerHTML = `<b>Understood as:</b> ${escapeHtml(st.understood_as)}`;
         if (!state.unitMap) await extractUnit(true);
-        if (state.unitMap) await runSimulation();
+        state.emtCall = null;
+        if (st.emt_radio && els.emtTranscriptInput) {
+          // Incoming patients: play the EMS radio call and let the fleet coordinate around it.
+          els.emtTranscriptInput.value = st.emt_radio;
+          out.innerHTML += `<br><b>EMS radio:</b> “${escapeHtml(st.emt_radio)}”`;
+          speakRadio(st.emt_radio);
+          await coordinateEmtDispatch();
+        } else if (state.unitMap) {
+          await runSimulation();
+        }
       } catch (err) {
         out.textContent = `Couldn't set that up: ${err.message}`;
       } finally {
