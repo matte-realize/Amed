@@ -118,6 +118,9 @@ async def extract_unit(request: Request) -> dict[str, Any]:
     meters_per_pixel = 0.05
     uploaded_bytes: Optional[bytes] = None
     uploaded_suffix = ".png"
+    spec_bytes: Optional[bytes] = None
+    spec_suffix = ".txt"
+    use_sample_spec = False
 
     if "application/json" in content_type:
         try:
@@ -128,6 +131,7 @@ async def extract_unit(request: Request) -> dict[str, Any]:
             raise HTTPException(status_code=400, detail="JSON body must be an object.")
         plan_id = body.get("plan_id")
         use_fallback = _parse_bool(body.get("use_fallback", False))
+        use_sample_spec = _parse_bool(body.get("use_sample_spec", False))
         if body.get("meters_per_pixel") is not None:
             meters_per_pixel = float(body["meters_per_pixel"])
     else:
@@ -136,6 +140,7 @@ async def extract_unit(request: Request) -> dict[str, Any]:
         if isinstance(raw_plan_id, str) and raw_plan_id.strip():
             plan_id = raw_plan_id.strip()
         use_fallback = _parse_bool(form.get("use_fallback", False))
+        use_sample_spec = _parse_bool(form.get("use_sample_spec", False))
         raw_mpp = form.get("meters_per_pixel")
         if isinstance(raw_mpp, str) and raw_mpp.strip():
             meters_per_pixel = float(raw_mpp)
@@ -146,6 +151,12 @@ async def extract_unit(request: Request) -> dict[str, Any]:
             suffix = Path(filename).suffix.lower()
             if suffix in IMAGE_EXTENSIONS:
                 uploaded_suffix = suffix
+        spec_upload = form.get("spec_file")
+        if spec_upload is not None and hasattr(spec_upload, "read"):
+            spec_bytes = await spec_upload.read()
+            spec_name = getattr(spec_upload, "filename", None) or "spec.txt"
+            if Path(spec_name).suffix.lower() in {".pdf", ".txt", ".md", ".csv", ".json"}:
+                spec_suffix = Path(spec_name).suffix.lower()
 
     if use_fallback:
         try:
@@ -166,6 +177,7 @@ async def extract_unit(request: Request) -> dict[str, Any]:
         }
 
     temp_path: Optional[str] = None
+    temp_spec_path: Optional[str] = None
     try:
         if uploaded_bytes:
             with tempfile.NamedTemporaryFile(suffix=uploaded_suffix, delete=False) as tmp:
@@ -180,7 +192,16 @@ async def extract_unit(request: Request) -> dict[str, Any]:
                 detail="Provide a floor plan file upload, a valid plan_id, or set use_fallback=true.",
             )
 
-        raw_unit = extract_unit_map(image_path, meters_per_pixel=meters_per_pixel)
+        spec_path: Optional[str] = None
+        if spec_bytes:
+            with tempfile.NamedTemporaryFile(suffix=spec_suffix, delete=False) as stmp:
+                stmp.write(spec_bytes)
+                temp_spec_path = stmp.name
+            spec_path = temp_spec_path
+        elif use_sample_spec and (DEMO_DIR / "sample_facility_spec.txt").is_file():
+            spec_path = str(DEMO_DIR / "sample_facility_spec.txt")
+
+        raw_unit = extract_unit_map(image_path, meters_per_pixel=meters_per_pixel, spec_path=spec_path)
         verified_unit, stats = verify_unit_map(image_path, raw_unit)
         return {
             "unit_map": verified_unit.model_dump(),
@@ -192,11 +213,12 @@ async def extract_unit(request: Request) -> dict[str, Any]:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Extraction failed: {exc}") from exc
     finally:
-        if temp_path and os.path.exists(temp_path):
-            try:
-                os.unlink(temp_path)
-            except OSError:
-                pass
+        for p in (temp_path, temp_spec_path):
+            if p and os.path.exists(p):
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass
 
 
 @app.post("/api/simulate", response_model=SimulationComparison)

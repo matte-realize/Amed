@@ -9,7 +9,7 @@ import json
 import os
 import threading
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 from dotenv import load_dotenv
 from google import genai
@@ -157,12 +157,24 @@ def crop_door_region(
 def extract_unit_map(
     image_path: str,
     meters_per_pixel: float = 0.05,
+    spec_path: Optional[str] = None,
 ) -> UnitMap:
-    """Extract rooms and doors from a floor plan image using Gemini 4 Neon."""
+    """Extract rooms and doors from a floor plan image (+ optional spec doc) using Gemini 4 Neon."""
     with Image.open(image_path) as img:
         rgb_img = img.convert("RGB")
         width, height = rgb_img.size
         img_bytes = _image_to_bytes_png(rgb_img)
+
+    spec_parts: list[Any] = []
+    if spec_path:
+        sp = Path(spec_path)
+        if sp.is_file():
+            ext = sp.suffix.lower()
+            if ext == ".pdf":
+                spec_parts.append(types.Part.from_bytes(data=sp.read_bytes(), mime_type="application/pdf"))
+            else:
+                spec_text = sp.read_text(encoding="utf-8", errors="replace")[:12000]
+                spec_parts.append(f"SUPPORTING FACILITY SPEC DOCUMENT ({sp.name}):\n{spec_text}")
 
     prompt = (
         f"Analyze this architectural floor plan image ({width}x{height} pixels).\n"
@@ -187,12 +199,14 @@ def extract_unit_map(
     )
 
     client = _get_client()
+    contents: list[Any] = [
+        types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
+        *spec_parts,
+        prompt,
+    ]
     response = client.models.generate_content(
         model=NEON_MODEL,
-        contents=[
-            types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
-            prompt,
-        ],
+        contents=contents,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=_ExtractedUnitSchema,

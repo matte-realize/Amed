@@ -1,0 +1,15 @@
+FACILITY ARCHITECTURAL & LOGISTICS SPEC — WEST WING MED-SURG UNIT
+Scale Reference: 1 pixel = 0.05 meters (20 px/m)
+Corridor Width: Main Corridor = 3.0m clear width, unobstructed AMR transit lane
+
+DOOR HARDWARE & CLEARANCE SCHEDULE:
+- Door to Medication Room: 1.20m clear width, badge-locked swing door (requires auto-door actuator for unassisted robot entry)
+- Door to Supply Room: 1.25m clear width, manual double-leaf door (requires exterior staging bay or auto-opener)
+- Door to Lab Drop: 1.10m clear width, open alcove
+- Doors to Patient Rooms 101, 103: 0.85m clear width (below 0.90m AMR chassis threshold — human-only entry)
+- Doors to Patient Rooms 102, 104: 1.05m clear width, clinical bedside isolation (corridor-threshold drop only)
+
+CLINICAL & WORKFLOW RESTRICTIONS:
+- Patient Rooms 101-104: Bedside clinical care only; no autonomous robot entry permitted.
+- Nurse Station: Shared clinical hub; robots dock at outer counter pad only.
+- Medication Room / Supply Room / Lab Drop: Assisted zones until badge-actuated door openers and exterior pass-through lockers are installed.
