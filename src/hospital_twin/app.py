@@ -148,7 +148,10 @@ async def extract_unit(request: Request) -> dict[str, Any]:
                 uploaded_suffix = suffix
 
     if use_fallback:
-        unit_map = load_fallback_unit()
+        try:
+            unit_map = load_fallback_unit(plan_id)
+        except TypeError:
+            unit_map = load_fallback_unit()
         stats = {
             "kept": len(unit_map.rooms) + len(unit_map.doors),
             "dropped": 0,

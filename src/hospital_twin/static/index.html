@@ -402,6 +402,10 @@
     .highlight-card.tier-autonomous { border-left-color: #10b981; }
     .highlight-card.tier-assisted { border-left-color: #f59e0b; }
     .highlight-card.tier-human_only { border-left-color: #e11d48; }
+    .highlight-card.tier-shift-summary {
+      border-left-color: #2563eb;
+      background: linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%);
+    }
     .highlight-card .hc-top {
       display: flex;
       justify-content: space-between;
@@ -427,6 +431,7 @@
     .highlight-card.tier-autonomous .hc-pill { background: #d1fae5; color: #065f46; }
     .highlight-card.tier-assisted .hc-pill { background: #fef3c7; color: #92400e; }
     .highlight-card.tier-human_only .hc-pill { background: #ffe4e6; color: #9f1239; }
+    .highlight-card.tier-shift-summary .hc-pill { background: #dbeafe; color: #1e40af; }
     .highlight-card .hc-reason {
       font-size: 12px;
       color: var(--muted);
@@ -808,6 +813,7 @@
           <div class="cam-actions" id="camActionsSingle">
             <button type="button" class="cam-btn" data-cam="iso">3D Iso</button>
             <button type="button" class="cam-btn" data-cam="top">Top Tilt</button>
+            <button type="button" class="cam-btn" data-cam="reset">Reset 3D View</button>
           </div>
           <div class="hover-tip" id="hoverTip"></div>
         </div>
@@ -857,6 +863,7 @@
             <div class="cam-actions" id="camActionsDual">
               <button type="button" class="cam-btn" data-cam="iso">3D Iso</button>
               <button type="button" class="cam-btn" data-cam="top">Top Tilt</button>
+              <button type="button" class="cam-btn" data-cam="reset">Reset 3D View</button>
             </div>
           </div>
         </div>
@@ -997,8 +1004,10 @@
     }
 
     function updateAutonomySummaryChip() {
+      const hlContainer = document.getElementById("autonomyHighlights");
       if (!state.unitMap || !state.unitMap.rooms) {
         els.autonomySummaryChip.classList.add("hidden");
+        if (hlContainer) hlContainer.classList.add("hidden");
         return;
       }
       let autoCount = 0;
@@ -1020,78 +1029,114 @@
         `<span style="color:#94a3b8">· ${passableDoors}/${totalDoors} Passable Doors</span>`;
       els.autonomySummaryChip.classList.remove("hidden");
 
+      renderAutonomyHighlights();
+    }
+
+    function renderAutonomyHighlights() {
       const hlContainer = document.getElementById("autonomyHighlights");
-      if (hlContainer) {
-        const autoRooms = state.unitMap.rooms.filter((r) => (r.autonomy_tier || "autonomous") === "autonomous");
-        const assistRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "assisted");
-        const humanRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "human_only");
-        const narrowDoors = (state.unitMap.doors || []).filter((d) => d.robot_passable === false);
-
-        const cards = [];
-        if (autoRooms.length > 0) {
-          const sample = autoRooms[0];
-          cards.push({
-            kind: "room",
-            id: sample.id,
-            tier: "autonomous",
-            pill: `${autoRooms.length} Autonomous Zones`,
-            title: autoRooms.map((r) => r.label).slice(0, 3).join(", ") + (autoRooms.length > 3 ? "…" : ""),
-            reason: sample.autonomy_reason || "Full courier-robot transit & docking supported.",
-          });
-        }
-        if (assistRooms.length > 0) {
-          const sample = assistRooms[0];
-          cards.push({
-            kind: "room",
-            id: sample.id,
-            tier: "assisted",
-            pill: `${assistRooms.length} Assisted Hub`,
-            title: assistRooms.map((r) => r.label).join(", "),
-            reason: sample.autonomy_reason || "Shared human-robot handoff zone.",
-          });
-        }
-        if (humanRooms.length > 0) {
-          const sample = humanRooms[0];
-          cards.push({
-            kind: "room",
-            id: sample.id,
-            tier: "human_only",
-            pill: `${humanRooms.length} Human-Only`,
-            title: humanRooms.map((r) => r.label).slice(0, 3).join(", ") + (humanRooms.length > 3 ? "…" : ""),
-            reason: sample.autonomy_reason || "Clinical bedside care; robots stop at corridor threshold.",
-          });
-        }
-        if (narrowDoors.length > 0) {
-          const d0 = narrowDoors[0];
-          cards.push({
-            kind: "door",
-            id: d0.id,
-            tier: "human_only",
-            pill: `${narrowDoors.length} Narrow Doors (<0.9m)`,
-            title: narrowDoors.map((d) => `${d.id} (${(d.width_m || 0.85).toFixed(2)}m)`).slice(0, 2).join(", "),
-            reason: "Clearance below 0.90m robot threshold — flagged as physical bottleneck.",
-          });
-        }
-
-        hlContainer.innerHTML = cards
-          .map(
-            (c) => `
-            <div class="highlight-card tier-${c.tier}" data-pick-kind="${c.kind}" data-pick-id="${escapeHtml(c.id)}">
-              <div class="hc-top">
-                <span class="hc-title">${escapeHtml(c.title)}</span>
-                <span class="hc-pill">${escapeHtml(c.pill)}</span>
-              </div>
-              <div class="hc-reason">${escapeHtml(c.reason)}</div>
-            </div>`
-          )
-          .join("");
-        hlContainer.querySelectorAll(".highlight-card").forEach((card) => {
-          card.addEventListener("click", () => {
-            setSelection({ kind: card.dataset.pickKind, id: card.dataset.pickId });
-          });
-        });
-        hlContainer.classList.remove("hidden");
+      if (!hlContainer) return;
+      if (!state.unitMap || !state.unitMap.rooms) {
+        hlContainer.classList.add("hidden");
+        return;
       }
+
+      const autoRooms = state.unitMap.rooms.filter((r) => (r.autonomy_tier || "autonomous") === "autonomous");
+      const assistRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "assisted");
+      const humanRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "human_only");
+      const narrowDoors = (state.unitMap.doors || []).filter((d) => d.robot_passable === false);
+
+      const cards = [];
+      if (autoRooms.length > 0) {
+        const sample = autoRooms[0];
+        cards.push({
+          kind: "room",
+          id: sample.id,
+          tier: "autonomous",
+          pill: `${autoRooms.length} Autonomous Zones`,
+          title: autoRooms.map((r) => r.label).slice(0, 3).join(", ") + (autoRooms.length > 3 ? "…" : ""),
+          reason: sample.autonomy_reason || "Full courier-robot transit & docking supported.",
+        });
+      }
+      if (assistRooms.length > 0) {
+        const sample = assistRooms[0];
+        cards.push({
+          kind: "room",
+          id: sample.id,
+          tier: "assisted",
+          pill: `${assistRooms.length} Assisted Hub`,
+          title: assistRooms.map((r) => r.label).join(", "),
+          reason: sample.autonomy_reason || "Shared human-robot handoff zone.",
+        });
+      }
+      if (humanRooms.length > 0) {
+        const sample = humanRooms[0];
+        cards.push({
+          kind: "room",
+          id: sample.id,
+          tier: "human_only",
+          pill: `${humanRooms.length} Human-Only`,
+          title: humanRooms.map((r) => r.label).slice(0, 3).join(", ") + (humanRooms.length > 3 ? "…" : ""),
+          reason: sample.autonomy_reason || "Clinical bedside care; robots stop at corridor threshold.",
+        });
+      }
+      if (narrowDoors.length > 0) {
+        const d0 = narrowDoors[0];
+        cards.push({
+          kind: "door",
+          id: d0.id,
+          tier: "human_only",
+          pill: `${narrowDoors.length} Narrow Doors (<0.9m)`,
+          title: narrowDoors.map((d) => `${d.id} (${(d.width_m || 0.85).toFixed(2)}m)`).slice(0, 2).join(", "),
+          reason: "Clearance below 0.90m robot threshold — flagged as physical bottleneck.",
+        });
+      }
+
+      // Live "Autonomized vs. Human-Only Trips" summary card after Run Shift completes
+      if (state.comparison && state.comparison.robot_assisted) {
+        const ra = state.comparison.robot_assisted;
+        const assump = state.comparison.assumptions || {};
+        const events = ra.events || [];
+        const robotEventTrips = events.filter((e) => e.agent_role === "robot").length;
+        const nurseEventTrips = events.filter((e) => e.agent_role === "nurse").length;
+        const autoTrips = Number(assump.autonomized_trips ?? ra.autonomized_trips ?? robotEventTrips);
+        const humanTrips = Number(assump.human_only_trips ?? ra.human_only_trips ?? nurseEventTrips);
+        const totalTrips = Math.max(1, autoTrips + humanTrips);
+        const offloadPct = Math.round((autoTrips / totalTrips) * 100);
+        const savedMin = Number(state.comparison.nurse_minutes_saved || 0).toFixed(1);
+        const focusTarget = (assistRooms[0] || autoRooms[0] || state.unitMap.rooms[0])?.id || "";
+
+        cards.push({
+          kind: focusTarget ? "room" : "reset",
+          id: focusTarget,
+          tier: "shift-summary",
+          pill: `${offloadPct}% Offloaded · +${savedMin}m Saved`,
+          title: "Autonomized vs. Human-Only Trips",
+          reason: `${autoTrips} trips offloaded to courier robots vs. ${humanTrips} nurse-handled trips — saving ${savedMin} nurse walk min this shift.`,
+        });
+      }
+
+      hlContainer.innerHTML = cards
+        .map(
+          (c) => `
+          <div class="highlight-card tier-${c.tier}" data-pick-kind="${c.kind}" data-pick-id="${escapeHtml(c.id)}">
+            <div class="hc-top">
+              <span class="hc-title">${escapeHtml(c.title)}</span>
+              <span class="hc-pill">${escapeHtml(c.pill)}</span>
+            </div>
+            <div class="hc-reason">${escapeHtml(c.reason)}</div>
+          </div>`
+        )
+        .join("");
+      hlContainer.querySelectorAll(".highlight-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          if (card.dataset.pickKind === "reset" || !card.dataset.pickId) {
+            reset3DCameras();
+          } else {
+            setSelection({ kind: card.dataset.pickKind, id: card.dataset.pickId });
+          }
+        });
+      });
+      hlContainer.classList.remove("hidden");
     }
 
     function renderInspectorCards() {
@@ -1181,11 +1226,58 @@
       els.inspectorDual.classList.toggle("hidden", singleActive);
     }
 
+    function getSelectionPixelPoint(sel) {
+      if (!sel || !state.unitMap) return null;
+      if (sel.kind === "room") {
+        const room = (state.unitMap.rooms || []).find((r) => r.id === sel.id);
+        if (!room) return null;
+        if (room.centroid) return { x: room.centroid.x, y: room.centroid.y };
+        if (room.polygon && room.polygon.length > 0) {
+          return {
+            x: room.polygon.reduce((s, p) => s + p.x, 0) / room.polygon.length,
+            y: room.polygon.reduce((s, p) => s + p.y, 0) / room.polygon.length,
+          };
+        }
+      } else if (sel.kind === "door") {
+        const door = (state.unitMap.doors || []).find((d) => d.id === sel.id);
+        if (door && door.position) return { x: door.position.x, y: door.position.y };
+      }
+      return null;
+    }
+
+    function focusSelectionIn3D(sel) {
+      if (state.viewMode !== "3d" || !state.threeReady || !sel) return;
+      const pxPt = getSelectionPixelPoint(sel);
+      if (!pxPt) return;
+      if (!els.singleView.classList.contains("hidden") && twinSingle) {
+        const w = twinSingle.pxToWorld(pxPt.x, pxPt.y);
+        twinSingle.focusOnWorldPoint(w.x, w.z);
+      } else if (twinLeft && twinRight) {
+        const w = twinLeft.pxToWorld(pxPt.x, pxPt.y);
+        twinLeft.focusOnWorldPoint(w.x, w.z);
+        twinRight.focusOnWorldPoint(w.x, w.z);
+      }
+    }
+
+    function reset3DCameras() {
+      state.selectedSelection = null;
+      renderInspectorCards();
+      if (!els.singleView.classList.contains("hidden") && twinSingle) {
+        twinSingle.setPresetCamera("reset");
+        drawSingleMap();
+      } else if (twinLeft && twinRight) {
+        twinLeft.setPresetCamera("reset");
+        twinRight.setPresetCamera("reset");
+        renderSimulationFrame();
+      }
+    }
+
     function setSelection(sel) {
       state.selectedSelection = sel;
       renderInspectorCards();
       if (!els.singleView.classList.contains("hidden")) drawSingleMap();
       else renderSimulationFrame();
+      if (sel) focusSelectionIn3D(sel);
     }
 
     // =========================================================================
@@ -1657,10 +1749,15 @@
 
         this.raycaster = new THREE.Raycaster();
         this.pointerDownPos = null;
+        this.focusAnim = null;
 
         this.renderer.domElement.addEventListener("pointerdown", (e) => {
           this.pointerDownPos = { x: e.clientX, y: e.clientY };
+          this.focusAnim = null;
         });
+        this.renderer.domElement.addEventListener("wheel", () => {
+          this.focusAnim = null;
+        }, { passive: true });
         this.renderer.domElement.addEventListener("pointerup", (e) => {
           if (!this.pointerDownPos) return;
           const dist = Math.hypot(e.clientX - this.pointerDownPos.x, e.clientY - this.pointerDownPos.y);
@@ -1704,15 +1801,34 @@
         };
       }
 
+      animateCameraTo(endTarget, endCamPos, duration = 520) {
+        this.focusAnim = {
+          startTarget: this.controls.target.clone(),
+          endTarget: endTarget.clone(),
+          startCamPos: this.camera.position.clone(),
+          endCamPos: endCamPos.clone(),
+          startTime: performance.now(),
+          duration,
+        };
+      }
+
+      focusOnWorldPoint(wx, wz) {
+        const dx = this.camera.position.x - this.controls.target.x;
+        const dz = this.camera.position.z - this.controls.target.z;
+        const hLen = Math.hypot(dx, dz);
+        const ux = hLen > 3 ? dx / hLen : 0;
+        const uz = hLen > 3 ? dz / hLen : 1;
+        const endTarget = new THREE.Vector3(wx, 1.2, wz);
+        const endCamPos = new THREE.Vector3(wx + ux * 36, 36, wz + uz * 36);
+        this.animateCameraTo(endTarget, endCamPos, 520);
+      }
+
       setPresetCamera(preset) {
-        if (preset === "top") {
-          this.camera.position.set(0, 92, 16);
-        } else {
-          this.camera.position.set(0, 66, 66);
-        }
-        this.controls.target.set(0, 0, 0);
-        this.controls.update();
-        this.renderOnce();
+        const endTarget = new THREE.Vector3(0, 0, 0);
+        const endCamPos = preset === "top"
+          ? new THREE.Vector3(0, 92, 16)
+          : new THREE.Vector3(0, 66, 66);
+        this.animateCameraTo(endTarget, endCamPos, 480);
       }
 
       resize() {
@@ -2093,6 +2209,7 @@
           }
         });
 
+        this.stepFocusAnim(performance.now());
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
       }
@@ -2101,7 +2218,17 @@
         this.renderer.render(this.scene, this.camera);
       }
 
-      tickControlsAndRender() {
+      stepFocusAnim(now) {
+        if (!this.focusAnim) return;
+        const p = Math.min(1, (now - this.focusAnim.startTime) / this.focusAnim.duration);
+        const ease = 1 - Math.pow(1 - p, 3);
+        this.controls.target.lerpVectors(this.focusAnim.startTarget, this.focusAnim.endTarget, ease);
+        this.camera.position.lerpVectors(this.focusAnim.startCamPos, this.focusAnim.endCamPos, ease);
+        if (p >= 1) this.focusAnim = null;
+      }
+
+      tickControlsAndRender(now = performance.now()) {
+        this.stepFocusAnim(now);
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
       }
@@ -2113,17 +2240,17 @@
       const loop = () => {
         threeLoopId = requestAnimationFrame(loop);
         if (state.viewMode !== "3d" || !state.threeReady) return;
-        // Animate active 3D reconstruction rise-up
+        // Animate active 3D reconstruction rise-up & smooth camera focus lerp
         const now = performance.now();
         if (twinSingle && !els.singleView.classList.contains("hidden")) {
           animateReconstructionGroup(twinSingle.staticGroup, now);
-          twinSingle.tickControlsAndRender();
+          twinSingle.tickControlsAndRender(now);
         }
         if (twinLeft && twinRight && !els.dualView.classList.contains("hidden")) {
           animateReconstructionGroup(twinLeft.staticGroup, now);
           animateReconstructionGroup(twinRight.staticGroup, now);
-          twinLeft.tickControlsAndRender();
-          twinRight.tickControlsAndRender();
+          twinLeft.tickControlsAndRender(now);
+          twinRight.tickControlsAndRender(now);
         }
       };
       threeLoopId = requestAnimationFrame(loop);
@@ -2660,7 +2787,7 @@
           res = await fetch("/api/extract", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ use_fallback: true }),
+            body: JSON.stringify({ use_fallback: true, plan_id: state.selectedPlanId }),
           });
         } else {
           const form = new FormData();
@@ -2685,7 +2812,8 @@
 
         if (useFallback && !state.bgImage) {
           try {
-            state.bgImage = await loadImageFromUrl("/api/plans/sample_unit/image");
+            const fallbackPlan = state.selectedPlanId || "sample_unit";
+            state.bgImage = await loadImageFromUrl(`/api/plans/${encodeURIComponent(fallbackPlan)}/image`);
             state.bgVersion++;
           } catch {
             state.bgImage = null;
@@ -2776,6 +2904,7 @@
         els.playbackBar.classList.remove("hidden");
         els.assumptionsBar.classList.remove("hidden");
         renderInspectorCards();
+        renderAutonomyHighlights();
 
         if (state.viewMode === "3d" && state.threeReady && twinLeft && twinRight) {
           twinLeft.resize();
@@ -2862,6 +2991,10 @@
     document.querySelectorAll("[data-cam]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const preset = btn.dataset.cam;
+        if (preset === "reset") {
+          reset3DCameras();
+          return;
+        }
         if (!els.singleView.classList.contains("hidden") && twinSingle) {
           twinSingle.setPresetCamera(preset);
         } else if (twinLeft && twinRight) {
@@ -2871,7 +3004,13 @@
       });
     });
 
-    els.planSelect.addEventListener("change", previewSelectedPlan);
+    els.planSelect.addEventListener("change", async () => {
+      state.comparison = null;
+      await previewSelectedPlan();
+      if (state.selectedPlanId) {
+        extractUnit(true);
+      }
+    });
     els.fileUpload.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2952,6 +3091,7 @@
       els.assumptionsBar.classList.add("hidden");
       els.singleView.classList.remove("hidden");
       setStep(state.unitMap ? 2 : 1);
+      renderAutonomyHighlights();
       applyViewVisibility();
     });
 
