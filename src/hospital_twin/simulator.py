@@ -44,6 +44,7 @@ ScenarioMode = Literal[
     "crash_cart_missing",
     "cardiac_arrest",
     "contamination_quarantine",
+    "catastrophic_mci",
 ]
 
 
@@ -70,6 +71,7 @@ class _TripRequest:
     robot_route: _PlannedRoute
     speed_factor: float = 1.0
     delay_s: float = 0.0
+    nurse_delay_s: float = 0.0
     is_stat: bool = False
 
 
@@ -166,6 +168,7 @@ def _generate_trip_requests(
         t = 0.0
         while t < shift_duration_s:
             effective_robot_route = robot_route
+            nurse_delay_s = 0.0
             if scenario_mode == "routine":
                 arrival_s = t
                 speed_factor = 1.0
@@ -206,6 +209,11 @@ def _generate_trip_requests(
                 arrival_s = t
                 speed_factor = rng.uniform(0.80, 1.0)
                 delay_s = rng.uniform(45.0, 120.0) if rng.random() < 0.35 else 0.0
+            elif scenario_mode == "catastrophic_mci":
+                arrival_s = t
+                speed_factor = rng.uniform(0.85, 1.05)
+                delay_s = 0.0
+                nurse_delay_s = rng.uniform(120.0, 300.0)
             else:
                 jitter = rng.uniform(-0.20 * period_s, 0.25 * period_s)
                 arrival_s = min(max(0.0, t + jitter), max(0.0, shift_duration_s - 1.0))
@@ -221,12 +229,13 @@ def _generate_trip_requests(
                     robot_route=effective_robot_route,
                     speed_factor=speed_factor,
                     delay_s=delay_s,
+                    nurse_delay_s=nurse_delay_s,
                     is_stat=False,
                 )
             )
             t += period_s
 
-    if scenario_mode in ("chaotic", "surge"):
+    if scenario_mode in ("chaotic", "surge", "catastrophic_mci"):
         requests.extend(
             _generate_stat_bursts(
                 unit=unit,
@@ -273,6 +282,11 @@ def _generate_stat_bursts(
         num_clusters = max(2, total_stat // 3)
         delay_prob = 0.25
         max_delay = 40.0
+    elif scenario_mode == "catastrophic_mci":
+        total_stat = 8
+        num_clusters = 2
+        delay_prob = 0.0
+        max_delay = 0.0
     else:  # surge
         total_stat = max(8, int(round(shift_hours * 3.0)))
         num_clusters = max(3, total_stat // 4)
@@ -320,6 +334,9 @@ def _generate_stat_bursts(
         )
         speed_factor = rng.uniform(0.85, 1.15)
         delay_s = rng.uniform(10.0, max_delay) if rng.random() < delay_prob else 0.0
+        nurse_delay_s = (
+            rng.uniform(120.0, 300.0) if scenario_mode == "catastrophic_mci" else 0.0
+        )
         stat_requests.append(
             _TripRequest(
                 arrival_time_s=arrival_s,
@@ -327,6 +344,7 @@ def _generate_stat_bursts(
                 robot_route=robot_route,
                 speed_factor=speed_factor,
                 delay_s=delay_s,
+                nurse_delay_s=nurse_delay_s,
                 is_stat=True,
             )
         )
@@ -400,6 +418,7 @@ def _run_single_mode(
     handoff_seconds: float = DEFAULT_HANDOFF_SECONDS,
     uncollected_flag_s: float = UNCOLLECTED_FLAG_SECONDS,
     robot_profile_id: str = "aethon_tug",
+    scenario_mode: ScenarioMode = "routine",
 ) -> ShiftSummary:
     env = simpy.Environment()
     events: list[TripEvent] = []
@@ -407,10 +426,11 @@ def _run_single_mode(
     order_seq = 0
     batch_seq = 0
 
-    nurse_pool = simpy.FilterStore(env, capacity=DEFAULT_NUM_NURSES)
+    effective_num_nurses = 1 if scenario_mode == "catastrophic_mci" else DEFAULT_NUM_NURSES
+    nurse_pool = simpy.FilterStore(env, capacity=effective_num_nurses)
     nurse_loc: dict[str, str | None] = {}
     nurse_counts: dict[str, int] = {}
-    for i in range(DEFAULT_NUM_NURSES):
+    for i in range(effective_num_nurses):
         nid = f"nurse-{i + 1}"
         nurse_pool.put(nid)
         nurse_loc[nid] = None
@@ -487,10 +507,11 @@ def _run_single_mode(
                     )
                 )
 
+            effective_delay_s = req.delay_s + (req.nurse_delay_s if role == "nurse" else 0.0)
             transit_s = (
-                (route.distance_m / effective_speed) + req.delay_s
+                (route.distance_m / effective_speed) + effective_delay_s
                 if route.distance_m > 0
-                else req.delay_s
+                else effective_delay_s
             )
             delivery_handoff = handoff_seconds if use_robot else 0.0
             step_duration_s = load_handoff + transit_s + delivery_handoff
@@ -639,6 +660,7 @@ def simulate_shift(
                 robot_route=req.robot_route,
                 speed_factor=req.speed_factor,
                 delay_s=round(req.delay_s * 0.3, 3) if req.is_stat else req.delay_s,
+                nurse_delay_s=round(req.nurse_delay_s * 0.3, 3) if req.is_stat else req.nurse_delay_s,
                 is_stat=req.is_stat,
             )
             for req in requests
@@ -655,6 +677,7 @@ def simulate_shift(
         robot_speed_mps=robot_speed_mps,
         handoff_seconds=handoff_seconds,
         robot_profile_id=robot_profile_id,
+        scenario_mode=scenario_mode,
     )
     robot_assisted = _run_single_mode(
         requests=requests,
@@ -667,6 +690,7 @@ def simulate_shift(
         robot_speed_mps=robot_speed_mps,
         handoff_seconds=handoff_seconds,
         robot_profile_id=robot_profile_id,
+        scenario_mode=scenario_mode,
     )
 
     nurse_minutes_saved = round(

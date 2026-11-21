@@ -6,7 +6,7 @@
   <title>Amed — Hospital robotics world model</title>
   <meta name="description" content="Test hospital courier robots on your own floor plan: Gemini 4 reads the unit, checks every doorway against the robot, and simulates a nursing shift with and without the fleet." />
   <meta name="theme-color" content="#fbf8f5" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23fbf8f5'/%3E%3Crect x='1.5' y='1.5' width='29' height='29' fill='none' stroke='%2317262b' stroke-width='2'/%3E%3Cpath d='M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z' fill='%230b6e66'/%3E%3C/svg%3E" />
+  <link rel="icon" type="image/svg+xml" href="/static/amed-mark.svg" />
   <script type="importmap">
   {
     "imports": {
@@ -21,15 +21,18 @@
   <link rel="stylesheet" href="/static/amed.css" />
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="amedMark" viewBox="0 0 32 32">
+      <path d="M11.5 3.5h9v8h8v9h-8v8h-9v-8h-8v-9h8z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M5.5 16H11l1.8-3.6 2.7 7.2 2-4.6H22" fill="none" stroke="#cf3f55" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="22.5" y="13.5" width="5" height="5" fill="#0b6e66"/>
+    </symbol>
+  </svg>
   <!-- Site nav -->
   <nav class="site-nav">
     <div class="site-nav-inner">
       <a class="brand" href="#" data-page-tab-link="overview" aria-label="Amed home">
-        <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <rect x="1.5" y="1.5" width="29" height="29" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/>
-          <path d="M2 24h6l2-4 3 8 2-5h15" stroke="#cf3f55" stroke-width="1.5" fill="none"/>
-        </svg>
+        <svg class="brand-mark" aria-hidden="true"><use href="#amedMark"/></svg>
         <span class="brand-title">Amed</span>
         <span class="brand-sub">Robot planning for hospitals</span>
       </a>
@@ -119,6 +122,20 @@
       </figure>
     </header>
 
+    <!-- Why it matters -->
+    <section id="research" class="lp-section" aria-label="Hospital logistics benchmarks">
+      <div class="lp-head">
+        <span class="eyebrow">Why it matters</span>
+        <h2>Every trip down the hall is time away from a patient.</h2>
+      </div>
+      <div class="lp-stats">
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">30.1%</div><div class="lp-stat-lbl">of in-hospital cardiac arrests see a delay before defibrillation</div></div>
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">−5% / min</div><div class="lp-stat-lbl">lower survival for every minute a child’s epinephrine is delayed</div></div>
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">$661k</div><div class="lp-stat-lbl">average malpractice payout for a delayed diagnosis</div></div>
+        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">~10,000 / wk</div><div class="lp-stat-lbl">medication orders a week at a typical 200-bed hospital</div></div>
+      </div>
+    </section>
+
     <!-- Nurses only vs with robots -->
     <section id="compare" class="lp-section">
       <div class="lp-head">
@@ -130,21 +147,6 @@
         <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
         <p class="cmp-ctx">Running a sample shift…</p>
       </div>
-    </section>
-
-    <!-- What you get -->
-    <section id="outcomes" class="lp-section">
-      <div class="lp-head">
-        <span class="eyebrow">What you walk away with</span>
-        <h2>A building plan and a business case, from one floor plan.</h2>
-        <p class="lp-lede">Facilities gets a list of what to change. Finance gets the hours saved and how many robots are worth buying. Nursing gets to see the shift before it happens.</p>
-      </div>
-      <ol class="lp-steps four">
-        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For facilities</span><h3>A door-by-door fix list</h3><p>Every doorway measured against the robot you picked, with the ones that are too narrow called out so you know exactly what to widen or re-hang.</p></div></li>
-        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For the floor</span><h3>Where robots can go</h3><p>Each room marked as robot-ready, needs a hand-off point, or staff only, so you can plan drop-off spots before anything is installed.</p></div></li>
-        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For finance</span><h3>Hours back, per shift</h3><p>Nurse walking time with and without robots on the same unit and the same orders, so the savings are about your building, not a brochure.</p></div></li>
-        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For planning</span><h3>How many robots to buy</h3><p>The same shift run with one, two and three robots on good days and bad, showing the point where adding another stops paying off.</p></div></li>
-      </ol>
     </section>
 
     <!-- In-room automation -->
@@ -161,6 +163,21 @@
         <span class="who-gap"><i></i>R&amp;D gap</span>
       </div>
       <div class="ra-grid" id="roomAutomationGrid"></div>
+    </section>
+
+    <!-- What you get -->
+    <section id="outcomes" class="lp-section">
+      <div class="lp-head">
+        <span class="eyebrow">What you walk away with</span>
+        <h2>A building plan and a business case, from one floor plan.</h2>
+        <p class="lp-lede">Facilities gets a list of what to change. Finance gets the hours saved and how many robots are worth buying. Nursing gets to see the shift before it happens.</p>
+      </div>
+      <ol class="lp-steps four">
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For facilities</span><h3>A door-by-door fix list</h3><p>Every doorway measured against the robot you picked, with the ones that are too narrow called out so you know exactly what to widen or re-hang.</p></div></li>
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For the floor</span><h3>Where robots can go</h3><p>Each room marked as robot-ready, needs a hand-off point, or staff only, so you can plan drop-off spots before anything is installed.</p></div></li>
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For finance</span><h3>Hours back, per shift</h3><p>Nurse walking time with and without robots on the same unit and the same orders, so the savings are about your building, not a brochure.</p></div></li>
+        <li><div class="sheet"><span class="tk tl"></span><span class="tk br"></span><span class="step-n">For planning</span><h3>How many robots to buy</h3><p>The same shift run with one, two and three robots on good days and bad, showing the point where adding another stops paying off.</p></div></li>
+      </ol>
     </section>
 
     <!-- Robot hardware inspector -->
@@ -218,89 +235,6 @@
       </div>
     </section>
 
-    <!-- Fleet selector -->
-    <section id="fleet" class="lp-section">
-      <div class="lp-head">
-        <span class="eyebrow">Pick one</span>
-        <h2>Choose a robot to test on your unit.</h2>
-      </div>
-      <div class="fleet-grid" id="landingFleetGrid">
-        <button type="button" class="fleet-card active" data-robot-profile="aethon_tug">
-          <div class="fleet-svg-wrap">
-            <svg viewBox="0 0 80 48" width="72" height="44" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-              <rect x="8" y="32" width="64" height="9"/><rect x="14" y="12" width="52" height="20"/>
-              <path d="M31 12v20M49 12v20"/><rect x="24" y="6" width="12" height="6" fill="#0b6e66" stroke="none"/>
-              <circle cx="20" cy="43" r="3.5"/><circle cx="60" cy="43" r="3.5"/>
-            </svg>
-          </div>
-          <span class="fleet-card-tag">On the market</span>
-          <div class="fleet-card-name">Aethon TUG</div>
-          <div class="fleet-card-spec">Needs 0.90 m doors · 3 locked bins</div>
-        </button>
-        <button type="button" class="fleet-card" data-robot-profile="diligent_moxi">
-          <div class="fleet-svg-wrap">
-            <svg viewBox="0 0 80 48" width="72" height="44" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-              <rect x="20" y="34" width="40" height="7"/><rect x="33" y="14" width="14" height="20"/>
-              <rect x="30" y="6" width="20" height="9"/><path d="M47 18 L58 14 L62 24" stroke="#0b6e66" stroke-width="2.2"/>
-              <circle cx="28" cy="43" r="3"/><circle cx="52" cy="43" r="3"/>
-            </svg>
-          </div>
-          <span class="fleet-card-tag">On the market</span>
-          <div class="fleet-card-name">Diligent Moxi</div>
-          <div class="fleet-card-spec">Needs 0.85 m doors · has an arm</div>
-        </button>
-        <button type="button" class="fleet-card" data-robot-profile="pneumatic_tube">
-          <div class="fleet-svg-wrap">
-            <svg viewBox="0 0 80 48" width="72" height="44" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-              <rect x="10" y="18" width="60" height="14" rx="7"/><rect x="24" y="20" width="26" height="10" rx="5" fill="#0b6e66" stroke="none"/>
-              <path d="M54 25H64M60 21l4 4-4 4"/>
-            </svg>
-          </div>
-          <span class="fleet-card-tag">On the market</span>
-          <div class="fleet-card-name">Pneumatic tube</div>
-          <div class="fleet-card-spec">Fastest · small items only</div>
-        </button>
-        <button type="button" class="fleet-card" data-robot-profile="amed_prestage_pod">
-          <div class="fleet-svg-wrap">
-            <svg viewBox="0 0 80 48" width="72" height="44" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-              <rect x="6" y="32" width="68" height="9"/><rect x="10" y="10" width="60" height="22"/>
-              <path d="M25 10v22M40 10v22M55 10v22"/><circle cx="40" cy="6" r="3" fill="#cf3f55" stroke="none"/>
-              <circle cx="18" cy="43" r="3.5"/><circle cx="62" cy="43" r="3.5"/>
-            </svg>
-          </div>
-          <span class="fleet-card-tag custom">Amed design</span>
-          <div class="fleet-card-name">Amed emergency cart</div>
-          <div class="fleet-card-spec">Stages emergency supplies</div>
-        </button>
-        <button type="button" class="fleet-card" data-robot-profile="amed_narrow_rover">
-          <div class="fleet-svg-wrap">
-            <svg viewBox="0 0 80 48" width="72" height="44" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-              <rect x="18" y="33" width="44" height="8"/><rect x="24" y="14" width="14" height="19"/><rect x="42" y="14" width="14" height="19"/>
-              <rect x="30" y="8" width="20" height="5" fill="#0b6e66" stroke="none"/>
-              <circle cx="26" cy="43" r="3"/><circle cx="54" cy="43" r="3"/>
-            </svg>
-          </div>
-          <span class="fleet-card-tag custom">Amed design</span>
-          <div class="fleet-card-name">Amed slim rover</div>
-          <div class="fleet-card-spec">Fits 0.72 m doors in older wings</div>
-        </button>
-      </div>
-    </section>
-
-    <!-- Why it matters -->
-    <section id="research" class="lp-section" aria-label="Hospital logistics benchmarks">
-      <div class="lp-head">
-        <span class="eyebrow">Why it matters</span>
-        <h2>Every trip down the hall is time away from a patient.</h2>
-      </div>
-      <div class="lp-stats">
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">30.1%</div><div class="lp-stat-lbl">of in-hospital cardiac arrests see a delay before defibrillation</div></div>
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">−5% / min</div><div class="lp-stat-lbl">lower survival for every minute a child’s epinephrine is delayed</div></div>
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">$661k</div><div class="lp-stat-lbl">average malpractice payout for a delayed diagnosis</div></div>
-        <div class="lp-stat sheet"><span class="tk tl"></span><span class="tk br"></span><div class="lp-stat-val">~10,000 / wk</div><div class="lp-stat-lbl">medication orders a week at a typical 200-bed hospital</div></div>
-      </div>
-    </section>
-
     <section id="targets" class="lp-section">
       <div class="lp-head">
         <span class="eyebrow">Before you sign</span>
@@ -328,8 +262,23 @@
       </div>
     </section>
 
-    <footer class="lp-foot" style="margin-top:96px;">
-      <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="29" stroke="currentColor" stroke-width="1.5"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" stroke="currentColor" stroke-width="1.5"/></svg><span class="brand-title">Amed</span></span>
+    <!-- Closing call to action -->
+    <section class="lp-section">
+      <div class="lp-cta-band sheet">
+        <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
+        <div>
+          <h2>See it on your own floor plan.</h2>
+          <p class="lp-lede">No integration and no patient data. Just a floor plan image of one unit.</p>
+        </div>
+        <div class="lp-cta">
+          <button type="button" class="lp-btn primary lg" data-page-tab-link="engine">Try your floor plan</button>
+          <button type="button" class="lp-btn lg" data-page-tab-link="demo">Watch the sample run</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="lp-foot" style="margin-top:72px;">
+      <span class="brand"><svg class="brand-mark" aria-hidden="true"><use href="#amedMark"/></svg><span class="brand-title">Amed</span></span>
       <span>Built with Gemini 4</span>
       <span>Plans deliveries and building changes. Not clinical advice.</span>
     </footer>
@@ -366,6 +315,7 @@
             </div>
           </label>
           <button type="button" class="lp-btn primary lg" id="wtStartBtn">Start →</button>
+          <button type="button" class="lp-btn lg btn-simulate-struggle" id="featuredMciDemoBtn" data-struggle-plan="st_elizabeths_ward" data-struggle-fallback-plan="icu_wing" data-struggle-count="3" data-struggle-scenario="catastrophic_mci" data-struggle-robot="mixed_fleet" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 10 minutes, trauma blood &amp; pharmacy pickup every 12 minutes, lab specimen drop every 15 minutes, supply restock every 30 minutes">Featured Live Demo: Catastrophic MCI →</button>
         </div>
       </div>
 
@@ -404,11 +354,11 @@
           <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-plan="icu_wing" data-struggle-count="2" data-struggle-scenario="chaotic" data-struggle-robot="amed_narrow_rover" data-struggle-ems="false" data-struggle-runs="pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly">Run scenario →</button>
         </article>
         <article class="case-card">
-          <span class="case-n">03 · Surge + EMS</span>
-          <h3>Mass-casualty pre-staging</h3>
-          <p>Two pre-stage carts use EMS advance signals to position crash carts before surge patients arrive.</p>
-          <div class="case-meta">ICU wing · 2 robots</div>
-          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-plan="icu_wing" data-struggle-count="2" data-struggle-scenario="surge" data-struggle-robot="amed_prestage_pod" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 15 minutes, pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes">Run scenario →</button>
+          <span class="case-n">03 · Featured Live Demo · Catastrophic MCI</span>
+          <h3>Catastrophic MCI (Clinicians at Bedside)</h3>
+          <p>Three mixed-fleet robots use EMS advance signals to run STAT crash carts, blood, and meds while clinicians stay at bedside.</p>
+          <div class="case-meta">St. Elizabeths / ICU wing · 3 robots (mixed fleet)</div>
+          <button type="button" class="lp-inline-action btn-simulate-struggle" data-struggle-plan="st_elizabeths_ward" data-struggle-fallback-plan="icu_wing" data-struggle-count="3" data-struggle-scenario="catastrophic_mci" data-struggle-robot="mixed_fleet" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 10 minutes, trauma blood &amp; pharmacy pickup every 12 minutes, lab specimen drop every 15 minutes, supply restock every 30 minutes">Run featured demo →</button>
         </article>
         <article class="case-card">
           <span class="case-n">04 · Robot failure</span>
@@ -526,6 +476,7 @@
               <option value="routine">Routine</option>
               <option value="chaotic" selected>Chaotic (STAT surges)</option>
               <option value="surge">Mass surge</option>
+              <option value="catastrophic_mci">Catastrophic MCI (Clinicians at Bedside)</option>
               <option value="robot_failure">Robot failure</option>
               <option value="pharmacy_delay">Pharmacy delay</option>
               <option value="staffing_gap">Staffing gap</option>
@@ -1199,6 +1150,7 @@
     // =========================================================================
     let THREE = null;
     let OrbitControls = null;
+    let RoomEnvironment = null;
     let twinSingle = null;
     let twinLeft = null;
     let twinRight = null;
@@ -1212,6 +1164,9 @@
         ]);
         THREE = threeMod;
         OrbitControls = orbitMod.OrbitControls;
+        try {
+          RoomEnvironment = (await import("three/addons/environments/RoomEnvironment.js")).RoomEnvironment;
+        } catch { RoomEnvironment = null; }
         return true;
       } catch (errPrimary) {
         try {
@@ -2301,6 +2256,34 @@
       return group;
     }
 
+    // Filmic tone mapping + soft image-based light from a neutral "room" environment, so
+    // painted walls, steel and plastic read like real materials instead of flat colors.
+    function applyRealisticRendering(renderer, scene, exposure = 1.05) {
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = exposure;
+      if ("environmentIntensity" in scene) scene.environmentIntensity = 0.5;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      if (RoomEnvironment) {
+        try {
+          const pmrem = new THREE.PMREMGenerator(renderer);
+          scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+          pmrem.dispose();
+        } catch { /* environment lighting is optional */ }
+      }
+    }
+
+    // A soft contact shadow under people and robots, readable from the top-down camera.
+    function addContactShadow(mesh, radius = 1.1) {
+      const blob = new THREE.Mesh(
+        new THREE.CircleGeometry(radius, 28),
+        new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.22, depthWrite: false })
+      );
+      blob.rotation.x = -Math.PI / 2;
+      blob.position.y = 0.04;
+      blob.renderOrder = -1;
+      mesh.add(blob);
+    }
+
     function createBlueprintCanvas(w, h) {
       const c = document.createElement("canvas");
       c.width = w;
@@ -2316,6 +2299,146 @@
       for (let y = 0; y <= h; y += 50) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
       }
+      return c;
+    }
+
+    function createHospitalFloorTexture(imgW, imgH) {
+      const c = document.createElement("canvas");
+      c.width = imgW;
+      c.height = imgH;
+      const ctx = c.getContext("2d");
+      const unit = state.unitMap;
+      const mpp = unit?.meters_per_pixel || 0.05;
+      const tilePx = Math.max(12, Math.min(36, Math.round(0.6 / mpp)));
+
+      if (state.bgImage) {
+        ctx.drawImage(state.bgImage, 0, 0, imgW, imgH);
+        // Subtle architectural vinyl sheen & 60cm grout micro-grid without opaque neon blocks
+        ctx.fillStyle = "rgba(248, 250, 252, 0.08)";
+        ctx.fillRect(0, 0, imgW, imgH);
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.10)";
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= imgW; x += tilePx) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, imgH); ctx.stroke();
+        }
+        for (let y = 0; y <= imgH; y += tilePx) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(imgW, y); ctx.stroke();
+        }
+        return c;
+      }
+
+      // Clinical terrazzo / sheet-vinyl base
+      ctx.fillStyle = "#f1f5f9";
+      ctx.fillRect(0, 0, imgW, imgH);
+
+      // Subtle architectural room-by-room floor contrast
+      if (unit && Array.isArray(unit.rooms)) {
+        unit.rooms.forEach((room) => {
+          if (!room.polygon || room.polygon.length < 3) return;
+          ctx.save();
+          ctx.beginPath();
+          room.polygon.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          });
+          ctx.closePath();
+          ctx.fillStyle = room.type === "corridor" ? "#e9eff5" : "#f8fafc";
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+
+      // Deterministic terrazzo micro-aggregate speckle
+      let seed = 1337;
+      const nextRand = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      const speckleCount = Math.min(4500, Math.round((imgW * imgH) / 180));
+      for (let i = 0; i < speckleCount; i++) {
+        const sx = nextRand() * imgW;
+        const sy = nextRand() * imgH;
+        const r = 0.6 + nextRand() * 1.1;
+        ctx.fillStyle = i % 3 === 0 ? "rgba(148, 163, 184, 0.22)" : "rgba(203, 213, 225, 0.30)";
+        ctx.fillRect(sx, sy, r, r);
+      }
+
+      // 60cm clinical tile grout lines + 2.4m expansion joints
+      for (let x = 0, idx = 0; x <= imgW; x += tilePx, idx++) {
+        ctx.strokeStyle = idx % 4 === 0 ? "rgba(100, 116, 139, 0.28)" : "rgba(148, 163, 184, 0.28)";
+        ctx.lineWidth = idx % 4 === 0 ? 1.25 : 0.85;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, imgH); ctx.stroke();
+      }
+      for (let y = 0, idx = 0; y <= imgH; y += tilePx, idx++) {
+        ctx.strokeStyle = idx % 4 === 0 ? "rgba(100, 116, 139, 0.28)" : "rgba(148, 163, 184, 0.28)";
+        ctx.lineWidth = idx % 4 === 0 ? 1.25 : 0.85;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(imgW, y); ctx.stroke();
+      }
+
+      // Subtle corridor lane striping along major corridor axis
+      if (unit && Array.isArray(unit.rooms)) {
+        unit.rooms.forEach((room) => {
+          if (room.type !== "corridor" || !room.polygon || room.polygon.length < 3) return;
+          let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+          room.polygon.forEach((pt) => {
+            minX = Math.min(minX, pt.x); maxX = Math.max(maxX, pt.x);
+            minY = Math.min(minY, pt.y); maxY = Math.max(maxY, pt.y);
+          });
+          const wSpan = maxX - minX;
+          const hSpan = maxY - minY;
+          if (wSpan < 24 && hSpan < 24) return;
+
+          ctx.save();
+          ctx.beginPath();
+          room.polygon.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          });
+          ctx.closePath();
+          ctx.clip();
+
+          const horizontal = wSpan >= hSpan;
+          const cx = (minX + maxX) / 2;
+          const cy = (minY + maxY) / 2;
+          const laneOffset = Math.min(18, (horizontal ? hSpan : wSpan) * 0.28);
+
+          // Dual subtle edge wayfinding lines
+          ctx.strokeStyle = "rgba(14, 116, 144, 0.16)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([]);
+          [-1, 1].forEach((side) => {
+            ctx.beginPath();
+            if (horizontal) {
+              ctx.moveTo(minX + 6, cy + side * laneOffset);
+              ctx.lineTo(maxX - 6, cy + side * laneOffset);
+            } else {
+              ctx.moveTo(cx + side * laneOffset, minY + 6);
+              ctx.lineTo(cx + side * laneOffset, maxY - 6);
+            }
+            ctx.stroke();
+          });
+
+          // Center dashed AGV / logistics guide line
+          ctx.strokeStyle = "rgba(71, 85, 105, 0.20)";
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([8, 8]);
+          ctx.beginPath();
+          if (horizontal) {
+            ctx.moveTo(minX + 8, cy);
+            ctx.lineTo(maxX - 8, cy);
+          } else {
+            ctx.moveTo(cx, minY + 8);
+            ctx.lineTo(cx, maxY - 8);
+          }
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
+      // Crisp architectural perimeter frame
+      ctx.strokeStyle = "rgba(51, 65, 85, 0.35)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, imgW - 2, imgH - 2);
       return c;
     }
 
@@ -2336,6 +2459,7 @@
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         mountEl.innerHTML = "";
         mountEl.appendChild(this.renderer.domElement);
+        applyRealisticRendering(this.renderer, this.scene, 0.92);
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
@@ -2346,10 +2470,11 @@
         this.controls.target.set(0, 0, 0);
 
         // Architectural studio lighting
-        const hemi = new THREE.HemisphereLight(0xffffff, 0xcbd5e1, 1.15);
+        // Overhead fluorescent-style key light + soft fill; the environment map supplies bounce light.
+        const hemi = new THREE.HemisphereLight(0xfffdf8, 0xd6d0c8, RoomEnvironment ? 0.55 : 1.15);
         this.scene.add(hemi);
 
-        const dir1 = new THREE.DirectionalLight(0xffffff, 1.25);
+        const dir1 = new THREE.DirectionalLight(0xfff6ea, RoomEnvironment ? 1.55 : 1.25);
         dir1.position.set(45, 85, 55);
         dir1.castShadow = true;
         dir1.shadow.mapSize.width = 2048;
@@ -2362,6 +2487,8 @@
         dir1.shadow.camera.top = d;
         dir1.shadow.camera.bottom = -d;
         dir1.shadow.bias = -0.0005;
+        dir1.shadow.normalBias = 0.02;
+        dir1.shadow.radius = 4;
         this.scene.add(dir1);
 
         const dir2 = new THREE.DirectionalLight(0xe0f2fe, 0.45);
@@ -2551,8 +2678,8 @@
         slab.receiveShadow = true;
         this.staticGroup.add(slab);
 
-        // Textured floor plan ground plane
-        const texSource = state.bgImage || createBlueprintCanvas(imgW, imgH);
+        // Textured floor plan ground plane (realistic 60cm clinical terrazzo/vinyl + clean bgImage blend)
+        const texSource = createHospitalFloorTexture(imgW, imgH);
         const floorTex = new THREE.Texture(texSource);
         floorTex.needsUpdate = true;
         floorTex.colorSpace = THREE.SRGBColorSpace;
@@ -2562,8 +2689,8 @@
         planeGeo.rotateX(-Math.PI / 2);
         const planeMat = new THREE.MeshStandardMaterial({
           map: floorTex,
-          roughness: 0.88,
-          metalness: 0.02,
+          roughness: 0.72,
+          metalness: 0.04,
         });
         const plane = new THREE.Mesh(planeGeo, planeMat);
         plane.position.y = 0.01;
@@ -2600,12 +2727,47 @@
           roomCentroids.set(r.id, { x: cx, y: cy });
         });
 
-        // 1. Crisp architectural white/light-slate walls + subtle colored floor zone tint + 3D interior fixtures
+        // Precompute corridor world segments so patient_room walls facing corridors get observation windows
+        const corridorSegments = [];
+        unit.rooms.forEach((r) => {
+          if (r.type !== "corridor" || !r.polygon || r.polygon.length < 3) return;
+          const wPts = r.polygon.map((pt) => this.pxToWorld(pt.x, pt.y));
+          for (let i = 0; i < wPts.length; i++) {
+            corridorSegments.push([wPts[i], wPts[(i + 1) % wPts.length]]);
+          }
+        });
+        const isCorridorFacing = (mx, mz) => {
+          for (const [p1, p2] of corridorSegments) {
+            const vx = p2.x - p1.x;
+            const vz = p2.z - p1.z;
+            const lenSq = vx * vx + vz * vz;
+            if (lenSq < 1e-6) continue;
+            const t = Math.max(0, Math.min(1, ((mx - p1.x) * vx + (mz - p1.z) * vz) / lenSq));
+            const projX = p1.x + t * vx;
+            const projZ = p1.z + t * vz;
+            if (Math.hypot(mx - projX, mz - projZ) < 0.85) return true;
+          }
+          return false;
+        };
+
+        const kickplateMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.55, metalness: 0.12 });
+        const wallCapMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.45, metalness: 0.08 });
+        const obsGlassMat = new THREE.MeshStandardMaterial({
+          color: 0xe0f2fe,
+          transparent: true,
+          opacity: 0.42,
+          roughness: 0.15,
+          metalness: 0.12,
+          depthWrite: false,
+        });
+
+        // 1. Crisp architectural white/light-slate walls + subtle floor zone tint + 3D interior fixtures
         const rooms = unit.rooms.slice(0, maxRooms);
         rooms.forEach((room) => {
           if (!room.polygon || room.polygon.length < 3) return;
           const style = getRoomStyle(room);
           const isCorridor = room.type === "corridor";
+          const isPatientRoom = room.type === "patient_room";
           const isSelected = state.selectedSelection?.kind === "room" && state.selectedSelection?.id === room.id;
           const wallHeight = isCorridor ? 0.55 : (subtle ? 2.8 : 3.6);
 
@@ -2624,15 +2786,15 @@
           });
           shape.closePath();
 
-          // Subtle colored floor zone tint
+          // Subtle colored floor zone tint (0.04 normal, 0.20 selected)
           const zoneGeo = new THREE.ShapeGeometry(shape);
           zoneGeo.rotateX(-Math.PI / 2);
           const zoneMat = new THREE.MeshStandardMaterial({
             color: style.hex,
             emissive: isSelected ? style.hex : 0x000000,
-            emissiveIntensity: isSelected ? 0.22 : 0,
+            emissiveIntensity: isSelected ? 0.14 : 0,
             transparent: true,
-            opacity: isSelected ? 0.30 : (isCorridor ? 0.07 : 0.14),
+            opacity: isSelected ? 0.20 : 0.04,
             roughness: 0.9,
             metalness: 0.0,
             depthWrite: false,
@@ -2644,7 +2806,7 @@
           this.staticGroup.add(zoneMesh);
           this.pickTargets.push(zoneMesh);
 
-          // Crisp architectural white / light-slate perimeter walls
+          // Crisp architectural white / light-slate perimeter walls + dark-slate baseboard + top cap + observation glass
           const wallMat = new THREE.MeshStandardMaterial({
             color: isSelected ? 0xffffff : (isCorridor ? 0xe2e8f0 : 0xf8fafc),
             emissive: isSelected ? style.hex : 0x000000,
@@ -2653,22 +2815,51 @@
             metalness: 0.04,
           });
           const topOutlinePts = [];
+          const kickH = Math.min(0.22, wallHeight * 0.45);
+          const capH = 0.07;
           for (let i = 0; i < worldPoly.length; i++) {
             const a = worldPoly[i];
             const b = worldPoly[(i + 1) % worldPoly.length];
-            topOutlinePts.push(new THREE.Vector3(a.x, 0.03 + wallHeight + 0.01, a.z));
+            topOutlinePts.push(new THREE.Vector3(a.x, 0.03 + wallHeight + capH + 0.01, a.z));
             const dx = b.x - a.x;
             const dz = b.z - a.z;
             const segLen = Math.hypot(dx, dz);
             if (segLen < 0.05) continue;
+            const mx = (a.x + b.x) / 2;
+            const mz = (a.z + b.z) / 2;
+            const rotY = -Math.atan2(dz, dx);
+
             const wallSeg = new THREE.Mesh(new THREE.BoxGeometry(segLen, wallHeight, 0.22), wallMat);
-            wallSeg.position.set((a.x + b.x) / 2, 0.03 + wallHeight / 2, (a.z + b.z) / 2);
-            wallSeg.rotation.y = -Math.atan2(dz, dx);
+            wallSeg.position.set(mx, 0.03 + wallHeight / 2, mz);
+            wallSeg.rotation.y = rotY;
             wallSeg.castShadow = !isCorridor;
             wallSeg.receiveShadow = true;
             wallSeg.userData.pickInfo = { kind: "room", id: room.id };
             this.staticGroup.add(wallSeg);
             this.pickTargets.push(wallSeg);
+
+            // Dark-slate baseboard kickplate (height: 0.22, 0x334155)
+            const kickSeg = new THREE.Mesh(new THREE.BoxGeometry(segLen + 0.02, kickH, 0.25), kickplateMat);
+            kickSeg.position.set(mx, 0.03 + kickH / 2, mz);
+            kickSeg.rotation.y = rotY;
+            kickSeg.receiveShadow = true;
+            this.staticGroup.add(kickSeg);
+
+            // Crisp top wall cap (0xcbd5e1)
+            const capSeg = new THREE.Mesh(new THREE.BoxGeometry(segLen + 0.04, capH, 0.27), wallCapMat);
+            capSeg.position.set(mx, 0.03 + wallHeight + capH / 2, mz);
+            capSeg.rotation.y = rotY;
+            this.staticGroup.add(capSeg);
+
+            // Translucent glass observation window band in upper half of corridor-facing patient_room walls
+            if (isPatientRoom && segLen > 1.2 && wallHeight > 1.2 && isCorridorFacing(mx, mz)) {
+              const winH = wallHeight * 0.34;
+              const winW = segLen * 0.66;
+              const glassBand = new THREE.Mesh(new THREE.BoxGeometry(winW, winH, 0.25), obsGlassMat);
+              glassBand.position.set(mx, 0.03 + wallHeight * 0.68, mz);
+              glassBand.rotation.y = rotY;
+              this.staticGroup.add(glassBand);
+            }
           }
 
           if (topOutlinePts.length >= 3) {
@@ -2712,7 +2903,9 @@
           this.staticGroup.add(sprite);
         });
 
-        // 2. 3D Doorway Arches scaled by door.width_m + Robot Passability Ring
+        // 2. 3D Doorways: door jambs + overhead header + 45°-open door leaf with brushed steel lever handle + threshold strip
+        const steelMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.22, metalness: 0.85 });
+        const leafMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.45, metalness: 0.06 });
         const doors = unit.doors.slice(0, maxDoors);
         doors.forEach((door) => {
           const dWorld = this.pxToWorld(door.position.x, door.position.y);
@@ -2725,7 +2918,7 @@
           const archSpan = Math.min(4.2, Math.max(1.5, widthMeters * worldUnitsPerMeter));
           const archH = subtle ? 2.5 : 3.3;
 
-          // Align arch along the wall between the two connected rooms
+          // Align doorway along the wall between the two connected rooms
           let archRotY = 0;
           if (door.rooms_connected && door.rooms_connected.length === 2) {
             const c1 = roomCentroids.get(door.rooms_connected[0]);
@@ -2736,31 +2929,62 @@
           }
 
           const doorGroup = new THREE.Group();
-          doorGroup.position.set(dWorld.x, 0.06, dWorld.z);
+          doorGroup.position.set(dWorld.x, 0.04, dWorld.z);
           doorGroup.rotation.y = archRotY;
 
-          const archMat = new THREE.MeshStandardMaterial({
-            color: isSelected ? 0xffffff : doorColor,
-            emissive: doorColor,
-            emissiveIntensity: isSelected ? 1.0 : 0.65,
-            roughness: 0.25,
+          const frameMat = new THREE.MeshStandardMaterial({
+            color: isSelected ? 0xffffff : 0x475569,
+            emissive: isSelected ? doorColor : 0x000000,
+            emissiveIntensity: isSelected ? 0.65 : 0,
+            roughness: 0.35,
+            metalness: 0.35,
           });
 
-          // Left & right doorway pillars
+          // Left & right door jambs
           [-1, 1].forEach((side) => {
-            const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.28, archH, 0.38), archMat);
-            pillar.position.set(side * (archSpan / 2), archH / 2, 0);
-            pillar.userData.pickInfo = { kind: "door", id: door.id };
-            doorGroup.add(pillar);
-            this.pickTargets.push(pillar);
+            const jamb = new THREE.Mesh(new THREE.BoxGeometry(0.18, archH, 0.36), frameMat);
+            jamb.position.set(side * (archSpan / 2), archH / 2, 0);
+            jamb.castShadow = true;
+            jamb.userData.pickInfo = { kind: "door", id: door.id };
+            doorGroup.add(jamb);
+            this.pickTargets.push(jamb);
           });
 
-          // Overhead lintel bar scaled to door.width_m
-          const lintel = new THREE.Mesh(new THREE.BoxGeometry(archSpan + 0.34, 0.32, 0.44), archMat);
-          lintel.position.set(0, archH, 0);
-          lintel.userData.pickInfo = { kind: "door", id: door.id };
-          doorGroup.add(lintel);
-          this.pickTargets.push(lintel);
+          // Overhead header
+          const header = new THREE.Mesh(new THREE.BoxGeometry(archSpan + 0.28, 0.24, 0.40), frameMat);
+          header.position.set(0, archH + 0.10, 0);
+          header.castShadow = true;
+          header.userData.pickInfo = { kind: "door", id: door.id };
+          doorGroup.add(header);
+          this.pickTargets.push(header);
+
+          // 45°-open 3D door leaf hinged on left jamb + brushed steel lever handle
+          const leafW = Math.max(0.65, archSpan - 0.20);
+          const leafH = archH - 0.06;
+          const hingePivot = new THREE.Group();
+          hingePivot.position.set(-archSpan / 2 + 0.09, 0, 0);
+          hingePivot.rotation.y = Math.PI / 4;
+
+          const leafMesh = new THREE.Mesh(new THREE.BoxGeometry(leafW, leafH, 0.08), leafMat);
+          leafMesh.position.set(leafW / 2, leafH / 2, 0);
+          leafMesh.castShadow = true;
+          leafMesh.receiveShadow = true;
+          leafMesh.userData.pickInfo = { kind: "door", id: door.id };
+          hingePivot.add(leafMesh);
+          this.pickTargets.push(leafMesh);
+
+          // Brushed steel lever handle (both faces of door leaf)
+          const handleX = Math.max(0.25, leafW - 0.18);
+          const handleY = leafH * 0.44;
+          [-1, 1].forEach((face) => {
+            const rose = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.16, 0.025), steelMat);
+            rose.position.set(handleX, handleY, face * 0.052);
+            hingePivot.add(rose);
+            const lever = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.04, 0.04), steelMat);
+            lever.position.set(handleX - 0.08, handleY, face * 0.075);
+            hingePivot.add(lever);
+          });
+          doorGroup.add(hingePivot);
 
           // Invisible wider click hitbox for easy doorway clicking
           const hitBox = new THREE.Mesh(
@@ -2772,27 +2996,28 @@
           doorGroup.add(hitBox);
           this.pickTargets.push(hitBox);
 
-          // Floor ring (emerald passable pad vs rose warning ring for !robot_passable)
-          const ringInner = passable ? archSpan * 0.28 : archSpan * 0.38;
-          const ringOuter = passable ? archSpan * 0.46 : archSpan * 0.68;
-          const ringGeo = new THREE.RingGeometry(ringInner, ringOuter, 28);
-          ringGeo.rotateX(-Math.PI / 2);
-          const ringMat = new THREE.MeshBasicMaterial({
+          // Green (passable) / Red (blocked) floor threshold strip
+          const thresholdMat = new THREE.MeshStandardMaterial({
             color: doorColor,
-            transparent: true,
-            opacity: passable ? 0.65 : 0.92,
-            side: THREE.DoubleSide,
+            emissive: doorColor,
+            emissiveIntensity: isSelected ? 0.95 : 0.45,
+            roughness: 0.3,
           });
-          doorGroup.add(new THREE.Mesh(ringGeo, ringMat));
+          const thresholdStrip = new THREE.Mesh(new THREE.BoxGeometry(archSpan + 0.16, 0.04, 0.46), thresholdMat);
+          thresholdStrip.position.set(0, 0.01, 0);
+          thresholdStrip.userData.pickInfo = { kind: "door", id: door.id };
+          doorGroup.add(thresholdStrip);
+          this.pickTargets.push(thresholdStrip);
 
           if (!passable) {
-            // Outer second warning halo for narrow !robot_passable doors
-            const warnGeo = new THREE.RingGeometry(ringOuter + 0.22, ringOuter + 0.42, 28);
+            // Outer warning halo for narrow !robot_passable doors
+            const ringOuter = archSpan * 0.68;
+            const warnGeo = new THREE.RingGeometry(ringOuter + 0.15, ringOuter + 0.36, 28);
             warnGeo.rotateX(-Math.PI / 2);
             const warnMat = new THREE.MeshBasicMaterial({
               color: 0xfb7185,
               transparent: true,
-              opacity: 0.7,
+              opacity: 0.72,
               side: THREE.DoubleSide,
             });
             doorGroup.add(new THREE.Mesh(warnGeo, warnMat));
@@ -2881,6 +3106,11 @@
             obj.receiveShadow = true;
           }
         });
+        // Models are authored at 2 world units per metre; rescale to this plan's real metres.
+        const mpp = state.unitMap?.meters_per_pixel || 0.05;
+        const trueScale = (this.worldScale / mpp) / 2;
+        mesh.scale.setScalar(Math.min(1.6, Math.max(0.6, trueScale)));
+        if (!ghost) addContactShadow(mesh, role === "nurse" ? 0.8 : 1.2);
         if (ghost) {
           mesh.traverse((obj) => {
             if (!obj.material) return;
@@ -3020,6 +3250,7 @@
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.setSize(w, h, false);
+        applyRealisticRendering(this.renderer, this.scene, 1.1);
 
         // Preserve overlay hint if present
         const hint = mountEl.querySelector(".showcase-hint");
@@ -4633,6 +4864,7 @@
     document.querySelectorAll(".btn-simulate-struggle").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const plan = btn.dataset.strugglePlan;
+        const fallbackPlan = btn.dataset.struggleFallbackPlan || "icu_wing";
         const count = Number(btn.dataset.struggleCount || 2);
         const scenario = btn.dataset.struggleScenario;
         const robot = btn.dataset.struggleRobot;
@@ -4640,7 +4872,9 @@
         const runs = btn.dataset.struggleRuns;
         if (plan && els.planSelect) {
           els.planSelect.value = plan;
-          state.selectedPlanId = plan;
+          const resolvedPlan = els.planSelect.value === plan ? plan : fallbackPlan;
+          els.planSelect.value = resolvedPlan;
+          state.selectedPlanId = els.planSelect.value || resolvedPlan;
           state.unitMap = null;
         }
         if (count >= 1 && count <= 3) {
@@ -5375,6 +5609,8 @@
       if (spanX < 5 || spanZ < 5) return null;
       const group = new THREE.Group();
       const bot = createRobot3D(spec.station.tag, spec.station.profile);
+      bot.scale.setScalar(1.25);
+      addContactShadow(bot, 1.3);
       const cx = (bounds.minX + bounds.maxX) / 2;
       const cz = (bounds.minZ + bounds.maxZ) / 2;
       const towardCorridor = cz <= 0 ? 1 : -1;

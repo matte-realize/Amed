@@ -26,6 +26,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 DEMO_DIR = _REPO_ROOT / "data" / "demo"
 FALLBACK_UNIT_PATH = DEMO_DIR / "fallback_unit.json"
 ICU_WING_FALLBACK_PATH = DEMO_DIR / "icu_wing_fallback.json"
+ST_ELIZABETHS_WARD_FALLBACK_PATH = DEMO_DIR / "st_elizabeths_ward_fallback.json"
 
 
 class _ExtractedRoom(BaseModel):
@@ -458,14 +459,21 @@ def verify_unit_map(
 def load_fallback_unit(plan_id: Optional[str] = None) -> UnitMap:
     """Load the explicitly labeled pre-traced fallback unit map for a demo plan.
 
-    When `plan_id` is provided (e.g. "icu_wing") and `data/demo/{plan_id}_fallback.json`
-    exists, loads that plan's pre-traced fallback; otherwise loads `fallback_unit.json`.
+    When `plan_id` is provided (e.g. "icu_wing", "st_elizabeths_ward") and
+    `data/demo/{plan_id}_fallback.json` exists, loads that plan's pre-traced
+    fallback; otherwise loads `fallback_unit.json`.
     """
     target_path = FALLBACK_UNIT_PATH
     if plan_id:
         safe_id = plan_id.strip()
         if safe_id and "/" not in safe_id and "\\" not in safe_id and ".." not in safe_id:
-            candidate = DEMO_DIR / f"{safe_id}_fallback.json"
+            candidate = (
+                ICU_WING_FALLBACK_PATH
+                if safe_id == "icu_wing"
+                else ST_ELIZABETHS_WARD_FALLBACK_PATH
+                if safe_id == "st_elizabeths_ward"
+                else DEMO_DIR / f"{safe_id}_fallback.json"
+            )
             if candidate.is_file():
                 target_path = candidate
 

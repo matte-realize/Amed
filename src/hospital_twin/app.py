@@ -65,6 +65,7 @@ class SimulateRequest(BaseModel):
         "crash_cart_missing",
         "cardiac_arrest",
         "contamination_quarantine",
+        "catastrophic_mci",
     ] = "chaotic"
     seed: int = 42
     ems_preposition: bool = False
@@ -88,6 +89,7 @@ class StressSweepRequest(BaseModel):
         "crash_cart_missing",
         "cardiac_arrest",
         "contamination_quarantine",
+        "catastrophic_mci",
     ] = "surge"
 
 

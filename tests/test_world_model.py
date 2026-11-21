@@ -222,3 +222,28 @@ def test_readiness_research_gap_and_additional_stress_modes():
     cq = simulate_shift(unit, sched, shift_hours=8.0, num_robots=1, scenario_mode="contamination_quarantine", seed=3)
     assert ca.robot_assisted.total_trips == 4
     assert cq.robot_assisted.total_trips == 4
+
+
+def test_catastrophic_mci_robots_outperform_overloaded_nurses():
+    from hospital_twin.schemas import ScheduledRun
+    from hospital_twin.simulator import simulate_shift
+
+    unit = _make_sample_unit()
+    schedule = [
+        ScheduledRun(run_type="pharmacy_pickup", origin="med_room", destination="nurse_station", frequency_minutes=30.0),
+        ScheduledRun(run_type="lab_specimen_drop", origin="nurse_station", destination="lab_drop", frequency_minutes=30.0),
+        ScheduledRun(run_type="supply_restock", origin="supply_room", destination="nurse_station", frequency_minutes=30.0),
+    ]
+    comp = simulate_shift(
+        unit,
+        schedule,
+        shift_hours=8.0,
+        num_robots=3,
+        scenario_mode="catastrophic_mci",
+        seed=42,
+        robot_profile_id="mixed_fleet",
+    )
+    assert comp.assumptions["scenario_mode"] == "catastrophic_mci"
+    assert comp.assumptions["stat_trips"] == 8
+    assert comp.nurse_minutes_saved > 20
+    assert comp.robot_assisted.avg_delivery_wait_s < comp.nurse_only.avg_delivery_wait_s
