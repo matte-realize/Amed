@@ -734,8 +734,18 @@
 
       <!-- Right: results -->
       <aside class="eng-panel eng-right" aria-label="Results">
+        <section class="eng-sec act-sec">
+          <h3 class="eng-sec-h"><span class="n">R1</span>Live activity <span class="act-count" id="actCount"></span></h3>
+          <div class="segmented act-filter" id="actFilter">
+            <button type="button" class="active" data-act="all">All</button>
+            <button type="button" data-act="robot">Robots</button>
+            <button type="button" data-act="nurse">People</button>
+          </div>
+          <ol class="act-log" id="actLog"><li class="act-empty">Run a shift to see what robots and staff are doing, minute by minute.</li></ol>
+        </section>
+
         <section class="eng-sec">
-          <h3 class="eng-sec-h"><span class="n">R1</span>Shift report</h3>
+          <h3 class="eng-sec-h"><span class="n">R2</span>Shift report</h3>
           <div id="cmpEngine"><p class="eng-empty">Run a shift to compare.</p></div>
           <div class="eng-kpi">
             <span class="badge saved" id="savedBadge">Saved: 0.0 nurse min</span>
@@ -753,7 +763,7 @@
           <p class="eng-empty" id="autonomyEmpty">Map a unit to see which rooms a robot can serve.</p>
         </section>
 
-        <section class="eng-sec hidden" id="custodyLogSection">
+        <section class="eng-sec hidden act-folded" id="custodyLogSection">
           <h3 class="eng-sec-h"><span class="n">R3</span>Delivery log <span class="badge ok" id="custodyCountBadge">0 handoffs</span></h3>
           <div class="custody-log" id="custodyLogBody"></div>
         </section>
@@ -4453,6 +4463,56 @@
       return comp._overlay;
     }
 
+    // ---- Live activity log: what every robot and person is doing, newest first ----
+    const ACT_JOB = { pharmacy_pickup: "meds", lab_specimen_drop: "a lab specimen", supply_restock: "supplies" };
+    const ACT_SHORT = { aethon_tug: "TUG", diligent_moxi: "MOXI", pneumatic_tube: "TUBE", amed_prestage_pod: "CART", amed_narrow_rover: "SLIM", amed_compounding_arm: "ARM", amed_surgical_prep_bot: "PREP", alta_transfer_robot: "ALTA" };
+    let actFilter = "all";
+    let actKey = "";
+
+    function actRoomName(id) {
+      const r = (state.unitMap?.rooms || []).find((x) => x.id === id);
+      return r ? (r.label || r.id) : String(id || "").replace(/_/g, " ");
+    }
+
+    function actWho(ev) {
+      const n = String(ev.agent_id || "").replace(/\D/g, "") || "1";
+      if (ev.agent_role === "nurse") return `Nurse ${n}`;
+      return `${ACT_SHORT[ev.robot_profile_id || state.robotProfileId] || "Robot"} ${n}`;
+    }
+
+    function renderActivityLog(events, t) {
+      const list = document.getElementById("actLog");
+      if (!list) return;
+      const entries = [];
+      events.forEach((ev) => {
+        if (actFilter !== "all" && (actFilter === "nurse") !== (ev.agent_role === "nurse")) return;
+        const from = actRoomName(ev.node_path?.[0]);
+        const to = actRoomName(ev.node_path?.[ev.node_path.length - 1]);
+        const job = ACT_JOB[ev.run_type] || "a delivery";
+        if (t >= ev.start_time_s) entries.push({ t: ev.start_time_s, role: ev.agent_role, who: actWho(ev), text: `Left ${from} with ${job} for ${to}` });
+        if (t >= ev.end_time_s) {
+          const w = Math.round(ev.wait_time_s || 0);
+          entries.push({ t: ev.end_time_s, role: ev.agent_role, who: actWho(ev), text: `Delivered ${job} to ${to}${w > 5 ? ` (waited ${w} s)` : ""}`, done: true });
+        }
+      });
+      const key = `${state.simVersion}:${state.simView}:${actFilter}:${entries.length}`;
+      if (key === actKey) return;
+      actKey = key;
+      entries.sort((a, b) => b.t - a.t);
+      const robots = entries.filter((e) => e.role !== "nurse" && e.done).length;
+      const people = entries.filter((e) => e.role === "nurse" && e.done).length;
+      const countEl = document.getElementById("actCount");
+      if (countEl) countEl.textContent = `${robots} by robots · ${people} by people`;
+      list.innerHTML = entries.length
+        ? entries.slice(0, 60).map((e) => `
+            <li class="${e.role === "nurse" ? "nurse" : "robot"}${e.done ? " done" : ""}">
+              <span class="t">${formatClock(e.t)}</span>
+              <span class="who">${escapeHtml(e.who)}</span>
+              <span class="what">${escapeHtml(e.text)}</span>
+            </li>`).join("")
+        : `<li class="act-empty">Nothing yet. The first jobs start in a moment.</li>`;
+    }
+
     function renderSimulationFrame() {
       if (!state.comparison) return;
       const comp = state.comparison;
@@ -4464,6 +4524,7 @@
 
       const use3D = state.viewMode === "3d" && state.threeReady;
       const viewSummary = getSimViewSummary(comp);
+      renderActivityLog(state.simView === "nurse" ? comp.nurse_only.events : comp.robot_assisted.events, t);
       const liveEl = document.getElementById("simLiveJobs");
       if (liveEl) {
         let r = 0, n = 0;
@@ -5625,6 +5686,18 @@
         if (state.unitMap) {
           runSimulation();
         }
+      });
+    }
+
+    const actFilterGroup = document.getElementById("actFilter");
+    if (actFilterGroup) {
+      actFilterGroup.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-act]");
+        if (!b) return;
+        actFilter = b.dataset.act;
+        actFilterGroup.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b));
+        actKey = "";
+        renderSimulationFrame();
       });
     }
 

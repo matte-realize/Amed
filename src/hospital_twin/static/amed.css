@@ -759,3 +759,18 @@ body.wt-running .engine { margin-right: 0; }
 .lab-pick em { font-style: normal; color: var(--accent); }
 @media (max-width: 640px) { .lab-brief-limits { grid-template-columns: 1fr; } }
 .sim-live { color: var(--ok); border-color: var(--ok-line); }
+
+/* ---------- live activity log (right panel) ---------- */
+.act-sec { gap: 8px; }
+.act-count { margin-left: auto; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; color: var(--ink-3); text-transform: none; }
+.act-filter { height: 28px; align-self: flex-start; }
+.act-log { list-style: none; margin: 0; padding: 0; max-height: 46vh; overflow-y: auto; border: 1px solid var(--rule); }
+.act-log li { display: grid; grid-template-columns: 44px 62px 1fr; gap: 8px; align-items: baseline; padding: 6px 8px; border-bottom: 1px solid var(--rule); border-left: 3px solid var(--robot); font-size: 12px; line-height: 1.35; }
+.act-log li.nurse { border-left-color: var(--nurse); }
+.act-log li.done { background: var(--paper); }
+.act-log .t { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.act-log .who { font-family: var(--mono); font-size: 10.5px; font-weight: 500; color: var(--robot); }
+.act-log li.nurse .who { color: var(--nurse); }
+.act-log .what { color: var(--ink); }
+.act-log li.act-empty { display: block; border-left-color: var(--rule-2); color: var(--ink-3); }
+.act-folded { display: none !important; }
