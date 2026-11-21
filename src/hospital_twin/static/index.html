@@ -743,8 +743,12 @@
         <label class="inline-label" for="planSelect">Plan</label>
         <select id="planSelect"></select>
         <label class="btn" for="fileUpload" title="Upload PNG or JPG floor plan">
-          Upload
+          Upload Plan
           <input type="file" id="fileUpload" accept="image/png,image/jpeg,image/webp" class="hidden" />
+        </label>
+        <label class="btn" for="specUpload" id="specUploadLabel" title="Attach supporting facility spec PDF, TXT, or CSV">
+          + Spec Doc
+          <input type="file" id="specUpload" accept=".pdf,.txt,.md,.csv,.json" class="hidden" />
         </label>
         <button class="btn btn-primary" id="mapBtn">Map Unit</button>
         <button class="btn" id="fallbackBtn" title="Load pre-traced demo unit">Demo Map</button>
@@ -2850,6 +2854,11 @@
           } else {
             throw new Error("Please select a floor plan, upload an image, or click Demo Map.");
           }
+          if (state.uploadedSpecFile) {
+            form.append("spec_file", state.uploadedSpecFile);
+          } else {
+            form.append("use_sample_spec", "true");
+          }
           res = await fetch("/api/extract", { method: "POST", body: form });
         }
 
@@ -3080,6 +3089,17 @@
       els.runSimBtn.disabled = true;
       drawSingleMap();
     });
+    const specUploadEl = document.getElementById("specUpload");
+    const specUploadLabelEl = document.getElementById("specUploadLabel");
+    if (specUploadEl) {
+      specUploadEl.addEventListener("change", (e) => {
+        const f = e.target.files[0];
+        state.uploadedSpecFile = f || null;
+        if (specUploadLabelEl) {
+          specUploadLabelEl.childNodes[0].textContent = f ? `Spec: ${f.name.slice(0, 14)} ` : "+ Spec Doc ";
+        }
+      });
+    }
 
     els.mapBtn.addEventListener("click", () => extractUnit(false));
     els.fallbackBtn.addEventListener("click", () => extractUnit(true));
