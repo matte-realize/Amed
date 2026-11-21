@@ -76,7 +76,7 @@ Open `http://127.0.0.1:8000`. Without a `GEMINI_API_KEY`, use **Demo map** or th
 | --- | --- |
 | **Overview** | What Amed answers for facilities, finance and nursing, the robot catalog with 3D models, and one-click examples. |
 | **See it work** | A guided run of the real tool on a sample unit: read the plan → double-check it → check the robot fits → describe a shift → run it with and without robots → try a bad day → show eval accuracy. Every step calls the live API. |
-| **Try it** | The engine. Left panel: unit, fleet, shift and run controls. Center: 3D/2D viewport (audit or side-by-side shift). Right: outcome, room autonomy, custody log, stress sweep. Bottom: shift timeline. |
+| **Try it** | The engine. Left panel: unit, fleet, shift and run controls. Center: 3D/2D viewport (unit audit, or the shift with both runs overlaid on one plan; toggle Overlay / Nurses only / With robots). Right: outcome, room autonomy, custody log, stress sweep. Bottom: shift timeline. |
 
 Frontend: `src/hospital_twin/static/index.html` (markup + Three.js app) and `static/amed.css` (chart-paper theme).
 

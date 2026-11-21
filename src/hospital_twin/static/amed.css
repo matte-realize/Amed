@@ -636,3 +636,19 @@ body.wt-running .engine { margin-right: 0; }
 .ra-block .ra-task small { font-size: 10.5px; }
 .ra-block .ra-who { font-size: 8.5px; }
 @media (min-width: 1081px) { body.wt-running .eng-viewport .inspector-card { left: auto; right: 12px; } }
+
+/* ---------- combined (overlay) shift view ---------- */
+.eng-viewport .dual-grid { grid-template-columns: 1fr; }
+.sim-offscreen { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+.sim-card-overlay .canvas-header { justify-content: flex-start; gap: 10px 14px; }
+.sim-view-toggle { height: 30px; }
+.sim-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); margin-right: auto; }
+.sim-legend .ghost .dot-swatch { opacity: 0.35; }
+.dual-grid[data-simview="nurse"] .sim-legend span:not(.ghost), .dual-grid[data-simview="robot"] .sim-legend .ghost { display: none; }
+.dual-grid[data-simview="nurse"] .sim-legend .ghost .dot-swatch { opacity: 1; }
+.sim-stats { display: flex; flex-wrap: wrap; gap: 0; background: var(--paper-3); border-bottom: 1px solid var(--rule); }
+.sim-stat-group { display: flex; align-items: center; flex-wrap: wrap; gap: 0; padding: 6px 10px; border-right: 1px solid var(--rule); }
+.sim-stat-group .g { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 8px; padding-left: 8px; border-left: 3px solid var(--nurse); }
+.sim-stat-group.robot .g { border-left-color: var(--robot); }
+.sim-stat-group .metric-pill { border-right: 0; }
+.eng-viewport .sim-card-overlay { border-right: 0; }

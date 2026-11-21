@@ -452,7 +452,7 @@
           <span class="step-pill" data-step="3">03 Simulate</span>
         </div>
         <div class="eng-tb-group right">
-          <div class="segmented stage-toggle" id="stageModeGroup" title="Single-unit audit or side-by-side shift simulation">
+          <div class="segmented stage-toggle" id="stageModeGroup" title="Single-unit audit or the shift simulation (both runs overlaid on one plan)">
             <button type="button" class="active" data-stage="audit">Audit</button>
             <button type="button" data-stage="sim" id="stageSimBtn" disabled>Shift sim</button>
           </div>
@@ -587,32 +587,33 @@
         </section>
 
         <section class="dual-grid hidden" id="dualView">
-          <div class="sim-card">
+          <div class="sim-card sim-card-overlay">
             <div class="canvas-header">
-              <div class="canvas-title"><span class="dot-swatch" style="background:var(--nurse);"></span>Nurse-only <span class="badge nurse">0 robots</span></div>
-              <div class="sim-metrics">
-                <span class="metric-pill">Walked <strong id="nurseWalkedLeft">0.0</strong>m</span>
+              <div class="segmented sim-view-toggle" id="simViewGroup" title="Show both runs on one floor plan, or one at a time">
+                <button type="button" class="active" data-simview="overlay">Overlay</button>
+                <button type="button" data-simview="nurse">Nurses only</button>
+                <button type="button" data-simview="robot">With robots</button>
+              </div>
+              <div class="sim-legend">
+                <span class="ghost"><span class="dot-swatch" style="background:var(--nurse);"></span>Nurses-only run (faded)</span>
+                <span><span class="dot-swatch" style="background:var(--robot);"></span>Robots</span>
+                <span><span class="dot-swatch" style="background:var(--nurse);"></span>Nurses, with robots</span>
+              </div>
+              <span class="badge ok" id="robotCountBadge">1 robot</span>
+              <span class="badge nurse hidden" id="statSurgeBadge">0 STAT</span>
+            </div>
+            <div class="sim-stats">
+              <div class="sim-stat-group nurse">
+                <span class="g">Nurses only</span>
+                <span class="metric-pill">Walked <strong id="nurseWalkedLeft">0.0</strong> min</span>
                 <span class="metric-pill">Wait <strong id="waitLeft">0</strong>s</span>
                 <span class="metric-pill">Peak <strong id="maxWaitLeft">0</strong>s</span>
                 <span class="metric-pill">Trips <strong id="tripsLeft">0</strong></span>
               </div>
-            </div>
-            <div class="canvas-wrap" id="wrapLeft">
-              <div class="three-mount" id="threeLeft"></div>
-              <canvas class="canvas-2d hidden" id="canvasLeft"></canvas>
-              <div class="inspector-card hidden" id="inspectorDual"></div>
-              <div class="cam-hint" id="camHintDual">Synced cameras · click to inspect</div>
-            </div>
-          </div>
-          <div class="sim-card">
-            <div class="canvas-header">
-              <div class="canvas-title"><span class="dot-swatch" style="background:var(--robot);"></span>Robot-assisted
-                <span class="badge ok" id="robotCountBadge">1 robot</span>
-                <span class="badge nurse hidden" id="statSurgeBadge">0 STAT</span>
-              </div>
-              <div class="sim-metrics">
-                <span class="metric-pill">Walked <strong id="nurseWalkedRight">0.0</strong>m</span>
-                <span class="metric-pill">Robot <strong id="robotTravelRight">0.0</strong>m</span>
+              <div class="sim-stat-group robot">
+                <span class="g">With robots</span>
+                <span class="metric-pill">Nurses walked <strong id="nurseWalkedRight">0.0</strong> min</span>
+                <span class="metric-pill">Robots <strong id="robotTravelRight">0.0</strong> min</span>
                 <span class="metric-pill">Wait <strong id="waitRight">0</strong>s</span>
                 <span class="metric-pill">Peak <strong id="maxWaitRight">0</strong>s</span>
               </div>
@@ -620,11 +621,20 @@
             <div class="canvas-wrap" id="wrapRight">
               <div class="three-mount" id="threeRight"></div>
               <canvas class="canvas-2d hidden" id="canvasRight"></canvas>
+              <div class="inspector-card hidden" id="inspectorDual"></div>
+              <div class="cam-hint" id="camHintDual">Both runs on one plan · drag to orbit · click a room to inspect</div>
               <div class="cam-actions" id="camActionsDual">
                 <button type="button" class="cam-btn" data-cam="iso">Iso</button>
                 <button type="button" class="cam-btn" data-cam="top">Top</button>
                 <button type="button" class="cam-btn" data-cam="reset">Reset</button>
               </div>
+            </div>
+          </div>
+          <!-- Second camera kept off-screen; the overlay view draws both runs in one scene. -->
+          <div class="sim-offscreen" aria-hidden="true">
+            <div class="canvas-wrap" id="wrapLeft">
+              <div class="three-mount" id="threeLeft"></div>
+              <canvas class="canvas-2d hidden" id="canvasLeft"></canvas>
             </div>
           </div>
         </section>
@@ -749,6 +759,7 @@
       simTime: 0,
       playing: false,
       speed: 1200,
+      simView: "overlay",   // "overlay" | "nurse" | "robot"
       lastFrameTs: null,
       rafId: null,
       calibration: null,
@@ -2824,7 +2835,8 @@
           }
 
           const isNurse = ev.agent_role === "nurse";
-          const colorHex = isNurse ? 0xe11d48 : 0x0d9488;
+          const ghost = !!ev._ghost;
+          const colorHex = ghost ? 0xf08a9c : isNurse ? 0xe11d48 : 0x0d9488;
 
           const curve = new THREE.CatmullRomCurve3(worldPts, false, "catmullrom", 0.06);
           const segs = Math.min(64, Math.max(12, worldPts.length * 8));
@@ -2832,9 +2844,10 @@
           const tubeMat = new THREE.MeshStandardMaterial({
             color: colorHex,
             emissive: colorHex,
-            emissiveIntensity: 0.35,
+            emissiveIntensity: ghost ? 0.15 : 0.35,
             transparent: true,
-            opacity: 0.92,
+            opacity: ghost ? 0.35 : 0.92,
+            depthWrite: !ghost,
             roughness: 0.3,
           });
           const activeTube = new THREE.Mesh(tubeGeo, tubeMat);
@@ -2846,7 +2859,7 @@
           const lineMat = new THREE.LineBasicMaterial({
             color: colorHex,
             transparent: true,
-            opacity: 0.42,
+            opacity: ghost ? 0.18 : 0.42,
           });
           const faintLine = new THREE.Line(lineGeo, lineMat);
           faintLine.visible = false;
@@ -2856,9 +2869,9 @@
         });
       }
 
-      getOrCreateAgentMesh(key, role, agentId, evProfileId = null) {
+      getOrCreateAgentMesh(key, role, agentId, evProfileId = null, ghost = false) {
         const activeProfile = evProfileId || state.robotProfileId;
-        const poolKey = role === "nurse" ? `nurse:${key}` : `robot:${key}:${activeProfile}`;
+        const poolKey = (ghost ? "ghost:" : "") + (role === "nurse" ? `nurse:${key}` : `robot:${key}:${activeProfile}`);
         if (this.agentPool.has(poolKey)) return this.agentPool.get(poolKey);
         const tag = role === "nurse" ? "Nurse" : ("R" + (agentId.replace(/\D/g, "") || "1"));
         const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, activeProfile);
@@ -2868,6 +2881,21 @@
             obj.receiveShadow = true;
           }
         });
+        if (ghost) {
+          mesh.traverse((obj) => {
+            if (!obj.material) return;
+            const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            const faded = mats.map((m) => {
+              const c = m.clone();
+              c.transparent = true;
+              c.opacity = Math.min(c.opacity ?? 1, 0.32);
+              c.depthWrite = false;
+              return c;
+            });
+            obj.material = Array.isArray(obj.material) ? faded : faded[0];
+            obj.castShadow = false;
+          });
+        }
         mesh.visible = false;
         this.agentsGroup.add(mesh);
         this.agentPool.set(poolKey, mesh);
@@ -2922,7 +2950,7 @@
             const pose = interpolatePolylinePose(ev.pixel_path, frac);
             const wPos = this.pxToWorld(pose.x, pose.y);
 
-            const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id, ev.robot_profile_id);
+            const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id, ev.robot_profile_id, !!ev._ghost);
             agentMesh.visible = true;
             const stridePhase = frac * Math.PI * 14;
             const bob = ev.agent_role === "nurse" ? Math.abs(Math.sin(stridePhase)) * 0.16 : 0;
@@ -2939,6 +2967,7 @@
             }
           } else if (vis && t - ev.end_time_s >= 0 && t - ev.end_time_s <= 25) {
             const age = (t - ev.end_time_s) / 25;
+            if (ev._ghost) return;
             const ripple = this.getOrCreateRipple(rippleIdx++);
             ripple.visible = true;
             ripple.position.set(vis.endWorld.x, 0.25, vis.endWorld.z);
@@ -3702,6 +3731,23 @@
       return `${hh}:${mm}`;
     }
 
+    // One summary for the combined view: the nurses-only run is drawn as faded "ghost"
+    // agents under the robot-assisted run, so both are visible on one full-size plan.
+    function getSimViewSummary(comp) {
+      if (state.simView === "nurse") return comp.nurse_only;
+      if (state.simView === "robot") return comp.robot_assisted;
+      if (!comp._overlay) {
+        comp._overlay = {
+          ...comp.robot_assisted,
+          events: [
+            ...comp.nurse_only.events.map((ev) => ({ ...ev, _ghost: true })),
+            ...comp.robot_assisted.events,
+          ],
+        };
+      }
+      return comp._overlay;
+    }
+
     function renderSimulationFrame() {
       if (!state.comparison) return;
       const comp = state.comparison;
@@ -3712,12 +3758,11 @@
       const rightStats = computeShiftMetricsAt(comp.robot_assisted, t);
 
       const use3D = state.viewMode === "3d" && state.threeReady;
-      if (use3D && twinLeft && twinRight) {
-        twinLeft.updateSimulationFrame(comp.nurse_only, t, "left");
-        twinRight.updateSimulationFrame(comp.robot_assisted, t, "right");
+      const viewSummary = getSimViewSummary(comp);
+      if (use3D && twinRight) {
+        twinRight.updateSimulationFrame(viewSummary, t, state.simView);
       } else {
-        renderShiftCanvas2D(els.canvasLeft, comp.nurse_only, t);
-        renderShiftCanvas2D(els.canvasRight, comp.robot_assisted, t);
+        renderShiftCanvas2D(els.canvasRight, viewSummary, t);
       }
 
       els.nurseWalkedLeft.textContent = leftStats.nurseMin.toFixed(1);
@@ -4647,6 +4692,18 @@
       });
     }
 
+    const simViewGroup = document.getElementById("simViewGroup");
+    if (simViewGroup) {
+      simViewGroup.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-simview]");
+        if (!b) return;
+        state.simView = b.dataset.simview;
+        simViewGroup.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b));
+        document.getElementById("dualView")?.setAttribute("data-simview", state.simView);
+        renderSimulationFrame();
+      });
+    }
+
     els.speedGroup.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-speed]");
       if (!btn) return;
@@ -4959,10 +5016,10 @@
           const n1 = c.robot_assisted.nurse_minutes_walked;
           wtFocus(document.getElementById("cmpEngine"));
           wtSay(`${cmpVerdict(buildComparison(c))}
-            <span class="r" style="color:var(--ink-3)">Left: nurses only. Right: with robots. Same unit, same orders.</span>`);
+            <span class="r" style="color:var(--ink-3)">Both runs on one plan: faded red is the nurses-only shift, teal is the robots.</span>`);
           await wtWait(6500, token);
           wtFocus(els.dualView);
-          wtSay(`Left: nurses only. Right: with robots. Same unit, same orders.
+          wtSay(`Both runs play on the same floor plan. Faded red: the nurses-only shift. Solid: the shift with robots. Same unit, same orders.
             <span class="r">Nurse walking ${n0.toFixed(0)} → ${n1.toFixed(0)} min · ${c.nurse_minutes_saved.toFixed(0)} min back per shift · ${c.robot_assisted.total_trips} robot trips</span>`);
           await wtWait(9000, token);
         },
