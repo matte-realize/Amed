@@ -3317,6 +3317,7 @@
       const halo = new THREE.Mesh(haloGeo, haloMat);
       halo.position.y = 0.04;
       group.add(halo);
+      group.userData.halo = halo;
 
       const darkMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.42, metalness: 0.6 });
       const rubberMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.85, metalness: 0.1 });
@@ -3584,8 +3585,154 @@
         const capDome = new THREE.Mesh(new THREE.SphereGeometry(0.50, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), darkMat);
         capDome.position.y = 2.44;
         group.add(capDome);
+      } else if (profileId === "amed_compounding_arm") {
+        // 6-DOF Articulated Sterile Compounding Robotic Arm
+        const pedestalBase = new THREE.Mesh(new THREE.CylinderGeometry(0.82, 0.92, 0.22, 32), darkMat);
+        pedestalBase.position.y = 0.15;
+        group.add(pedestalBase);
+
+        const pedestalFlange = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.74, 0.12, 28), steelMat);
+        pedestalFlange.position.y = 0.31;
+        group.add(pedestalFlange);
+
+        // 4 leveling feet around pedestal perimeter
+        [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].forEach((ang) => {
+          const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 0.08, 14), rubberMat);
+          foot.position.set(Math.cos(ang) * 0.84, 0.04, Math.sin(ang) * 0.84);
+          group.add(foot);
+        });
+
+        // Pedestal status LED ring
+        const statusLedRing = new THREE.Mesh(
+          new THREE.TorusGeometry(0.76, 0.028, 10, 36),
+          new THREE.MeshBasicMaterial({ color: 0x14b8a6 })
+        );
+        statusLedRing.rotation.x = Math.PI / 2;
+        statusLedRing.position.y = 0.26;
+        group.add(statusLedRing);
+
+        // Rotating turret (DOF 1)
+        const armTurret = new THREE.Group();
+        armTurret.position.set(0, 0.37, 0);
+        group.add(armTurret);
+
+        const turretDrum = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.52, 0.34, 24), whiteMat);
+        turretDrum.position.y = 0.17;
+        armTurret.add(turretDrum);
+
+        [-0.44, 0.44].forEach((sx) => {
+          const turretServo = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.18, 16), darkMat);
+          turretServo.rotation.z = Math.PI / 2;
+          turretServo.position.set(sx, 0.24, 0);
+          armTurret.add(turretServo);
+        });
+
+        [-0.25, 0.25].forEach((yx) => {
+          const yokeCheek = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.36, 0.34), steelMat);
+          yokeCheek.position.set(yx, 0.44, 0);
+          armTurret.add(yokeCheek);
+        });
+
+        // Shoulder joint + upper arm (DOF 2)
+        const armShoulder = new THREE.Group();
+        armShoulder.position.set(0, 0.50, 0);
+        armShoulder.rotation.z = 0.28;
+        armTurret.add(armShoulder);
+
+        const shoulderServo = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.66, 20), darkMat);
+        shoulderServo.rotation.z = Math.PI / 2;
+        armShoulder.add(shoulderServo);
+
+        const shoulderCap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.70, 16), tealMat);
+        shoulderCap.rotation.z = Math.PI / 2;
+        armShoulder.add(shoulderCap);
+
+        const upperArmBody = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.92, 0.26), whiteMat);
+        upperArmBody.position.y = 0.46;
+        armShoulder.add(upperArmBody);
+
+        const upperArmSpine = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.82, 0.30), darkMat);
+        upperArmSpine.position.y = 0.46;
+        armShoulder.add(upperArmSpine);
+
+        // Elbow joint + tapered forearm (DOF 3)
+        const armElbow = new THREE.Group();
+        armElbow.position.set(0, 0.92, 0);
+        armElbow.rotation.z = -0.78;
+        armShoulder.add(armElbow);
+
+        const elbowServo = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.44, 18), darkMat);
+        elbowServo.rotation.z = Math.PI / 2;
+        armElbow.add(elbowServo);
+
+        const elbowCap = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.48, 16), tealMat);
+        elbowCap.rotation.z = Math.PI / 2;
+        armElbow.add(elbowCap);
+
+        const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.15, 0.82, 18), whiteMat);
+        forearm.position.y = 0.41;
+        armElbow.add(forearm);
+
+        // Internal cable-routing conduit along forearm
+        const cableConduit = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.74, 10), rubberMat);
+        cableConduit.position.set(0.13, 0.40, 0);
+        cableConduit.rotation.z = -0.06;
+        armElbow.add(cableConduit);
+
+        [0.22, 0.56].forEach((cy) => {
+          const clamp = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.05, 10), steelMat);
+          clamp.position.set(0.125, cy, 0);
+          armElbow.add(clamp);
+        });
+
+        // 3-axis wrist gimbal (DOF 4-6)
+        const wristPitch = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.22, 14), steelMat);
+        wristPitch.rotation.z = Math.PI / 2;
+        wristPitch.position.y = 0.84;
+        armElbow.add(wristPitch);
+
+        const wristRoll = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.095, 0.14, 16), darkMat);
+        wristRoll.position.y = 0.94;
+        armElbow.add(wristRoll);
+
+        const toolFlange = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.085, 0.06, 16), tealMat);
+        toolFlange.position.y = 1.03;
+        armElbow.add(toolFlange);
+
+        // Dual parallel sterile vial gripper fingers
+        [-0.085, 0.085].forEach((gx) => {
+          const finger = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.22, 0.06), steelMat);
+          finger.position.set(gx, 1.15, 0);
+          armElbow.add(finger);
+
+          const pad = new THREE.Mesh(new THREE.BoxGeometry(0.024, 0.10, 0.05), darkMat);
+          pad.position.set(gx * 0.82, 1.22, 0);
+          armElbow.add(pad);
+        });
+
+        // Glowing teal/cyan sterile med vial held in gripper
+        const vialMat = new THREE.MeshStandardMaterial({
+          color: 0x2dd4bf,
+          emissive: 0x14b8a6,
+          emissiveIntensity: 0.78,
+          transparent: true,
+          opacity: 0.88,
+          roughness: 0.12,
+          metalness: 0.1,
+        });
+        const medVial = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.048, 0.18, 16), vialMat);
+        medVial.position.set(0, 1.21, 0);
+        armElbow.add(medVial);
+
+        const vialCap = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.036, 0.04, 14), steelMat);
+        vialCap.position.set(0, 1.31, 0);
+        armElbow.add(vialCap);
+
+        group.userData.armTurret = armTurret;
+        group.userData.armShoulder = armShoulder;
+        group.userData.armElbow = armElbow;
       } else {
-        // Default: aethon_tug — Layered AMR base, 4 wheels, LiDAR turret, 3-compartment custodial pod with badge pads
+        // Default: aethon_tug — Layered AMR base, 4 wheels, LiDAR turret, open-frame 3-module custodial tower
         const amrBase = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.38, 1.96), darkMat);
         amrBase.position.y = 0.28;
         group.add(amrBase);
@@ -3618,29 +3765,81 @@
         lidarGlow.position.set(0, 0.68, 0.76);
         group.add(lidarGlow);
 
-        // 3-compartment custodial pod (Pharmacy, Specimens, Supplies) + side locker doors & badge readers
-        const podFrame = new THREE.Mesh(new THREE.BoxGeometry(1.52, 1.76, 1.56), darkMat);
-        podFrame.position.set(0, 1.38, -0.10);
-        group.add(podFrame);
+        // Open-frame modular locker tower: 4 corner pillars, top/bottom decks, anodized rails
+        const podPlinth = new THREE.Mesh(new THREE.BoxGeometry(1.48, 0.08, 1.48), darkMat);
+        podPlinth.position.set(0, 0.50, -0.10);
+        group.add(podPlinth);
 
-        [0.80, 1.38, 1.96].forEach((py, idx) => {
-          const bay = new THREE.Mesh(
-            new THREE.BoxGeometry(1.56, 0.46, 1.44),
-            idx === 1 ? tealMat : whiteMat
-          );
-          bay.position.set(0, py, -0.10);
-          group.add(bay);
+        const podTopCap = new THREE.Mesh(new THREE.BoxGeometry(1.48, 0.08, 1.48), darkMat);
+        podTopCap.position.set(0, 2.30, -0.10);
+        group.add(podTopCap);
+
+        const podTopDeck = new THREE.Mesh(new THREE.BoxGeometry(1.34, 0.05, 1.34), steelMat);
+        podTopDeck.position.set(0, 2.36, -0.10);
+        group.add(podTopDeck);
+
+        // 4 slender vertical corner pillars
+        [[-0.68, -0.78], [0.68, -0.78], [-0.68, 0.58], [0.68, 0.58]].forEach(([px, pz]) => {
+          const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 1.82, 14), steelMat);
+          pillar.position.set(px, 1.40, pz);
+          group.add(pillar);
+        });
+
+        // Anodized side rails between drawer modules
+        [-0.71, 0.71].forEach((rx) => {
+          [1.10, 1.66].forEach((ry) => {
+            const sideRail = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.05, 1.36), darkMat);
+            sideRail.position.set(rx, ry, -0.10);
+            group.add(sideRail);
+          });
+        });
+
+        // 3 slim separated drawer modules with beveled/inset faces & translucent middle specimen bay
+        [0.82, 1.38, 1.94].forEach((py, idx) => {
+          if (idx === 1) {
+            // Middle specimen bay: open frame + translucent acrylic window + interior glowing rack
+            const bayTop = new THREE.Mesh(new THREE.BoxGeometry(1.30, 0.05, 1.28), darkMat);
+            bayTop.position.set(0, py + 0.185, -0.10);
+            group.add(bayTop);
+            const bayBot = new THREE.Mesh(new THREE.BoxGeometry(1.30, 0.05, 1.28), darkMat);
+            bayBot.position.set(0, py - 0.185, -0.10);
+            group.add(bayBot);
+            const bayBack = new THREE.Mesh(new THREE.BoxGeometry(1.28, 0.34, 0.08), darkMat);
+            bayBack.position.set(0, py, -0.70);
+            group.add(bayBack);
+
+            const acrylicWindow = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.32, 1.16), glassMat);
+            acrylicWindow.position.set(0, py, -0.08);
+            group.add(acrylicWindow);
+
+            const specimenRack = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.14, 0.72), tealMat);
+            specimenRack.position.set(0, py - 0.05, -0.10);
+            group.add(specimenRack);
+          } else {
+            const drawerBody = new THREE.Mesh(new THREE.BoxGeometry(1.30, 0.38, 1.26), whiteMat);
+            drawerBody.position.set(0, py, -0.10);
+            group.add(drawerBody);
+
+            // Inset beveled front fascia & status strip
+            const insetFace = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.26, 0.05), steelMat);
+            insetFace.position.set(0, py, 0.54);
+            group.add(insetFace);
+
+            const statusBar = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.035, 0.06), tealMat);
+            statusBar.position.set(0, py + 0.08, 0.56);
+            group.add(statusBar);
+          }
 
           // Side badge-reader pad & handle
-          const latch = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.18, 0.26), steelMat);
-          latch.position.set(0.80, py, 0.18);
+          const latch = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.16, 0.24), steelMat);
+          latch.position.set(0.70, py, 0.14);
           group.add(latch);
         });
 
         // Rear push handle
         const rearHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.36, 12), steelMat);
         rearHandle.rotation.z = Math.PI / 2;
-        rearHandle.position.set(0, 2.34, -0.84);
+        rearHandle.position.set(0, 2.36, -0.84);
         group.add(rearHandle);
       }
 
@@ -3654,6 +3853,7 @@
       const label = makeLabelSprite(tagText, "rgba(15, 118, 110, 0.94)", "#5eead4", 0.75);
       label.position.y = 3.65;
       group.add(label);
+      group.userData.label = label;
 
       return group;
     }
@@ -4449,8 +4649,11 @@
           pneumatic_tube: "TUBE",
           amed_prestage_pod: "POD",
           amed_narrow_rover: "SLIM",
+          amed_compounding_arm: "ARM",
         };
         const mesh = createRobot3D(tagMap[profileId] || "BOT", profileId);
+        if (mesh.userData.halo) mesh.remove(mesh.userData.halo);
+        if (mesh.userData.label) mesh.remove(mesh.userData.label);
         mesh.scale.setScalar(1.0);
         this.modelGroup.add(mesh);
       }
@@ -4474,7 +4677,20 @@
         this.renderer.setSize(w, h, false);
       }
 
-      tick() {
+      tick(now = performance.now()) {
+        if (this.modelGroup.children.length > 0) {
+          const robot = this.modelGroup.children[0];
+          if (robot.userData.armTurret) {
+            const t = now * 0.0012;
+            robot.userData.armTurret.rotation.y = Math.sin(t * 0.75) * 0.45;
+            if (robot.userData.armShoulder) {
+              robot.userData.armShoulder.rotation.z = 0.28 + Math.sin(t * 1.1) * 0.14;
+            }
+            if (robot.userData.armElbow) {
+              robot.userData.armElbow.rotation.z = -0.78 + Math.cos(t * 1.1) * 0.18;
+            }
+          }
+        }
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
       }
@@ -4557,6 +4773,21 @@
         design_notes: "Narrow-track differential base with dual vertical specimen/med canisters and top-mounted 360° solid-state LiDAR.",
         why_helpful: "Navigates legacy patient-room doorways (<0.85m) that block standard commercial AMRs.",
       },
+      amed_compounding_arm: {
+        id: "amed_compounding_arm",
+        name: "Amed 6-DOF Sterile Compounding Arm",
+        vendor: "Custom Amed",
+        is_custom: true,
+        speed_mps: 0.0,
+        clearance_m: 0.0,
+        compartments: 1,
+        handoff_seconds: 6,
+        dimensions: "62 cm Ø pedestal × 145 cm reach",
+        cost_estimate_usd: "~$75k–$95k custom cell",
+        description: "6-DOF articulated sterile pharmacy compounding arm with dual parallel vial gripper and 3-axis wrist gimbal.",
+        design_notes: "Heavy circular pedestal with leveling feet, rotating turret, exposed servo housings, internal cable conduit, and sterile vial gripper.",
+        why_helpful: "Automates repetitive IV admixture and STAT vial preparation inside pharmacy cleanrooms.",
+      },
     };
     let robotCatalogMap = { ...ROBOT_METADATA_FALLBACK };
 
@@ -4617,7 +4848,7 @@
         if (!state.threeReady) return;
         const now = performance.now();
         if (robotShowcase && tabOverviewEl && !tabOverviewEl.classList.contains("hidden")) {
-          robotShowcase.tick();
+          robotShowcase.tick(now);
         }
         if (state.viewMode !== "3d" || (tabEngineEl && tabEngineEl.classList.contains("hidden"))) return;
         // Animate active 3D reconstruction rise-up & smooth camera focus lerp
