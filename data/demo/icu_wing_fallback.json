@@ -1,0 +1,470 @@
+{
+  "source": "pre-traced fallback",
+  "unit_name": "ICU / Med-Surg L-Wing",
+  "image_width": 1000,
+  "image_height": 650,
+  "meters_per_pixel": 0.05,
+  "rooms": [
+    {
+      "id": "icu_iso_1",
+      "label": "ICU Isolation 1",
+      "type": "patient_room",
+      "polygon": [
+        {
+          "x": 40.0,
+          "y": 40.0
+        },
+        {
+          "x": 240.0,
+          "y": 40.0
+        },
+        {
+          "x": 240.0,
+          "y": 240.0
+        },
+        {
+          "x": 40.0,
+          "y": 240.0
+        }
+      ],
+      "centroid": {
+        "x": 140.0,
+        "y": 140.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Negative-pressure ICU isolation room with narrow 0.82m airlock door; nurse-only bedside entry.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
+    },
+    {
+      "id": "icu_iso_2",
+      "label": "ICU Isolation 2",
+      "type": "patient_room",
+      "polygon": [
+        {
+          "x": 240.0,
+          "y": 40.0
+        },
+        {
+          "x": 440.0,
+          "y": 40.0
+        },
+        {
+          "x": 440.0,
+          "y": 240.0
+        },
+        {
+          "x": 240.0,
+          "y": 240.0
+        }
+      ],
+      "centroid": {
+        "x": 340.0,
+        "y": 140.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Negative-pressure ICU isolation room with narrow 0.82m airlock door; nurse-only bedside entry.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
+    },
+    {
+      "id": "central_nurse_station",
+      "label": "Central Nurse Station",
+      "type": "nurse_station",
+      "polygon": [
+        {
+          "x": 440.0,
+          "y": 40.0
+        },
+        {
+          "x": 660.0,
+          "y": 40.0
+        },
+        {
+          "x": 660.0,
+          "y": 240.0
+        },
+        {
+          "x": 440.0,
+          "y": 240.0
+        }
+      ],
+      "centroid": {
+        "x": 550.0,
+        "y": 140.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "assisted",
+      "autonomy_reason": "Central telemetry and triage desk; courier robots dock at outer corridor counter for nurse handoff.",
+      "obstacles": [
+        "desk",
+        "terminal"
+      ]
+    },
+    {
+      "id": "corridor_main",
+      "label": "Main Corridor",
+      "type": "corridor",
+      "polygon": [
+        {
+          "x": 40.0,
+          "y": 240.0
+        },
+        {
+          "x": 660.0,
+          "y": 240.0
+        },
+        {
+          "x": 660.0,
+          "y": 360.0
+        },
+        {
+          "x": 40.0,
+          "y": 360.0
+        }
+      ],
+      "centroid": {
+        "x": 350.0,
+        "y": 300.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "3.0m wide primary west-east transit spine with unobstructed two-way courier navigation.",
+      "obstacles": []
+    },
+    {
+      "id": "corridor_east",
+      "label": "East Wing Corridor",
+      "type": "corridor",
+      "polygon": [
+        {
+          "x": 660.0,
+          "y": 40.0
+        },
+        {
+          "x": 780.0,
+          "y": 40.0
+        },
+        {
+          "x": 780.0,
+          "y": 600.0
+        },
+        {
+          "x": 660.0,
+          "y": 600.0
+        }
+      ],
+      "centroid": {
+        "x": 720.0,
+        "y": 320.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "3.0m wide L-wing north-south corridor linking main spine to east ICU isolation bays.",
+      "obstacles": []
+    },
+    {
+      "id": "pharmacy_satellite",
+      "label": "Pharmacy Satellite",
+      "type": "medication_room",
+      "polygon": [
+        {
+          "x": 40.0,
+          "y": 360.0
+        },
+        {
+          "x": 250.0,
+          "y": 360.0
+        },
+        {
+          "x": 250.0,
+          "y": 600.0
+        },
+        {
+          "x": 40.0,
+          "y": 600.0
+        }
+      ],
+      "centroid": {
+        "x": 145.0,
+        "y": 480.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "Automated dispensing satellite with 1.25m wide badge-activated doorway for autonomous medication pickup.",
+      "obstacles": [
+        "med_cart",
+        "shelf"
+      ]
+    },
+    {
+      "id": "clean_supply",
+      "label": "Clean Supply",
+      "type": "supply_room",
+      "polygon": [
+        {
+          "x": 250.0,
+          "y": 360.0
+        },
+        {
+          "x": 460.0,
+          "y": 360.0
+        },
+        {
+          "x": 460.0,
+          "y": 600.0
+        },
+        {
+          "x": 250.0,
+          "y": 600.0
+        }
+      ],
+      "centroid": {
+        "x": 355.0,
+        "y": 480.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "Central clean linen and IV supply bay with 1.25m clearance for autonomous restock carts.",
+      "obstacles": [
+        "shelf",
+        "supply_bin"
+      ]
+    },
+    {
+      "id": "lab_pneumatic_drop",
+      "label": "Lab Pneumatic Drop",
+      "type": "lab_drop",
+      "polygon": [
+        {
+          "x": 460.0,
+          "y": 360.0
+        },
+        {
+          "x": 660.0,
+          "y": 360.0
+        },
+        {
+          "x": 660.0,
+          "y": 600.0
+        },
+        {
+          "x": 460.0,
+          "y": 600.0
+        }
+      ],
+      "centroid": {
+        "x": 560.0,
+        "y": 480.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "Dedicated pneumatic tube specimen drop station directly accessible to courier robots.",
+      "obstacles": [
+        "lab_bench"
+      ]
+    },
+    {
+      "id": "icu_iso_3",
+      "label": "ICU Isolation 3",
+      "type": "patient_room",
+      "polygon": [
+        {
+          "x": 780.0,
+          "y": 40.0
+        },
+        {
+          "x": 960.0,
+          "y": 40.0
+        },
+        {
+          "x": 960.0,
+          "y": 320.0
+        },
+        {
+          "x": 780.0,
+          "y": 320.0
+        }
+      ],
+      "centroid": {
+        "x": 870.0,
+        "y": 180.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Acute ICU bedside zone; courier robots deliver to East Wing Corridor threshold for clinical handoff.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
+    },
+    {
+      "id": "icu_iso_4",
+      "label": "ICU Isolation 4",
+      "type": "patient_room",
+      "polygon": [
+        {
+          "x": 780.0,
+          "y": 320.0
+        },
+        {
+          "x": 960.0,
+          "y": 320.0
+        },
+        {
+          "x": 960.0,
+          "y": 600.0
+        },
+        {
+          "x": 780.0,
+          "y": 600.0
+        }
+      ],
+      "centroid": {
+        "x": 870.0,
+        "y": 460.0
+      },
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Acute ICU bedside zone; courier robots deliver to East Wing Corridor threshold for clinical handoff.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
+    }
+  ],
+  "doors": [
+    {
+      "id": "door_icu_1",
+      "position": {
+        "x": 140.0,
+        "y": 240.0
+      },
+      "rooms_connected": [
+        "icu_iso_1",
+        "corridor_main"
+      ],
+      "confidence": 1.0,
+      "width_m": 0.82,
+      "robot_passable": false
+    },
+    {
+      "id": "door_icu_2",
+      "position": {
+        "x": 340.0,
+        "y": 240.0
+      },
+      "rooms_connected": [
+        "icu_iso_2",
+        "corridor_main"
+      ],
+      "confidence": 1.0,
+      "width_m": 0.82,
+      "robot_passable": false
+    },
+    {
+      "id": "door_nurse",
+      "position": {
+        "x": 550.0,
+        "y": 240.0
+      },
+      "rooms_connected": [
+        "central_nurse_station",
+        "corridor_main"
+      ],
+      "confidence": 1.0,
+      "width_m": 1.4,
+      "robot_passable": true
+    },
+    {
+      "id": "door_pharmacy",
+      "position": {
+        "x": 145.0,
+        "y": 360.0
+      },
+      "rooms_connected": [
+        "pharmacy_satellite",
+        "corridor_main"
+      ],
+      "confidence": 1.0,
+      "width_m": 1.25,
+      "robot_passable": true
+    },
+    {
+      "id": "door_supply",
+      "position": {
+        "x": 355.0,
+        "y": 360.0
+      },
+      "rooms_connected": [
+        "clean_supply",
+        "corridor_main"
+      ],
+      "confidence": 1.0,
+      "width_m": 1.25,
+      "robot_passable": true
+    },
+    {
+      "id": "door_lab",
+      "position": {
+        "x": 560.0,
+        "y": 360.0
+      },
+      "rooms_connected": [
+        "lab_pneumatic_drop",
+        "corridor_main"
+      ],
+      "confidence": 1.0,
+      "width_m": 1.2,
+      "robot_passable": true
+    },
+    {
+      "id": "door_corridor_junction",
+      "position": {
+        "x": 660.0,
+        "y": 300.0
+      },
+      "rooms_connected": [
+        "corridor_main",
+        "corridor_east"
+      ],
+      "confidence": 1.0,
+      "width_m": 2.4,
+      "robot_passable": true
+    },
+    {
+      "id": "door_icu_3",
+      "position": {
+        "x": 780.0,
+        "y": 180.0
+      },
+      "rooms_connected": [
+        "icu_iso_3",
+        "corridor_east"
+      ],
+      "confidence": 1.0,
+      "width_m": 1.15,
+      "robot_passable": true
+    },
+    {
+      "id": "door_icu_4",
+      "position": {
+        "x": 780.0,
+        "y": 460.0
+      },
+      "rooms_connected": [
+        "icu_iso_4",
+        "corridor_east"
+      ],
+      "confidence": 1.0,
+      "width_m": 1.15,
+      "robot_passable": true
+    }
+  ]
+}

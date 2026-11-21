@@ -23,7 +23,9 @@ NEON_MODEL = "gemini-4-neon"
 DECISION_MODEL = "gemini-decision-1"
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-FALLBACK_UNIT_PATH = _REPO_ROOT / "data" / "demo" / "fallback_unit.json"
+DEMO_DIR = _REPO_ROOT / "data" / "demo"
+FALLBACK_UNIT_PATH = DEMO_DIR / "fallback_unit.json"
+ICU_WING_FALLBACK_PATH = DEMO_DIR / "icu_wing_fallback.json"
 
 
 class _ExtractedRoom(BaseModel):
@@ -433,8 +435,20 @@ def verify_unit_map(
     return verified_unit, stats
 
 
-def load_fallback_unit() -> UnitMap:
-    """Load the explicitly labeled pre-traced fallback unit map from data/demo/fallback_unit.json."""
-    with open(FALLBACK_UNIT_PATH, "r", encoding="utf-8") as f:
+def load_fallback_unit(plan_id: Optional[str] = None) -> UnitMap:
+    """Load the explicitly labeled pre-traced fallback unit map for a demo plan.
+
+    When `plan_id` is provided (e.g. "icu_wing") and `data/demo/{plan_id}_fallback.json`
+    exists, loads that plan's pre-traced fallback; otherwise loads `fallback_unit.json`.
+    """
+    target_path = FALLBACK_UNIT_PATH
+    if plan_id:
+        safe_id = plan_id.strip()
+        if safe_id and "/" not in safe_id and "\\" not in safe_id and ".." not in safe_id:
+            candidate = DEMO_DIR / f"{safe_id}_fallback.json"
+            if candidate.is_file():
+                target_path = candidate
+
+    with open(target_path, "r", encoding="utf-8") as f:
         payload = json.load(f)
     return UnitMap.model_validate(payload)

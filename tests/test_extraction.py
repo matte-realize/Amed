@@ -13,6 +13,7 @@ from PIL import Image
 from hospital_twin.extraction import (
     DECISION_MODEL,
     FALLBACK_UNIT_PATH,
+    ICU_WING_FALLBACK_PATH,
     NEON_MODEL,
     compute_centroid,
     crop_door_region,
@@ -25,6 +26,7 @@ from hospital_twin.schemas import Door, Point, Room, UnitMap
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SAMPLE_IMAGE_PATH = REPO_ROOT / "data" / "demo" / "sample_unit.png"
+ICU_WING_IMAGE_PATH = REPO_ROOT / "data" / "demo" / "icu_wing.png"
 
 
 class TestFallbackAndCropping(unittest.TestCase):
@@ -61,6 +63,52 @@ class TestFallbackAndCropping(unittest.TestCase):
         unit = load_fallback_unit()
         with Image.open(SAMPLE_IMAGE_PATH) as img:
             self.assertEqual(img.size, (unit.image_width, unit.image_height))
+
+    def test_icu_wing_image_and_fallback_unit(self) -> None:
+        self.assertTrue(ICU_WING_IMAGE_PATH.exists())
+        self.assertTrue(ICU_WING_FALLBACK_PATH.exists())
+
+        raw = json.loads(ICU_WING_FALLBACK_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(raw.get("source"), "pre-traced fallback")
+
+        icu = load_fallback_unit("icu_wing")
+        default_unit = load_fallback_unit()
+        self.assertIsInstance(icu, UnitMap)
+        self.assertEqual((icu.image_width, icu.image_height), (1000, 650))
+        with Image.open(ICU_WING_IMAGE_PATH) as img:
+            self.assertEqual(img.size, (icu.image_width, icu.image_height))
+
+        # Distinct from default sample_unit fallback
+        icu_ids = {r.id for r in icu.rooms}
+        default_ids = {r.id for r in default_unit.rooms}
+        self.assertNotEqual(icu_ids, default_ids)
+
+        # Verify required L-wing rooms & autonomy tiers
+        rooms_by_id = {r.id: r for r in icu.rooms}
+        self.assertIn("corridor_main", rooms_by_id)
+        self.assertIn("corridor_east", rooms_by_id)
+        self.assertEqual(rooms_by_id["central_nurse_station"].autonomy_tier, "assisted")
+        self.assertEqual(rooms_by_id["pharmacy_satellite"].autonomy_tier, "autonomous")
+        self.assertEqual(rooms_by_id["clean_supply"].autonomy_tier, "autonomous")
+        self.assertEqual(rooms_by_id["lab_pneumatic_drop"].autonomy_tier, "autonomous")
+
+        icu_rooms = [r for r in icu.rooms if r.type == "patient_room"]
+        self.assertEqual(len(icu_rooms), 4)
+        self.assertTrue(all(r.autonomy_tier == "human_only" for r in icu_rooms))
+
+        # Verify 2 narrow 0.82m non-passable airlock doors and all doors reference valid rooms
+        narrow_doors = [d for d in icu.doors if not d.robot_passable]
+        self.assertEqual(len(narrow_doors), 2)
+        for d in narrow_doors:
+            self.assertAlmostEqual(d.width_m, 0.82, places=2)
+        for d in icu.doors:
+            self.assertEqual(len(d.rooms_connected), 2)
+            self.assertIn(d.rooms_connected[0], rooms_by_id)
+            self.assertIn(d.rooms_connected[1], rooms_by_id)
+
+        # Unknown plan_id gracefully falls back to default sample_unit
+        unknown_fallback = load_fallback_unit("nonexistent_plan")
+        self.assertEqual({r.id for r in unknown_fallback.rooms}, default_ids)
 
     def test_crop_room_and_door_regions(self) -> None:
         unit = load_fallback_unit()
