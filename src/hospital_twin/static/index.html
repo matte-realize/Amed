@@ -380,6 +380,58 @@
       border-radius: 50%;
       margin-right: 3px;
     }
+    .autonomy-highlights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .highlight-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .highlight-card:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+    .highlight-card.tier-autonomous { border-left-color: #10b981; }
+    .highlight-card.tier-assisted { border-left-color: #f59e0b; }
+    .highlight-card.tier-human_only { border-left-color: #e11d48; }
+    .highlight-card .hc-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .highlight-card .hc-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .highlight-card .hc-pill {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--surface-alt);
+      color: var(--muted);
+    }
+    .highlight-card.tier-autonomous .hc-pill { background: #d1fae5; color: #065f46; }
+    .highlight-card.tier-assisted .hc-pill { background: #fef3c7; color: #92400e; }
+    .highlight-card.tier-human_only .hc-pill { background: #ffe4e6; color: #9f1239; }
+    .highlight-card .hc-reason {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
 
     .canvas-wrap {
       position: relative;
@@ -761,6 +813,9 @@
         </div>
       </section>
 
+      <!-- Autonomized Solution Highlights -->
+      <section class="autonomy-highlights hidden" id="autonomyHighlights"></section>
+
       <!-- Side-by-Side Animated Twin (Step 3) -->
       <section class="dual-grid hidden" id="dualView">
         <div class="sim-card">
@@ -964,6 +1019,79 @@
         `<span><span class="tier-dot" style="background:#e11d48"></span>${humanCount} Human-Only</span>` +
         `<span style="color:#94a3b8">· ${passableDoors}/${totalDoors} Passable Doors</span>`;
       els.autonomySummaryChip.classList.remove("hidden");
+
+      const hlContainer = document.getElementById("autonomyHighlights");
+      if (hlContainer) {
+        const autoRooms = state.unitMap.rooms.filter((r) => (r.autonomy_tier || "autonomous") === "autonomous");
+        const assistRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "assisted");
+        const humanRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "human_only");
+        const narrowDoors = (state.unitMap.doors || []).filter((d) => d.robot_passable === false);
+
+        const cards = [];
+        if (autoRooms.length > 0) {
+          const sample = autoRooms[0];
+          cards.push({
+            kind: "room",
+            id: sample.id,
+            tier: "autonomous",
+            pill: `${autoRooms.length} Autonomous Zones`,
+            title: autoRooms.map((r) => r.label).slice(0, 3).join(", ") + (autoRooms.length > 3 ? "…" : ""),
+            reason: sample.autonomy_reason || "Full courier-robot transit & docking supported.",
+          });
+        }
+        if (assistRooms.length > 0) {
+          const sample = assistRooms[0];
+          cards.push({
+            kind: "room",
+            id: sample.id,
+            tier: "assisted",
+            pill: `${assistRooms.length} Assisted Hub`,
+            title: assistRooms.map((r) => r.label).join(", "),
+            reason: sample.autonomy_reason || "Shared human-robot handoff zone.",
+          });
+        }
+        if (humanRooms.length > 0) {
+          const sample = humanRooms[0];
+          cards.push({
+            kind: "room",
+            id: sample.id,
+            tier: "human_only",
+            pill: `${humanRooms.length} Human-Only`,
+            title: humanRooms.map((r) => r.label).slice(0, 3).join(", ") + (humanRooms.length > 3 ? "…" : ""),
+            reason: sample.autonomy_reason || "Clinical bedside care; robots stop at corridor threshold.",
+          });
+        }
+        if (narrowDoors.length > 0) {
+          const d0 = narrowDoors[0];
+          cards.push({
+            kind: "door",
+            id: d0.id,
+            tier: "human_only",
+            pill: `${narrowDoors.length} Narrow Doors (<0.9m)`,
+            title: narrowDoors.map((d) => `${d.id} (${(d.width_m || 0.85).toFixed(2)}m)`).slice(0, 2).join(", "),
+            reason: "Clearance below 0.90m robot threshold — flagged as physical bottleneck.",
+          });
+        }
+
+        hlContainer.innerHTML = cards
+          .map(
+            (c) => `
+            <div class="highlight-card tier-${c.tier}" data-pick-kind="${c.kind}" data-pick-id="${escapeHtml(c.id)}">
+              <div class="hc-top">
+                <span class="hc-title">${escapeHtml(c.title)}</span>
+                <span class="hc-pill">${escapeHtml(c.pill)}</span>
+              </div>
+              <div class="hc-reason">${escapeHtml(c.reason)}</div>
+            </div>`
+          )
+          .join("");
+        hlContainer.querySelectorAll(".highlight-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            setSelection({ kind: card.dataset.pickKind, id: card.dataset.pickId });
+          });
+        });
+        hlContainer.classList.remove("hidden");
+      }
     }
 
     function renderInspectorCards() {
@@ -1544,9 +1672,6 @@
 
         this.controls.addEventListener("change", () => {
           if (this.onCameraChange) this.onCameraChange();
-          if (!state.playing && state.viewMode === "3d") {
-            this.renderOnce();
-          }
         });
       }
 
@@ -1973,9 +2098,46 @@
       }
 
       renderOnce() {
+        this.renderer.render(this.scene, this.camera);
+      }
+
+      tickControlsAndRender() {
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
       }
+    }
+
+    let threeLoopId = null;
+    function startThreeLoop() {
+      if (threeLoopId !== null) return;
+      const loop = () => {
+        threeLoopId = requestAnimationFrame(loop);
+        if (state.viewMode !== "3d" || !state.threeReady) return;
+        // Animate active 3D reconstruction rise-up
+        const now = performance.now();
+        if (twinSingle && !els.singleView.classList.contains("hidden")) {
+          animateReconstructionGroup(twinSingle.staticGroup, now);
+          twinSingle.tickControlsAndRender();
+        }
+        if (twinLeft && twinRight && !els.dualView.classList.contains("hidden")) {
+          animateReconstructionGroup(twinLeft.staticGroup, now);
+          animateReconstructionGroup(twinRight.staticGroup, now);
+          twinLeft.tickControlsAndRender();
+          twinRight.tickControlsAndRender();
+        }
+      };
+      threeLoopId = requestAnimationFrame(loop);
+    }
+
+    function animateReconstructionGroup(group, now) {
+      if (!group) return;
+      group.traverse((obj) => {
+        if (obj.userData && obj.userData.bornAt !== undefined && obj.scale.y < 0.999) {
+          const p = Math.min(1, (now - obj.userData.bornAt) / 380);
+          const ease = 1 - Math.pow(1 - p, 3);
+          obj.scale.y = Math.max(0.02, ease);
+        }
+      });
     }
 
     function initThreeViewports() {
@@ -1989,20 +2151,19 @@
           if (syncingCameras) return;
           syncingCameras = true;
           twinRight.camera.position.copy(twinLeft.camera.position);
+          twinRight.camera.quaternion.copy(twinLeft.camera.quaternion);
           twinRight.controls.target.copy(twinLeft.controls.target);
-          twinRight.controls.update();
-          if (!state.playing) twinRight.renderer.render(twinRight.scene, twinRight.camera);
           syncingCameras = false;
         };
         twinRight.onCameraChange = () => {
           if (syncingCameras) return;
           syncingCameras = true;
           twinLeft.camera.position.copy(twinRight.camera.position);
+          twinLeft.camera.quaternion.copy(twinRight.camera.quaternion);
           twinLeft.controls.target.copy(twinRight.controls.target);
-          twinLeft.controls.update();
-          if (!state.playing) twinLeft.renderer.render(twinLeft.scene, twinLeft.camera);
           syncingCameras = false;
         };
+        startThreeLoop();
         return true;
       } catch (err) {
         console.warn("WebGL initialization failed, falling back to 2D:", err);
@@ -2843,16 +3004,21 @@
     });
 
     // Boot: load plans + initialize 3D WebGL engine (falling back to 2D if needed)
-    fetchPlans();
-    loadThreeEngine().then((ok) => {
-      if (ok && initThreeViewports()) {
-        state.threeReady = true;
-        state.viewMode = "3d";
-      } else {
-        state.threeReady = false;
-        state.viewMode = "2d";
-      }
-      applyViewVisibility();
+    fetchPlans().then(() => {
+      loadThreeEngine().then((ok) => {
+        if (ok && initThreeViewports()) {
+          state.threeReady = true;
+          state.viewMode = "3d";
+        } else {
+          state.threeReady = false;
+          state.viewMode = "2d";
+        }
+        applyViewVisibility();
+        // Auto-reconstruct the demo unit in 3D on boot so the 3D twin is immediately active
+        if (!state.unitMap && state.plans.length > 0) {
+          extractUnit(true);
+        }
+      });
     });
   </script>
 </body>
