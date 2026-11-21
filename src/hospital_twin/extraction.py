@@ -156,11 +156,11 @@ def extract_unit_map(
         img_bytes = _image_to_bytes_png(rgb_img)
 
     prompt = (
-        f"Analyze this hospital unit floor plan image ({width}x{height} pixels).\n"
+        f"Analyze this architectural floor plan image ({width}x{height} pixels).\n"
         "Extract every distinct room/corridor and every door connecting two rooms/corridors.\n"
         "For each room provide:\n"
         "- id: short snake_case identifier (e.g. 'room_101', 'nurse_station', 'corridor_main')\n"
-        "- label: human-readable name shown on the plan\n"
+        "- label: exact human-readable name printed on the plan (or short descriptive name if unlabeled)\n"
         "- type: one of patient_room, nurse_station, medication_room, supply_room, lab_drop, corridor, other\n"
         "- polygon: list of {x, y} pixel coordinates tracing the room boundary\n"
         "- centroid: {x, y} pixel center of the room\n"
@@ -265,8 +265,8 @@ def _re_extract_room_label(
 def verify_unit_map(
     image_path: str,
     unit_map: UnitMap,
-    confidence_threshold: float = 0.6,
-    re_extract_threshold: float = 0.35,
+    confidence_threshold: float = 0.55,
+    re_extract_threshold: float = 0.25,
     max_workers: int = 8,
 ) -> tuple[UnitMap, dict]:
     """Verify each extracted room and door crop in parallel using the Decisions API.
@@ -306,7 +306,10 @@ def verify_unit_map(
             questions={
                 "is_room_label": {
                     "type": "noul",
-                    "instructions": f"Is this room labeled '{room.label}' (or a {room.type.replace('_', ' ')})?",
+                    "instructions": (
+                        f"Is this a valid room or corridor region in the floor plan "
+                        f"(tentatively '{room.label}')?"
+                    ),
                 }
             },
         )
