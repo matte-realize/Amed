@@ -836,10 +836,339 @@
       z-index: 10;
       display: none;
     }
+
+    html { scroll-behavior: smooth; }
+
+    /* Amed Landing Hero & Problem-Driven Section */
+    .amed-hero-wrap {
+      background: linear-gradient(135deg, #0b1220 0%, #0f172a 55%, #112432 100%);
+      color: #f8fafc;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 20px 18px 22px;
+    }
+    .amed-hero-inner {
+      max-width: 1520px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .amed-hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .amed-pitch-block {
+      max-width: 820px;
+    }
+    .amed-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #5eead4;
+      background: rgba(20, 184, 166, 0.14);
+      border: 1px solid rgba(94, 234, 212, 0.28);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    .amed-hero-title {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 2.8vw, 32px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.18;
+      color: #ffffff;
+    }
+    .amed-hero-sub {
+      margin: 0;
+      font-size: 14px;
+      color: #cbd5e1;
+      max-width: 760px;
+      line-height: 1.5;
+    }
+    .amed-hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-launch {
+      background: linear-gradient(135deg, #0d9488, #2563eb);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(13, 148, 136, 0.32);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-launch:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+    }
+    .btn-collapse-hero {
+      background: rgba(148, 163, 184, 0.14);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn-collapse-hero:hover {
+      background: rgba(148, 163, 184, 0.24);
+    }
+
+    .amed-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    .struggles-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 1100px) {
+      .struggles-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .struggles-grid { grid-template-columns: 1fr; }
+    }
+    .struggle-card {
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 12px;
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: border-color 0.18s ease, transform 0.18s ease;
+    }
+    .struggle-card:hover {
+      border-color: rgba(94, 234, 212, 0.5);
+      transform: translateY(-1px);
+    }
+    .struggle-stat {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fda4af;
+      line-height: 1.1;
+    }
+    .struggle-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-top: 3px;
+    }
+    .struggle-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+    .struggle-meta {
+      font-size: 11px;
+      color: #5eead4;
+      font-weight: 600;
+    }
+    .btn-simulate-struggle {
+      width: 100%;
+      background: rgba(20, 184, 166, 0.16);
+      color: #5eead4;
+      border: 1px solid rgba(94, 234, 212, 0.35);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .btn-simulate-struggle:hover {
+      background: #0d9488;
+      color: #ffffff;
+      border-color: #0d9488;
+    }
+
+    .fleet-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 1180px) {
+      .fleet-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .fleet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .fleet-card {
+      text-align: left;
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      color: #e2e8f0;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .fleet-card:hover {
+      border-color: rgba(94, 234, 212, 0.45);
+      background: rgba(30, 41, 59, 0.9);
+    }
+    .fleet-card.active {
+      border-color: #2dd4bf;
+      background: rgba(13, 148, 136, 0.24);
+      box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.35);
+    }
+    .fleet-card-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      border-radius: 999px;
+      margin-bottom: 5px;
+      background: rgba(148, 163, 184, 0.18);
+      color: #cbd5e1;
+    }
+    .fleet-card-tag.custom {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+    }
+    .fleet-card-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .fleet-card-spec {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 3px;
+      line-height: 1.35;
+    }
   </style>
 </head>
 <body>
-  <div class="app-shell">
+  <!-- Amed Landing Hero & Problem-Driven Section -->
+  <section class="amed-hero-wrap" id="amedLandingHero">
+    <div class="amed-hero-inner">
+      <div class="amed-hero-top">
+        <div class="amed-pitch-block">
+          <div class="amed-eyebrow">Amed · Hospital World Model</div>
+          <h1 class="amed-hero-title">Hospital World Model — Build a 3D twin from any floor plan, test existing &amp; custom robotics, and prove reliability on the hospital's worst day.</h1>
+          <p class="amed-hero-sub">Upload a unit blueprint, inspect corridor clearances and autonomy zones in 3D, and benchmark nurse-only vs. robot-assisted logistics under STAT surges, pharmacy delays, and equipment bottlenecks.</p>
+        </div>
+        <div class="amed-hero-actions">
+          <button type="button" class="btn-launch" id="launchTwinBtn">Launch Interactive Twin ↓</button>
+          <button type="button" class="btn-collapse-hero" id="toggleHeroBodyBtn" aria-expanded="true">Collapse Brief</button>
+        </div>
+      </div>
+
+      <div id="amedHeroBody" style="display:flex; flex-direction:column; gap:14px;">
+        <div>
+          <div class="amed-section-label">Sourced Hospital Struggles — Click Any Failure Mode to Simulate on the 3D Twin</div>
+          <div class="struggles-grid">
+            <article class="struggle-card">
+              <div>
+                <div class="struggle-stat">30.1%</div>
+                <div class="struggle-title">Delayed Defibrillation</div>
+                <p class="struggle-desc">In-hospital cardiac arrests suffer &gt;2 min defibrillation delays when crash carts or AEDs are staged away from patient bays.</p>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:7px;">
+                <div class="struggle-meta">Scenario: Crash Cart Missing · Fleet: Amed Pre-Stage Cart</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="crash_cart_missing" data-struggle-robot="amed_prestage_pod" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Simulate This Struggle</button>
+              </div>
+            </article>
+
+            <article class="struggle-card">
+              <div>
+                <div class="struggle-stat">0.95 / min</div>
+                <div class="struggle-title">Pediatric Epinephrine Survival</div>
+                <p class="struggle-desc">Every minute of delay to first epinephrine dose drops odds of survival (aOR ~0.95/min) during congested pharmacy runs.</p>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:7px;">
+                <div class="struggle-meta">Scenario: Pharmacy Delay · Fleet: Amed Slim Rover 0.72m</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="pharmacy_delay" data-struggle-robot="amed_narrow_rover" data-struggle-ems="false" data-struggle-runs="STAT epinephrine &amp; pharmacy pickup every 15 minutes, lab specimen drop hourly">Simulate This Struggle</button>
+              </div>
+            </article>
+
+            <article class="struggle-card">
+              <div>
+                <div class="struggle-stat">$661k</div>
+                <div class="struggle-title">Avg Diagnostic Indemnity</div>
+                <p class="struggle-desc">Delayed lab specimen handoffs and missed diagnostic follow-ups drive high-severity malpractice indemnity claims.</p>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:7px;">
+                <div class="struggle-meta">Scenario: Mass Surge · Fleet: Pneumatic Tube Hybrid</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="surge" data-struggle-robot="pneumatic_tube" data-struggle-ems="false" data-struggle-runs="lab specimen drop every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Simulate This Struggle</button>
+              </div>
+            </article>
+
+            <article class="struggle-card">
+              <div>
+                <div class="struggle-stat">23 / 23</div>
+                <div class="struggle-title">Drain &amp; Utility Outbreaks</div>
+                <p class="struggle-desc">Hospital outbreak investigations linked 23/23 sink &amp; utility-route exposures to shared clinical/custodial traffic.</p>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:7px;">
+                <div class="struggle-meta">Scenario: Staffing Gap · Fleet: Aethon TUG + Pod</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="staffing_gap" data-struggle-robot="aethon_tug" data-struggle-ems="false" data-struggle-runs="supply restock every 45 minutes, lab specimen drop hourly, pharmacy pickup every 30 minutes">Simulate This Struggle</button>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div>
+          <div class="amed-section-label">Robotics Fleet Selector — Existing Hospital Couriers &amp; Custom Amed Platforms</div>
+          <div class="fleet-grid" id="landingFleetGrid">
+            <button type="button" class="fleet-card active" data-robot-profile="aethon_tug">
+              <span class="fleet-card-tag">Existing</span>
+              <div class="fleet-card-name">Aethon TUG + Pod</div>
+              <div class="fleet-card-spec">AMR base + LiDAR puck + 3-bay custodial &amp; supply pod</div>
+            </button>
+            <button type="button" class="fleet-card" data-robot-profile="diligent_moxi">
+              <span class="fleet-card-tag">Existing</span>
+              <div class="fleet-card-name">Diligent Moxi</div>
+              <div class="fleet-card-spec">Slim base + vertical column + articulated arm + LED visor</div>
+            </button>
+            <button type="button" class="fleet-card" data-robot-profile="pneumatic_tube">
+              <span class="fleet-card-tag">Existing</span>
+              <div class="fleet-card-name">Pneumatic Tube Hybrid</div>
+              <div class="fleet-card-spec">High-speed specimen capsule transfer + last-meter courier</div>
+            </button>
+            <button type="button" class="fleet-card" data-robot-profile="amed_prestage_pod">
+              <span class="fleet-card-tag custom">Custom Amed</span>
+              <div class="fleet-card-name">Amed Pre-Stage Cart</div>
+              <div class="fleet-card-spec">Wide 4-bay emergency cart + amber strobe beacon</div>
+            </button>
+            <button type="button" class="fleet-card" data-robot-profile="amed_narrow_rover">
+              <span class="fleet-card-tag custom">Custom Amed</span>
+              <div class="fleet-card-name">Amed Slim Rover 0.72m</div>
+              <div class="fleet-card-spec">Compact slim-chassis rover + dual specimen/med canisters</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="app-shell" id="workspaceRoot">
     <!-- Top Header -->
     <header class="topbar">
       <div class="brand">
@@ -934,6 +1263,15 @@
           <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll random seed for chaotic/surge shifts">🎲 #42</button>
 
           <div class="divider"></div>
+
+          <label class="inline-label" for="robotProfileSelect">Fleet</label>
+          <select id="robotProfileSelect" title="Select hospital courier or custom Amed robotics platform">
+            <option value="aethon_tug" selected>Aethon TUG + Pod</option>
+            <option value="diligent_moxi">Diligent Moxi</option>
+            <option value="pneumatic_tube">Pneumatic Tube Hybrid</option>
+            <option value="amed_prestage_pod">Amed Pre-Stage Cart</option>
+            <option value="amed_narrow_rover">Amed Slim Rover 0.72m</option>
+          </select>
 
           <label class="inline-label">Robots</label>
           <div class="segmented" id="robotCountGroup">
@@ -1145,6 +1483,7 @@
       revealTimer: null,
       selectedSelection: null, // { kind: "room" | "door", id: string }
       numRobots: 1,
+      robotProfileId: "aethon_tug",
       scenarioMode: "chaotic",
       seed: 42,
       comparison: null,
@@ -1169,7 +1508,13 @@
       runDesc: document.getElementById("runDesc"),
       micBtn: document.getElementById("micBtn"),
       robotCountGroup: document.getElementById("robotCountGroup"),
+      robotProfileSelect: document.getElementById("robotProfileSelect"),
       scenarioSelect: document.getElementById("scenarioSelect"),
+      launchTwinBtn: document.getElementById("launchTwinBtn"),
+      toggleHeroBodyBtn: document.getElementById("toggleHeroBodyBtn"),
+      amedHeroBody: document.getElementById("amedHeroBody"),
+      landingFleetGrid: document.getElementById("landingFleetGrid"),
+      workspaceRoot: document.getElementById("workspaceRoot"),
       rerollSeedBtn: document.getElementById("rerollSeedBtn"),
       shiftHours: document.getElementById("shiftHours"),
       runSimBtn: document.getElementById("runSimBtn"),
@@ -1724,15 +2069,16 @@
         group.add(locker);
       }
 
-      // 1. Hospital Bed + Vital Signs Monitor (patient_room or "bed")
+      // 1. Hospital Bed (frame, mattress, pillow, side rails, headboard, IV pole + bag) + Vital Signs Monitor
       if (rType === "patient_room" || obs.has("bed")) {
         const bedGroup = new THREE.Group();
         const bedW = Math.min(3.4, spanX * 0.32);
         const bedL = Math.min(6.2, spanZ * 0.44);
+        const railMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.3, metalness: 0.65 });
 
         // Frame
         const frame = new THREE.Mesh(
-          new THREE.BoxGeometry(bedW, 0.55, bedL),
+          new THREE.BoxGeometry(bedW, 0.52, bedL),
           new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5, metalness: 0.4 })
         );
         frame.position.y = 0.45;
@@ -1769,8 +2115,53 @@
         headboard.position.set(0, 1.0, awaySign * (bedL / 2));
         bedGroup.add(headboard);
 
+        // Side Rails (left & right safety rails)
+        [-1, 1].forEach((side) => {
+          const topRail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, bedL * 0.62), railMat);
+          topRail.position.set(side * (bedW * 0.49), 1.38, 0);
+          bedGroup.add(topRail);
+
+          [-0.22, 0.22].forEach((zOff) => {
+            const post = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.55, 8), railMat);
+            post.position.set(side * (bedW * 0.49), 1.1, zOff * bedL);
+            bedGroup.add(post);
+          });
+        });
+
         bedGroup.position.set(cx - spanX * 0.1, 0.05, backZ);
         group.add(bedGroup);
+
+        // Tall Stainless IV Pole + IV Bag beside bed
+        const ivGroup = new THREE.Group();
+        const steelMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.85, roughness: 0.2 });
+        const ivBase = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.1, 12), steelMat);
+        ivBase.position.y = 0.08;
+        ivGroup.add(ivBase);
+
+        const ivPole = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.065, 3.6, 10), steelMat);
+        ivPole.position.y = 1.85;
+        ivGroup.add(ivPole);
+
+        const ivArm = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.06, 0.06), steelMat);
+        ivArm.position.y = 3.62;
+        ivGroup.add(ivArm);
+
+        const ivBag = new THREE.Mesh(
+          new THREE.BoxGeometry(0.28, 0.46, 0.12),
+          new THREE.MeshStandardMaterial({
+            color: 0xbae6fd,
+            emissive: 0x38bdf8,
+            emissiveIntensity: 0.25,
+            transparent: true,
+            opacity: 0.88,
+            roughness: 0.2,
+          })
+        );
+        ivBag.position.set(0.24, 3.3, 0);
+        ivGroup.add(ivBag);
+
+        ivGroup.position.set(cx - spanX * 0.1 - bedW * 0.68, 0.05, backZ + awaySign * 0.8);
+        group.add(ivGroup);
 
         // Vital Signs Monitor stand beside bed
         if (obs.has("monitor") || rType === "patient_room") {
@@ -1799,7 +2190,7 @@
         }
       }
 
-      // 2. U-Shaped Nurse Station Desk + Dual Terminals
+      // 2. Curved / L-Shaped Nurse Station Reception Desk + Dual Glowing Monitor Screens
       if (rType === "nurse_station" || obs.has("desk")) {
         const deskGroup = new THREE.Group();
         const w = Math.min(7.8, spanX * 0.52);
@@ -1807,35 +2198,45 @@
         const counterMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.35 });
         const baseMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
 
-        // Front counter facing corridor
+        // Curved front reception counter facing corridor
         const frontBase = new THREE.Mesh(new THREE.BoxGeometry(w, 1.35, 1.05), baseMat);
         frontBase.position.set(0, 0.68, -awaySign * (d / 2));
         deskGroup.add(frontBase);
 
-        const frontTop = new THREE.Mesh(new THREE.BoxGeometry(w + 0.3, 0.18, 1.3), counterMat);
+        const frontTop = new THREE.Mesh(new THREE.BoxGeometry(w + 0.35, 0.18, 1.35), counterMat);
         frontTop.position.set(0, 1.42, -awaySign * (d / 2));
         deskGroup.add(frontTop);
 
-        // Left & Right U-wings
+        // L-Shaped Return Wing
+        const lWingBase = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.35, d), baseMat);
+        lWingBase.position.set(w / 2 - 0.52, 0.68, 0);
+        deskGroup.add(lWingBase);
+
+        const lWingTop = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.18, d + 0.2), counterMat);
+        lWingTop.position.set(w / 2 - 0.52, 1.42, 0);
+        deskGroup.add(lWingTop);
+
+        // Curved Corner Accent
+        const corner = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 1.48, 16), counterMat);
+        corner.position.set(-w / 2 + 0.45, 0.76, -awaySign * (d / 2));
+        deskGroup.add(corner);
+
+        // Dual Glowing Monitor Screens on stands
         [-1, 1].forEach((side) => {
-          const wing = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.35, d), baseMat);
-          wing.position.set(side * (w / 2 - 0.5), 0.68, 0);
-          deskGroup.add(wing);
+          const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.45, 8), baseMat);
+          stand.position.set(side * (w * 0.2), 1.65, -awaySign * (d / 2));
+          deskGroup.add(stand);
 
-          const wingTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.18, d + 0.2), counterMat);
-          wingTop.position.set(side * (w / 2 - 0.5), 1.42, 0);
-          deskGroup.add(wingTop);
-
-          // Glowing workstation terminal
           const monitor = new THREE.Mesh(
-            new THREE.BoxGeometry(1.15, 0.75, 0.14),
+            new THREE.BoxGeometry(1.25, 0.8, 0.14),
             new THREE.MeshStandardMaterial({
               color: 0x0f172a,
               emissive: 0x38bdf8,
-              emissiveIntensity: 0.7,
+              emissiveIntensity: 0.75,
             })
           );
-          monitor.position.set(side * (w * 0.22), 1.92, -awaySign * (d / 2));
+          monitor.position.set(side * (w * 0.2), 2.02, -awaySign * (d / 2));
+          monitor.rotation.y = side * -0.18;
           deskGroup.add(monitor);
         });
 
@@ -1843,65 +2244,141 @@
         group.add(deskGroup);
       }
 
-      // 3. Shelving Units & Rolling Med Cart (medication_room / supply_room)
-      if (rType === "medication_room" || rType === "supply_room" || obs.has("shelf") || obs.has("med_cart")) {
+      // 3. Automated Pyxis-style Dispensing Cabinet (medication_room)
+      if (rType === "medication_room" || obs.has("med_cart")) {
+        const pyxisGroup = new THREE.Group();
+        const cabBody = new THREE.Mesh(
+          new THREE.BoxGeometry(2.6, 2.75, 1.4),
+          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, metalness: 0.2 })
+        );
+        cabBody.position.y = 1.42;
+        pyxisGroup.add(cabBody);
+
+        // Drawer bank lines
+        [0.55, 1.05, 1.55].forEach((dy) => {
+          const drawer = new THREE.Mesh(
+            new THREE.BoxGeometry(2.3, 0.36, 0.12),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.4 })
+          );
+          drawer.position.set(0, dy, -awaySign * 0.72);
+          pyxisGroup.add(drawer);
+        });
+
+        // Glowing Pyxis Screen
+        const pyxisScreen = new THREE.Mesh(
+          new THREE.BoxGeometry(1.15, 0.75, 0.14),
+          new THREE.MeshStandardMaterial({
+            color: 0x0f172a,
+            emissive: 0xa855f7,
+            emissiveIntensity: 0.75,
+          })
+        );
+        pyxisScreen.position.set(-0.35, 2.25, -awaySign * 0.74);
+        pyxisGroup.add(pyxisScreen);
+
+        // Badge Scanner
+        const scanner = new THREE.Mesh(
+          new THREE.BoxGeometry(0.42, 0.28, 0.16),
+          new THREE.MeshStandardMaterial({
+            color: 0x1e293b,
+            emissive: 0x22d3ee,
+            emissiveIntensity: 0.65,
+          })
+        );
+        scanner.position.set(0.68, 2.15, -awaySign * 0.74);
+        pyxisGroup.add(scanner);
+
+        pyxisGroup.position.set(cx, 0.05, backZ);
+        group.add(pyxisGroup);
+      }
+
+      // 4. Multi-Tier Supply Rack with Colored Supply Bins (supply_room)
+      if (rType === "supply_room" || obs.has("shelf")) {
         const rackW = Math.min(6.8, spanX * 0.52);
-        const binColor = rType === "medication_room" ? 0xa855f7 : 0xf59e0b;
         const rackGroup = new THREE.Group();
 
-        [0.45, 1.35, 2.25].forEach((tierY) => {
+        [0.45, 1.3, 2.15].forEach((tierY, tierIdx) => {
           const shelf = new THREE.Mesh(
             new THREE.BoxGeometry(rackW, 0.12, 1.35),
-            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.45, roughness: 0.4 })
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.5, roughness: 0.35 })
           );
           shelf.position.y = tierY;
           rackGroup.add(shelf);
+
+          const tierColors = [0xf59e0b, 0x3b82f6, 0x10b981];
+          [-0.32, 0, 0.32].forEach((offsetFrac, bIdx) => {
+            const bin = new THREE.Mesh(
+              new THREE.BoxGeometry(rackW * 0.24, 0.52, 1.0),
+              new THREE.MeshStandardMaterial({
+                color: tierColors[(tierIdx + bIdx) % tierColors.length],
+                roughness: 0.4,
+              })
+            );
+            bin.position.set(offsetFrac * rackW, tierY + 0.32, 0);
+            rackGroup.add(bin);
+          });
         });
 
-        // Colored storage totes on shelves
-        [-0.3, 0, 0.3].forEach((offsetFrac) => {
-          const bin = new THREE.Mesh(
-            new THREE.BoxGeometry(rackW * 0.24, 0.55, 1.0),
-            new THREE.MeshStandardMaterial({ color: binColor, roughness: 0.4 })
-          );
-          bin.position.set(offsetFrac * rackW, 1.7, 0);
-          rackGroup.add(bin);
+        // Vertical rack posts
+        [-rackW / 2, rackW / 2].forEach((px) => {
+          [-0.6, 0.6].forEach((pz) => {
+            const post = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.06, 0.06, 2.4, 8),
+              new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.6 })
+            );
+            post.position.set(px, 1.25, pz);
+            rackGroup.add(post);
+          });
         });
 
         rackGroup.position.set(cx, 0.05, backZ);
         group.add(rackGroup);
-
-        if (obs.has("med_cart") || rType === "medication_room") {
-          const cart = new THREE.Mesh(
-            new THREE.BoxGeometry(1.7, 1.65, 1.2),
-            new THREE.MeshStandardMaterial({ color: 0xc084fc, roughness: 0.35, metalness: 0.2 })
-          );
-          cart.position.set(cx - Math.min(2.6, spanX * 0.22), 0.9, cz - awaySign * 0.8);
-          group.add(cart);
-        }
       }
 
-      // 4. Lab Specimen Bench & Analyzer (lab_drop)
+      // 5. Lab Bench with Centrifuge & Specimen Rack (lab_drop)
       if (rType === "lab_drop" || obs.has("bench") || obs.has("centrifuge")) {
         const benchW = Math.min(6.2, spanX * 0.54);
         const bench = new THREE.Mesh(
-          new THREE.BoxGeometry(benchW, 1.4, 1.6),
+          new THREE.BoxGeometry(benchW, 1.4, 1.65),
           new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3 })
         );
         bench.position.set(cx, 0.75, backZ);
         group.add(bench);
 
-        const analyzer = new THREE.Mesh(
-          new THREE.BoxGeometry(1.8, 1.05, 1.2),
+        // Centrifuge unit
+        const centBody = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.68, 0.76, 0.82, 20),
           new THREE.MeshStandardMaterial({
             color: 0x065f46,
             emissive: 0x10b981,
-            emissiveIntensity: 0.55,
+            emissiveIntensity: 0.45,
             roughness: 0.25,
           })
         );
-        analyzer.position.set(cx + benchW * 0.22, 1.95, backZ);
-        group.add(analyzer);
+        centBody.position.set(cx + benchW * 0.22, 1.86, backZ);
+        group.add(centBody);
+
+        // Specimen Rack with colored sample tubes
+        const specRack = new THREE.Group();
+        const rackBase = new THREE.Mesh(
+          new THREE.BoxGeometry(1.3, 0.22, 0.75),
+          new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 })
+        );
+        specRack.add(rackBase);
+        [-0.4, -0.13, 0.13, 0.4].forEach((tx, idx) => {
+          const tube = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.07, 0.07, 0.48, 8),
+            new THREE.MeshStandardMaterial({
+              color: idx % 2 === 0 ? 0xf43f5e : 0x38bdf8,
+              emissive: idx % 2 === 0 ? 0xbe123c : 0x0284c7,
+              emissiveIntensity: 0.3,
+            })
+          );
+          tube.position.set(tx, 0.32, 0);
+          specRack.add(tube);
+        });
+        specRack.position.set(cx - benchW * 0.2, 1.56, backZ);
+        group.add(specRack);
       }
 
       return group;
@@ -1922,51 +2399,90 @@
       halo.position.y = 0.08;
       group.add(halo);
 
-      const bodyGeo = new THREE.CylinderGeometry(0.52, 0.72, 2.2, 20);
-      const bodyMat = new THREE.MeshStandardMaterial({
+      const scrubMat = new THREE.MeshStandardMaterial({
         color: 0xe11d48,
         roughness: 0.35,
         metalness: 0.1,
         emissive: 0x881337,
         emissiveIntensity: 0.35,
       });
-      const body = new THREE.Mesh(bodyGeo, bodyMat);
-      body.position.y = 1.25;
-      group.add(body);
+      const pantsMat = new THREE.MeshStandardMaterial({ color: 0x9f1239, roughness: 0.45 });
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.45 });
 
-      const collarGeo = new THREE.TorusGeometry(0.5, 0.09, 10, 20);
+      // Articulated Legs (pivot at hip y = 1.05)
+      function makeLeg(xOff) {
+        const pivot = new THREE.Group();
+        pivot.position.set(xOff, 1.05, 0);
+        const legMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 0.95, 12), pantsMat);
+        legMesh.position.y = -0.48;
+        pivot.add(legMesh);
+        const shoe = new THREE.Mesh(
+          new THREE.BoxGeometry(0.24, 0.14, 0.42),
+          new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 })
+        );
+        shoe.position.set(0, -0.96, 0.08);
+        pivot.add(shoe);
+        return pivot;
+      }
+      const leftLeg = makeLeg(-0.24);
+      const rightLeg = makeLeg(0.24);
+      group.add(leftLeg, rightLeg);
+
+      // Scrubs Torso
+      const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.54, 1.25, 18), scrubMat);
+      torso.position.y = 1.7;
+      group.add(torso);
+
+      // Articulated Arms (pivot at shoulder y = 2.18)
+      function makeArm(xOff) {
+        const pivot = new THREE.Group();
+        pivot.position.set(xOff, 2.18, 0);
+        const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 0.85, 10), scrubMat);
+        sleeve.position.y = -0.42;
+        pivot.add(sleeve);
+        const hand = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 10), skinMat);
+        hand.position.y = -0.88;
+        pivot.add(hand);
+        return pivot;
+      }
+      const leftArm = makeArm(-0.6);
+      const rightArm = makeArm(0.6);
+      group.add(leftArm, rightArm);
+
+      const collarGeo = new THREE.TorusGeometry(0.44, 0.08, 10, 20);
       collarGeo.rotateX(Math.PI / 2);
       const collarMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
       const collar = new THREE.Mesh(collarGeo, collarMat);
-      collar.position.y = 2.28;
+      collar.position.y = 2.34;
       group.add(collar);
 
-      const headGeo = new THREE.SphereGeometry(0.52, 20, 20);
-      const headMat = new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.45 });
-      const head = new THREE.Mesh(headGeo, headMat);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.48, 20, 20), skinMat);
       head.position.y = 2.88;
       group.add(head);
 
-      const badgeGeo = new THREE.BoxGeometry(0.45, 0.25, 0.18);
-      const badgeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const badge = new THREE.Mesh(badgeGeo, badgeMat);
-      badge.position.set(0, 1.85, 0.54);
+      const badge = new THREE.Mesh(
+        new THREE.BoxGeometry(0.42, 0.24, 0.14),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      badge.position.set(0, 1.88, 0.5);
       group.add(badge);
 
       const label = makeLabelSprite(tagText, "rgba(190, 18, 60, 0.92)", "#fda4af", 0.72);
       label.position.y = 4.35;
       group.add(label);
 
+      group.userData = { leftLeg, rightLeg, leftArm, rightArm };
       return group;
     }
 
-    function createRobot3D(tagText = "R1") {
+    function createRobot3D(tagText = "R1", profileId = "aethon_tug") {
       const group = new THREE.Group();
 
       const haloGeo = new THREE.RingGeometry(1.0, 1.65, 28);
       haloGeo.rotateX(-Math.PI / 2);
+      const haloColor = profileId === "amed_prestage_pod" ? 0xf59e0b : 0x14b8a6;
       const haloMat = new THREE.MeshBasicMaterial({
-        color: 0x14b8a6,
+        color: haloColor,
         transparent: true,
         opacity: 0.6,
         side: THREE.DoubleSide,
@@ -1975,41 +2491,146 @@
       halo.position.y = 0.08;
       group.add(halo);
 
-      const baseGeo = new THREE.CylinderGeometry(0.95, 1.02, 0.55, 24);
-      const baseMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.5 });
-      const base = new THREE.Mesh(baseGeo, baseMat);
-      base.position.y = 0.35;
-      group.add(base);
-
-      const cabGeo = new THREE.CylinderGeometry(0.84, 0.9, 1.45, 24);
-      const cabMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.15 });
-      const cab = new THREE.Mesh(cabGeo, cabMat);
-      cab.position.y = 1.35;
-      group.add(cab);
-
-      const ledGeo = new THREE.TorusGeometry(0.88, 0.09, 12, 28);
-      ledGeo.rotateX(Math.PI / 2);
-      const ledMat = new THREE.MeshBasicMaterial({ color: 0x2dd4bf });
-      const led = new THREE.Mesh(ledGeo, ledMat);
-      led.position.y = 1.95;
-      group.add(led);
-
-      const lidarGeo = new THREE.CylinderGeometry(0.42, 0.5, 0.32, 20);
-      const lidarMat = new THREE.MeshStandardMaterial({
+      const darkMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.55 });
+      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.15 });
+      const tealMat = new THREE.MeshStandardMaterial({
         color: 0x0d9488,
         emissive: 0x14b8a6,
-        emissiveIntensity: 0.65,
-        roughness: 0.2,
+        emissiveIntensity: 0.55,
+        roughness: 0.25,
       });
-      const lidar = new THREE.Mesh(lidarGeo, lidarMat);
-      lidar.position.y = 2.24;
-      group.add(lidar);
 
-      const eyeGeo = new THREE.BoxGeometry(0.65, 0.2, 0.22);
-      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x5eead4 });
-      const eye = new THREE.Mesh(eyeGeo, eyeMat);
-      eye.position.set(0, 1.55, 0.82);
-      group.add(eye);
+      if (profileId === "diligent_moxi") {
+        // Slim base + vertical column + articulated arm + LED visor
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.88, 0.48, 22), darkMat);
+        base.position.y = 0.28;
+        group.add(base);
+
+        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 1.95, 16), whiteMat);
+        col.position.y = 1.48;
+        group.add(col);
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.56, 0.68), whiteMat);
+        head.position.y = 2.65;
+        group.add(head);
+
+        const visor = new THREE.Mesh(
+          new THREE.BoxGeometry(0.82, 0.24, 0.12),
+          new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+        );
+        visor.position.set(0, 2.65, 0.34);
+        group.add(visor);
+
+        // Articulated Arm
+        const upperArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.85, 0.18), darkMat);
+        upperArm.position.set(0.55, 1.95, 0.22);
+        upperArm.rotation.x = -0.5;
+        group.add(upperArm);
+
+        const forearm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.72, 0.15), tealMat);
+        forearm.position.set(0.55, 1.68, 0.65);
+        forearm.rotation.x = 0.85;
+        group.add(forearm);
+      } else if (profileId === "amed_prestage_pod") {
+        // Wide 4-bay emergency cart + amber strobe beacon
+        const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.4, 1.65), darkMat);
+        chassis.position.y = 0.25;
+        group.add(chassis);
+
+        const cartBody = new THREE.Mesh(
+          new THREE.BoxGeometry(2.05, 1.5, 1.5),
+          new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.3, metalness: 0.2 })
+        );
+        cartBody.position.y = 1.2;
+        group.add(cartBody);
+
+        // 4-bay drawer fronts
+        [-0.45, 0.45].forEach((bx) => {
+          [0.85, 1.52].forEach((by) => {
+            const bay = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.52, 0.12), whiteMat);
+            bay.position.set(bx, by, 0.76);
+            group.add(bay);
+          });
+        });
+
+        // Amber strobe beacon
+        const beacon = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.24, 0.28, 0.36, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0xf59e0b,
+            emissive: 0xf59e0b,
+            emissiveIntensity: 0.95,
+          })
+        );
+        beacon.position.y = 2.15;
+        group.add(beacon);
+      } else if (profileId === "amed_narrow_rover") {
+        // Compact slim-chassis rover (0.72m) + dual specimen/med canisters
+        const slimChassis = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.42, 1.45), darkMat);
+        slimChassis.position.y = 0.25;
+        group.add(slimChassis);
+
+        [-0.38, 0.38].forEach((czOff, idx) => {
+          const canister = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.32, 0.32, 1.15, 16),
+            idx === 0 ? whiteMat : tealMat
+          );
+          canister.position.set(0, 1.02, czOff);
+          group.add(canister);
+        });
+
+        const lidar = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.22, 16), tealMat);
+        lidar.position.set(0, 1.72, 0.38);
+        group.add(lidar);
+      } else if (profileId === "pneumatic_tube") {
+        // Pneumatic Tube Hybrid: sleek transfer capsule carrier
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.76, 0.85, 0.46, 20), darkMat);
+        base.position.y = 0.26;
+        group.add(base);
+
+        const capsule = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.45, 0.45, 1.65, 20),
+          new THREE.MeshStandardMaterial({
+            color: 0x38bdf8,
+            emissive: 0x0284c7,
+            emissiveIntensity: 0.45,
+            transparent: true,
+            opacity: 0.9,
+          })
+        );
+        capsule.position.y = 1.3;
+        group.add(capsule);
+
+        const capTop = new THREE.Mesh(new THREE.SphereGeometry(0.45, 16, 12), darkMat);
+        capTop.position.y = 2.12;
+        group.add(capTop);
+      } else {
+        // Default: aethon_tug — AMR base + LiDAR puck + 3-compartment custodial pod
+        const amrBase = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.48, 1.95), darkMat);
+        amrBase.position.y = 0.28;
+        group.add(amrBase);
+
+        const lidarPuck = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 0.24, 18), tealMat);
+        lidarPuck.position.set(0, 0.64, 0.78);
+        group.add(lidarPuck);
+
+        // 3-compartment custodial pod
+        [0.85, 1.42, 1.98].forEach((py, idx) => {
+          const comp = new THREE.Mesh(
+            new THREE.BoxGeometry(1.48, 0.48, 1.52),
+            idx === 1 ? tealMat : whiteMat
+          );
+          comp.position.set(0, py, -0.08);
+          group.add(comp);
+        });
+
+        const eye = new THREE.Mesh(
+          new THREE.BoxGeometry(0.68, 0.16, 0.16),
+          new THREE.MeshBasicMaterial({ color: 0x5eead4 })
+        );
+        eye.position.set(0, 0.42, 0.98);
+        group.add(eye);
+      }
 
       const label = makeLabelSprite(tagText, "rgba(15, 118, 110, 0.94)", "#5eead4", 0.75);
       label.position.y = 3.65;
@@ -2480,12 +3101,13 @@
       }
 
       getOrCreateAgentMesh(key, role, agentId) {
-        if (this.agentPool.has(key)) return this.agentPool.get(key);
+        const poolKey = role === "nurse" ? `nurse:${key}` : `robot:${key}:${state.robotProfileId}`;
+        if (this.agentPool.has(poolKey)) return this.agentPool.get(poolKey);
         const tag = role === "nurse" ? "Nurse" : ("R" + (agentId.replace(/\D/g, "") || "1"));
-        const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag);
+        const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, state.robotProfileId);
         mesh.visible = false;
         this.agentsGroup.add(mesh);
-        this.agentPool.set(key, mesh);
+        this.agentPool.set(poolKey, mesh);
         return mesh;
       }
 
@@ -2539,8 +3161,16 @@
 
             const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id);
             agentMesh.visible = true;
-            const bob = ev.agent_role === "nurse" ? Math.abs(Math.sin(frac * Math.PI * 14)) * 0.22 : 0;
+            const stridePhase = frac * Math.PI * 14;
+            const bob = ev.agent_role === "nurse" ? Math.abs(Math.sin(stridePhase)) * 0.16 : 0;
             agentMesh.position.set(wPos.x, bob, wPos.z);
+            if (ev.agent_role === "nurse" && agentMesh.userData) {
+              const swing = Math.sin(stridePhase) * 0.52;
+              if (agentMesh.userData.leftLeg) agentMesh.userData.leftLeg.rotation.x = swing;
+              if (agentMesh.userData.rightLeg) agentMesh.userData.rightLeg.rotation.x = -swing;
+              if (agentMesh.userData.leftArm) agentMesh.userData.leftArm.rotation.x = -swing * 0.7;
+              if (agentMesh.userData.rightArm) agentMesh.userData.rightArm.rotation.x = swing * 0.7;
+            }
             if (Math.hypot(pose.dx, pose.dy) > 1e-4) {
               agentMesh.rotation.y = Math.atan2(pose.dx, pose.dy);
             }
@@ -3307,6 +3937,7 @@
             unit_map: state.unitMap,
             run_description: desc,
             num_robots: state.numRobots,
+            robot_profile_id: els.robotProfileSelect ? els.robotProfileSelect.value : state.robotProfileId,
             shift_hours: Number(els.shiftHours.value),
             scenario_mode: els.scenarioSelect ? els.scenarioSelect.value : state.scenarioMode,
             seed: state.seed,
@@ -3687,6 +4318,82 @@
       if (state.comparison && state.unitMap) {
         runSimulation();
       }
+    });
+
+    function setRobotProfile(profileId, rerunIfLoaded = false) {
+      if (!profileId) return;
+      state.robotProfileId = profileId;
+      if (els.robotProfileSelect) els.robotProfileSelect.value = profileId;
+      if (els.landingFleetGrid) {
+        els.landingFleetGrid.querySelectorAll(".fleet-card").forEach((card) => {
+          card.classList.toggle("active", card.dataset.robotProfile === profileId);
+        });
+      }
+      if (rerunIfLoaded && state.comparison && state.unitMap) {
+        runSimulation();
+      } else if (state.comparison && state.viewMode === "3d") {
+        renderSimulationFrame();
+      }
+    }
+
+    if (els.robotProfileSelect) {
+      els.robotProfileSelect.addEventListener("change", () => {
+        setRobotProfile(els.robotProfileSelect.value, true);
+      });
+    }
+
+    if (els.landingFleetGrid) {
+      els.landingFleetGrid.addEventListener("click", (e) => {
+        const card = e.target.closest(".fleet-card[data-robot-profile]");
+        if (!card) return;
+        setRobotProfile(card.dataset.robotProfile, true);
+      });
+    }
+
+    if (els.launchTwinBtn && els.workspaceRoot) {
+      els.launchTwinBtn.addEventListener("click", () => {
+        els.workspaceRoot.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+
+    if (els.toggleHeroBodyBtn && els.amedHeroBody) {
+      els.toggleHeroBodyBtn.addEventListener("click", () => {
+        const isCollapsed = els.amedHeroBody.classList.toggle("hidden");
+        els.toggleHeroBodyBtn.setAttribute("aria-expanded", String(!isCollapsed));
+        els.toggleHeroBodyBtn.textContent = isCollapsed ? "Expand Brief" : "Collapse Brief";
+      });
+    }
+
+    document.querySelectorAll(".btn-simulate-struggle").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const scenario = btn.dataset.struggleScenario;
+        const robot = btn.dataset.struggleRobot;
+        const useEms = btn.dataset.struggleEms === "true";
+        const runs = btn.dataset.struggleRuns;
+
+        if (scenario) {
+          state.scenarioMode = scenario;
+          if (els.scenarioSelect) els.scenarioSelect.value = scenario;
+        }
+        if (robot) {
+          setRobotProfile(robot, false);
+        }
+        if (els.emsPrepositionToggle) {
+          els.emsPrepositionToggle.checked = useEms;
+        }
+        if (runs && els.runDesc) {
+          els.runDesc.value = runs;
+        }
+        if (els.workspaceRoot) {
+          els.workspaceRoot.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        if (!state.unitMap) {
+          await extractUnit(true);
+        }
+        if (state.unitMap) {
+          await runSimulation();
+        }
+      });
     });
 
     if (els.scenarioSelect) {

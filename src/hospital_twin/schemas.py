@@ -201,3 +201,20 @@ class CoalitionSurgeRequest(BaseModel):
 class CoalitionSurgeReport(BaseModel):
     hospitals: list[dict]
     recommended_diversion: str
+
+
+class RobotProfile(BaseModel):
+    """Hardware and operational profile for a hospital courier robot or transport system."""
+
+    id: str
+    name: str
+    vendor: str
+    is_custom: bool
+    speed_mps: float
+    clearance_m: float
+    length_m: float
+    compartments: int
+    handoff_seconds: float
+    supported_runs: list[RunType]
+    solves_problem: str
+    description: str

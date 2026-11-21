@@ -94,3 +94,36 @@ def test_coalition_surge_and_endpoint():
     res = client.post("/api/coalition-surge", json=req.model_dump())
     assert res.status_code == 200, res.text
     assert res.json()["recommended_diversion"] == "Mercy East"
+
+
+def test_robotics_catalog_struggles_and_endpoints():
+    from hospital_twin.robotics import ROBOT_CATALOG, HOSPITAL_STRUGGLES, get_robot_profile
+    from hospital_twin.simulator import simulate_shift
+    from hospital_twin.schemas import ScheduledRun
+
+    assert len(ROBOT_CATALOG) == 5
+    assert len(HOSPITAL_STRUGGLES) >= 4
+    assert get_robot_profile("amed_narrow_rover").clearance_m == 0.72
+    assert get_robot_profile("nonexistent").id == "aethon_tug"
+
+    # Pneumatic tube handles pharmacy/lab but falls back to nurse on supply_restock
+    unit = _make_sample_unit()
+    schedule = [
+        ScheduledRun(run_type="lab_specimen_drop", origin="nurse_station", destination="lab_drop", frequency_minutes=240.0),
+        ScheduledRun(run_type="supply_restock", origin="supply_room", destination="nurse_station", frequency_minutes=240.0),
+    ]
+    comp = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1, robot_profile_id="pneumatic_tube")
+    assert comp.assumptions["robot_profile_id"] == "pneumatic_tube"
+    assert any(e.agent_role == "robot" and e.run_type == "lab_specimen_drop" for e in comp.robot_assisted.events)
+    assert any(e.agent_role == "nurse" and e.run_type == "supply_restock" for e in comp.robot_assisted.events)
+
+    from hospital_twin.app import app
+
+    client = TestClient(app)
+    robots_res = client.get("/api/robots")
+    assert robots_res.status_code == 200
+    assert len(robots_res.json()["robots"]) == 5
+
+    struggles_res = client.get("/api/struggles")
+    assert struggles_res.status_code == 200
+    assert len(struggles_res.json()["struggles"]) >= 4

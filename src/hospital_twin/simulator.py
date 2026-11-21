@@ -10,6 +10,7 @@ from typing import Literal
 import networkx as nx
 import simpy
 
+from hospital_twin.robotics import get_robot_profile
 from hospital_twin.routing import (
     DEFAULT_ROBOT_CLEARANCE_M,
     build_route_graph,
@@ -89,8 +90,12 @@ def _plan_robot_assisted_route(
     robot_graph: nx.Graph,
     run: ScheduledRun,
     num_robots: int,
+    supported_runs: list[RunType] | None = None,
 ) -> _PlannedRoute:
-    if num_robots > 0:
+    can_use_robot = num_robots > 0 and (
+        supported_runs is None or run.run_type in supported_runs
+    )
+    if can_use_robot:
         handoff_origin = find_robot_handoff_node(unit, run.origin)
         handoff_dest = find_robot_handoff_node(unit, run.destination)
         if (
@@ -135,6 +140,7 @@ def _generate_trip_requests(
     num_robots: int,
     scenario_mode: ScenarioMode,
     seed: int,
+    supported_runs: list[RunType] | None = None,
 ) -> list[_TripRequest]:
     rng = random.Random(seed)
     requests: list[_TripRequest] = []
@@ -151,7 +157,7 @@ def _generate_trip_requests(
             distance_m=nurse_dist_m,
         )
         robot_route = _plan_robot_assisted_route(
-            unit, full_graph, robot_graph, run, num_robots
+            unit, full_graph, robot_graph, run, num_robots, supported_runs=supported_runs
         )
 
         period_s = max(60.0, run.frequency_minutes * 60.0)
@@ -220,6 +226,7 @@ def _generate_trip_requests(
                 num_robots=num_robots,
                 scenario_mode=scenario_mode,
                 rng=rng,
+                supported_runs=supported_runs,
             )
         )
 
@@ -235,6 +242,7 @@ def _generate_stat_bursts(
     num_robots: int,
     scenario_mode: ScenarioMode,
     rng: random.Random,
+    supported_runs: list[RunType] | None = None,
 ) -> list[_TripRequest]:
     non_corridor = [r.id for r in unit.rooms if r.type != "corridor" and r.id in full_graph]
     candidate_rooms = non_corridor if len(non_corridor) >= 2 else list(full_graph.nodes)
@@ -298,7 +306,7 @@ def _generate_stat_bursts(
             distance_m=nurse_dist,
         )
         robot_route = _plan_robot_assisted_route(
-            unit, full_graph, robot_graph, stat_run, num_robots
+            unit, full_graph, robot_graph, stat_run, num_robots, supported_runs=supported_runs
         )
         speed_factor = rng.uniform(0.85, 1.15)
         delay_s = rng.uniform(10.0, max_delay) if rng.random() < delay_prob else 0.0
@@ -563,8 +571,17 @@ def simulate_shift(
     scenario_mode: ScenarioMode = "routine",
     seed: int = 42,
     ems_preposition: bool = False,
+    robot_profile_id: str = "aethon_tug",
 ) -> SimulationComparison:
     """Simulate a hospital shift in nurse-only and robot-assisted modes using SimPy."""
+    profile = get_robot_profile(robot_profile_id)
+    if robot_speed_mps == DEFAULT_ROBOT_SPEED_MPS:
+        robot_speed_mps = profile.speed_mps
+    if handoff_seconds == DEFAULT_HANDOFF_SECONDS:
+        handoff_seconds = profile.handoff_seconds
+    if robot_clearance_m == DEFAULT_ROBOT_CLEARANCE_M:
+        robot_clearance_m = profile.clearance_m
+
     if shift_hours <= 0:
         raise ValueError("shift_hours must be positive.")
     if num_robots < 0:
@@ -586,6 +603,7 @@ def simulate_shift(
         num_robots=num_robots,
         scenario_mode=scenario_mode,
         seed=seed,
+        supported_runs=profile.supported_runs,
     )
     if ems_preposition:
         # Advance EMS signals pre-stage carts/meds before arrival, cutting STAT surge delays by 70%
@@ -639,12 +657,14 @@ def simulate_shift(
         "shift_hours": shift_hours,
         "num_nurses": DEFAULT_NUM_NURSES,
         "num_robots": num_robots,
+        "robot_profile_id": profile.id,
+        "robot_profile_name": profile.name,
         "nurse_speed_mps": nurse_speed_mps,
         "robot_speed_mps": robot_speed_mps,
-        "robot_length_m": DEFAULT_ROBOT_LENGTH_M,
+        "robot_length_m": profile.length_m,
         "robot_clearance_m": robot_clearance_m,
         "handoff_seconds": handoff_seconds,
-        "pod_compartments": POD_COMPARTMENTS,
+        "pod_compartments": profile.compartments,
         "uncollected_flag_seconds": UNCOLLECTED_FLAG_SECONDS,
         "meters_per_pixel": unit.meters_per_pixel,
         "scenario_mode": scenario_mode,

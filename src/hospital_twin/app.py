@@ -64,6 +64,7 @@ class SimulateRequest(BaseModel):
     nurse_speed_mps: float = Field(default=1.2, gt=0.1, le=5.0)
     robot_speed_mps: float = Field(default=0.76, gt=0.1, le=5.0)
     handoff_seconds: float = Field(default=20.0, ge=0.0, le=300.0)
+    robot_profile_id: str = "aethon_tug"
 
 
 class StressSweepRequest(BaseModel):
@@ -133,6 +134,20 @@ async def health() -> dict[str, str]:
 @app.get("/api/plans")
 async def list_plans() -> dict[str, list[dict[str, str]]]:
     return {"plans": _list_demo_plans()}
+
+
+@app.get("/api/robots")
+async def list_robots() -> dict[str, list[dict[str, Any]]]:
+    from hospital_twin.robotics import ROBOT_CATALOG
+
+    return {"robots": [profile.model_dump() for profile in ROBOT_CATALOG.values()]}
+
+
+@app.get("/api/struggles")
+async def list_struggles() -> dict[str, list[dict[str, str]]]:
+    from hospital_twin.robotics import HOSPITAL_STRUGGLES
+
+    return {"struggles": HOSPITAL_STRUGGLES}
 
 
 @app.get("/api/plans/{plan_id}/image")
@@ -294,6 +309,7 @@ async def simulate(req: SimulateRequest) -> SimulationComparison:
                 scenario_mode=req.scenario_mode,
                 seed=req.seed,
                 ems_preposition=req.ems_preposition,
+                robot_profile_id=req.robot_profile_id,
             )
         except TypeError:
             comparison = simulate_shift(
