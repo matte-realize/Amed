@@ -30,7 +30,13 @@
         "x": 130.0,
         "y": 140.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Bedside clinical care zone; robot stops at corridor doorway handoff.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
     },
     {
       "id": "room_102",
@@ -58,7 +64,13 @@
         "x": 310.0,
         "y": 140.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Bedside clinical care zone; robot stops at corridor doorway handoff.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
     },
     {
       "id": "nurse_station",
@@ -86,7 +98,13 @@
         "x": 510.0,
         "y": 140.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "assisted",
+      "autonomy_reason": "Shared central hub; courier robots dock at outer counter.",
+      "obstacles": [
+        "desk",
+        "terminal"
+      ]
     },
     {
       "id": "med_room",
@@ -114,7 +132,13 @@
         "x": 710.0,
         "y": 140.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "Badge-controlled pharmacy pickup; wide 1.2m door allows autonomous docking.",
+      "obstacles": [
+        "med_cart",
+        "shelf"
+      ]
     },
     {
       "id": "lab_drop",
@@ -142,7 +166,12 @@
         "x": 880.0,
         "y": 140.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "Direct pneumatic/bench drop-off accessible to courier robots.",
+      "obstacles": [
+        "lab_bench"
+      ]
     },
     {
       "id": "corridor_main",
@@ -170,7 +199,10 @@
         "x": 500.0,
         "y": 310.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "3.0m wide main spine; unobstructed two-way robot transit.",
+      "obstacles": []
     },
     {
       "id": "room_103",
@@ -198,7 +230,13 @@
         "x": 150.0,
         "y": 490.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Bedside clinical care zone; robot stops at corridor doorway handoff.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
     },
     {
       "id": "room_104",
@@ -226,7 +264,13 @@
         "x": 370.0,
         "y": 490.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Bedside clinical care zone; robot stops at corridor doorway handoff.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
     },
     {
       "id": "supply_room",
@@ -254,7 +298,13 @@
         "x": 600.0,
         "y": 490.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "autonomous",
+      "autonomy_reason": "Open supply bay with 1.25m clearance for autonomous restock carts.",
+      "obstacles": [
+        "shelf",
+        "supply_bin"
+      ]
     },
     {
       "id": "room_105",
@@ -282,7 +332,13 @@
         "x": 840.0,
         "y": 490.0
       },
-      "confidence": 1.0
+      "confidence": 1.0,
+      "autonomy_tier": "human_only",
+      "autonomy_reason": "Bedside clinical care zone; robot stops at corridor doorway handoff.",
+      "obstacles": [
+        "bed",
+        "monitor"
+      ]
     }
   ],
   "doors": [
@@ -296,7 +352,9 @@
         "room_101",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 0.85,
+      "robot_passable": false
     },
     {
       "id": "door_102",
@@ -308,7 +366,9 @@
         "room_102",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 1.2,
+      "robot_passable": true
     },
     {
       "id": "door_nurse",
@@ -320,7 +380,9 @@
         "nurse_station",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 1.2,
+      "robot_passable": true
     },
     {
       "id": "door_med",
@@ -332,7 +394,9 @@
         "med_room",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 1.2,
+      "robot_passable": true
     },
     {
       "id": "door_lab",
@@ -344,7 +408,9 @@
         "lab_drop",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 1.2,
+      "robot_passable": true
     },
     {
       "id": "door_103",
@@ -356,7 +422,9 @@
         "room_103",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 1.2,
+      "robot_passable": true
     },
     {
       "id": "door_104",
@@ -368,7 +436,9 @@
         "room_104",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 0.85,
+      "robot_passable": false
     },
     {
       "id": "door_supply",
@@ -380,7 +450,9 @@
         "supply_room",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 1.2,
+      "robot_passable": true
     },
     {
       "id": "door_105",
@@ -392,7 +464,9 @@
         "room_105",
         "corridor_main"
       ],
-      "confidence": 1.0
+      "confidence": 1.0,
+      "width_m": 0.85,
+      "robot_passable": false
     }
   ]
 }

@@ -9,7 +9,7 @@ import json
 import os
 import threading
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from dotenv import load_dotenv
 from google import genai
@@ -32,12 +32,17 @@ class _ExtractedRoom(BaseModel):
     type: RoomType
     polygon: list[Point]
     centroid: Optional[Point] = None
+    autonomy_tier: Literal["autonomous", "assisted", "human_only"] = "autonomous"
+    autonomy_reason: str = ""
+    obstacles: list[str] = Field(default_factory=list)
 
 
 class _ExtractedDoor(BaseModel):
     id: str
     position: Point
     rooms_connected: list[str] = Field(min_length=2, max_length=2)
+    width_m: float = 1.0
+    robot_passable: bool = True
 
 
 class _ExtractedUnitSchema(BaseModel):
@@ -164,10 +169,15 @@ def extract_unit_map(
         "- type: one of patient_room, nurse_station, medication_room, supply_room, lab_drop, corridor, other\n"
         "- polygon: list of {x, y} pixel coordinates tracing the room boundary\n"
         "- centroid: {x, y} pixel center of the room\n"
+        "- autonomy_tier: 'autonomous' (corridors, supply, pharmacy, lab_drop, open logistics), 'assisted' (tight clearance or shared station), or 'human_only' (sterile/bedside patient care or narrow doorway)\n"
+        "- autonomy_reason: brief 1-sentence reason why this zone can or cannot be autonomized\n"
+        "- obstacles: visible interior fixtures (e.g. ['bed', 'desk', 'med_cart', 'shelf'])\n"
         "For each door provide:\n"
         "- id: short snake_case identifier (e.g. 'door_101')\n"
         "- position: {x, y} pixel coordinate of the doorway\n"
-        "- rooms_connected: exactly 2 room ids that this door connects.\n"
+        "- rooms_connected: exactly 2 room ids that this door connects\n"
+        "- width_m: estimated doorway clear width in meters\n"
+        "- robot_passable: true if width_m >= 0.90m and unobstructed, else false.\n"
     )
 
     client = _get_client()
@@ -205,6 +215,9 @@ def extract_unit_map(
                 type=item["type"],
                 polygon=poly,
                 centroid=centroid,
+                autonomy_tier=item.get("autonomy_tier", "autonomous"),
+                autonomy_reason=item.get("autonomy_reason", ""),
+                obstacles=list(item.get("obstacles", [])),
             )
         )
 
@@ -213,6 +226,8 @@ def extract_unit_map(
             id=d["id"],
             position=Point.model_validate(d["position"]),
             rooms_connected=list(d["rooms_connected"]),
+            width_m=float(d.get("width_m", 1.0)),
+            robot_passable=bool(d.get("robot_passable", True)),
         )
         for d in data.get("doors", [])
     ]

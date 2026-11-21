@@ -31,6 +31,9 @@ class Room(BaseModel):
     polygon: list[Point]
     centroid: Optional[Point] = None
     confidence: Optional[float] = None
+    autonomy_tier: Literal["autonomous", "assisted", "human_only"] = "autonomous"
+    autonomy_reason: str = ""
+    obstacles: list[str] = Field(default_factory=list)
 
 
 class Door(BaseModel):
@@ -38,6 +41,8 @@ class Door(BaseModel):
     position: Point
     rooms_connected: list[str] = Field(min_length=2, max_length=2)
     confidence: Optional[float] = None
+    width_m: float = 1.0
+    robot_passable: bool = True
 
 
 class UnitMap(BaseModel):
