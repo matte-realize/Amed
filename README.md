@@ -25,12 +25,24 @@ Evaluated live against 10 real, unseen architectural floor plans from `CubiCasa5
 ### What Failed & What We Changed
 - **Coordinate Frame Mismatch (fixed in `2d7119c`):** Initial eval scored 17.9% room detection because `cubicasa5k-skv4` ground-truth polygons are in a `1024.0` reference frame while the PNGs are ~`256×335` px. Scaling by `max(w, h) / frame` revealed Neon's true `100.0%` room recall and `0.797` mean IoU.
 - **Over-Pruning Unlabeled Rooms (fixed in `bcc0185`):** Decisions API initially dropped valid rooms (75.6% → 83.5% after fix) when asked to verify hospital-style labels against residential/unlabeled plans. Switching the check to structural room validity recovered +7.9 pp room recall while preserving `100.0%` door precision.
-- **Remaining Breaking Points:** On low-res (`~256×335`) thumbnails, small door crops lose wall-arc context so Decisions API conservatively rejects ~30% of true doors; handwritten or unscaled plans without a reference width require manual `meters_per_pixel` calibration.
+- **Remaining Breaking Points:** On low-res (`~256×335`) CubiCasa5K thumbnails, small door crops lose wall-arc context so Decisions API conservatively rejects ~30% of true doors; handwritten or unscaled plans without a reference width require manual `meters_per_pixel` calibration.
 
-## Stated Simulation Assumptions
-- Nurse walking speed: `1.2 m/s` | Courier robot speed: `0.8 m/s`
-- Default scale: `0.05 m/pixel` (configurable per plan)
-- Scope: Logistics trips only (`pharmacy_pickup`, `lab_specimen_drop`, `supply_restock`); no clinical or patient-care tasks. Time-saved figures are scenario estimates from these stated assumptions.
+### Live Breaking-Point Stress Test (`data/eval/stress_results.json`)
+Evaluated live (`gemini-4-neon` + `gemini-decision-1`) across progressive degradations of `data/eval/synthetic_icu_west.png`:
+
+| Variant | Effective Res | Baseline Rooms | Verified Rooms | Verified Label Acc | Verified Doors | Status |
+| --- | :---: | ---: | ---: | ---: | ---: | --- |
+| 1.0x (Clean) | `800x500` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |
+| 0.5x Downscale | `400x250` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |
+| 0.25x Downscale | `200x125` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |
+| Low Contrast + Blur | `800x500` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |
+| Rotated 15° | `800x500` | 100.0% | 100.0% | 100.0% | 20.0% | **BREAKING POINT (<75%)** |
+
+## Demo Plans, Scenarios & Stated Assumptions
+- **Demo Plans (`data/demo/`):** `sample_unit.png` (standard hospital unit) and `icu_wing.png` (L-shaped ICU wing with narrow isolation airlocks), plus custom floor plan image upload and optional facility spec document upload (`.pdf`, `.txt`, `.csv`).
+- **Scenario Modes:** `routine`, `chaotic` (STAT surges), and `surge` (mass surge), comparing Nurse-Only vs. 1–3 courier robots with spoken (Web Speech API) or typed shift run descriptions.
+- **Nurse walking speed:** `1.2 m/s` | **Courier robot speed:** `0.8 m/s` | **Default scale:** `0.05 m/pixel` (configurable per plan).
+- **Scope:** Logistics trips only (`pharmacy_pickup`, `lab_specimen_drop`, `supply_restock`); no clinical or patient-care tasks. Time-saved figures are scenario estimates from these stated assumptions.
 
 ## Quickstart
 ```bash

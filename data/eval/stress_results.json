@@ -1,0 +1,218 @@
+{
+  "mode": "live_gemini",
+  "source_image": "data/eval/synthetic_icu_west.png",
+  "breaking_point_variant": "rotated_15deg",
+  "variants": [
+    {
+      "variant_id": "clean",
+      "label": "1.0x (Clean)",
+      "image_path": "data/eval/stress_variants/synthetic_icu_west_clean.png",
+      "scale_factor": 1.0,
+      "effective_resolution": "800x500",
+      "degradation": "none",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verification_stats": {
+        "kept": 11,
+        "dropped": 0,
+        "re_extracted": 0,
+        "mean_confidence": 0.8253
+      }
+    },
+    {
+      "variant_id": "downscaled_0.5x",
+      "label": "0.5x Downscale",
+      "image_path": "data/eval/stress_variants/synthetic_icu_west_downscaled_0.5x.png",
+      "scale_factor": 0.5,
+      "effective_resolution": "400x250",
+      "degradation": "resolution_0.5x",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verification_stats": {
+        "kept": 11,
+        "dropped": 0,
+        "re_extracted": 0,
+        "mean_confidence": 0.7885
+      }
+    },
+    {
+      "variant_id": "downscaled_0.25x",
+      "label": "0.25x Downscale",
+      "image_path": "data/eval/stress_variants/synthetic_icu_west_downscaled_0.25x.png",
+      "scale_factor": 0.25,
+      "effective_resolution": "200x125",
+      "degradation": "resolution_0.25x",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verification_stats": {
+        "kept": 11,
+        "dropped": 0,
+        "re_extracted": 0,
+        "mean_confidence": 0.7558
+      }
+    },
+    {
+      "variant_id": "low_contrast_blur",
+      "label": "Low Contrast + Blur",
+      "image_path": "data/eval/stress_variants/synthetic_icu_west_low_contrast_blur.png",
+      "scale_factor": 1.0,
+      "effective_resolution": "800x500",
+      "degradation": "contrast_0.35_blur_2.5",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 1.0,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 5,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verification_stats": {
+        "kept": 11,
+        "dropped": 0,
+        "re_extracted": 0,
+        "mean_confidence": 0.754
+      }
+    },
+    {
+      "variant_id": "rotated_15deg",
+      "label": "Rotated 15\u00b0",
+      "image_path": "data/eval/stress_variants/synthetic_icu_west_rotated_15deg.png",
+      "scale_factor": 1.0,
+      "effective_resolution": "800x500",
+      "degradation": "rotation_15deg",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 0.2,
+        "door_precision": 0.2,
+        "mean_room_iou": 0.4531,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 1,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 1.0,
+        "room_label_accuracy": 1.0,
+        "door_detection_rate": 0.2,
+        "door_precision": 0.2,
+        "mean_room_iou": 0.4531,
+        "matched_rooms": 6,
+        "total_gt_rooms": 6,
+        "total_pred_rooms": 6,
+        "matched_doors": 1,
+        "total_gt_doors": 5,
+        "total_pred_doors": 5
+      },
+      "verification_stats": {
+        "kept": 11,
+        "dropped": 0,
+        "re_extracted": 0,
+        "mean_confidence": 0.7759
+      }
+    }
+  ],
+  "markdown_summary": "### Element 119 Breaking-Point Stress Test (Resolution & Degradation)\n\n| Variant | Effective Res | Baseline Rooms | Verified Rooms |Verified Label Acc | Verified Doors | Status |\n| --- | :---: | ---: | ---: | ---: | ---: | --- |\n| 1.0x (Clean) | `800x500` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |\n| 0.5x Downscale | `400x250` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |\n| 0.25x Downscale | `200x125` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |\n| Low Contrast + Blur | `800x500` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |\n| Rotated 15\u00b0 | `800x500` | 100.0% | 100.0% | 100.0% | 20.0% | **BREAKING POINT (<75%)** |"
+}

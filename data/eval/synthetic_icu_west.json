@@ -1,0 +1,237 @@
+{
+  "image_width": 800,
+  "image_height": 500,
+  "meters_per_pixel": 0.05,
+  "rooms": [
+    {
+      "id": "corridor",
+      "label": "Main Corridor",
+      "type": "corridor",
+      "polygon": [
+        {
+          "x": 50.0,
+          "y": 200.0
+        },
+        {
+          "x": 750.0,
+          "y": 200.0
+        },
+        {
+          "x": 750.0,
+          "y": 290.0
+        },
+        {
+          "x": 50.0,
+          "y": 290.0
+        }
+      ],
+      "centroid": {
+        "x": 400.0,
+        "y": 245.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "nurse_station",
+      "label": "Nurse Station",
+      "type": "nurse_station",
+      "polygon": [
+        {
+          "x": 300.0,
+          "y": 40.0
+        },
+        {
+          "x": 500.0,
+          "y": 40.0
+        },
+        {
+          "x": 500.0,
+          "y": 200.0
+        },
+        {
+          "x": 300.0,
+          "y": 200.0
+        }
+      ],
+      "centroid": {
+        "x": 400.0,
+        "y": 120.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "med_room",
+      "label": "Medication Room",
+      "type": "medication_room",
+      "polygon": [
+        {
+          "x": 50.0,
+          "y": 40.0
+        },
+        {
+          "x": 280.0,
+          "y": 40.0
+        },
+        {
+          "x": 280.0,
+          "y": 200.0
+        },
+        {
+          "x": 50.0,
+          "y": 200.0
+        }
+      ],
+      "centroid": {
+        "x": 165.0,
+        "y": 120.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "supply_room",
+      "label": "Supply Room",
+      "type": "supply_room",
+      "polygon": [
+        {
+          "x": 520.0,
+          "y": 40.0
+        },
+        {
+          "x": 750.0,
+          "y": 40.0
+        },
+        {
+          "x": 750.0,
+          "y": 200.0
+        },
+        {
+          "x": 520.0,
+          "y": 200.0
+        }
+      ],
+      "centroid": {
+        "x": 635.0,
+        "y": 120.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "patient_101",
+      "label": "Patient Room 101",
+      "type": "patient_room",
+      "polygon": [
+        {
+          "x": 50.0,
+          "y": 290.0
+        },
+        {
+          "x": 380.0,
+          "y": 290.0
+        },
+        {
+          "x": 380.0,
+          "y": 460.0
+        },
+        {
+          "x": 50.0,
+          "y": 460.0
+        }
+      ],
+      "centroid": {
+        "x": 215.0,
+        "y": 375.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "lab_drop",
+      "label": "Lab Drop",
+      "type": "lab_drop",
+      "polygon": [
+        {
+          "x": 400.0,
+          "y": 290.0
+        },
+        {
+          "x": 750.0,
+          "y": 290.0
+        },
+        {
+          "x": 750.0,
+          "y": 460.0
+        },
+        {
+          "x": 400.0,
+          "y": 460.0
+        }
+      ],
+      "centroid": {
+        "x": 575.0,
+        "y": 375.0
+      },
+      "confidence": null
+    }
+  ],
+  "doors": [
+    {
+      "id": "d_nurse",
+      "position": {
+        "x": 400.0,
+        "y": 200.0
+      },
+      "rooms_connected": [
+        "nurse_station",
+        "corridor"
+      ],
+      "confidence": null
+    },
+    {
+      "id": "d_med",
+      "position": {
+        "x": 165.0,
+        "y": 200.0
+      },
+      "rooms_connected": [
+        "med_room",
+        "corridor"
+      ],
+      "confidence": null
+    },
+    {
+      "id": "d_supply",
+      "position": {
+        "x": 635.0,
+        "y": 200.0
+      },
+      "rooms_connected": [
+        "supply_room",
+        "corridor"
+      ],
+      "confidence": null
+    },
+    {
+      "id": "d_101",
+      "position": {
+        "x": 215.0,
+        "y": 290.0
+      },
+      "rooms_connected": [
+        "patient_101",
+        "corridor"
+      ],
+      "confidence": null
+    },
+    {
+      "id": "d_lab",
+      "position": {
+        "x": 575.0,
+        "y": 290.0
+      },
+      "rooms_connected": [
+        "lab_drop",
+        "corridor"
+      ],
+      "confidence": null
+    }
+  ]
+}

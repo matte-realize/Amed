@@ -1,0 +1,197 @@
+{
+  "image_width": 720,
+  "image_height": 480,
+  "meters_per_pixel": 0.05,
+  "rooms": [
+    {
+      "id": "corridor",
+      "label": "Central Hall",
+      "type": "corridor",
+      "polygon": [
+        {
+          "x": 60.0,
+          "y": 190.0
+        },
+        {
+          "x": 660.0,
+          "y": 190.0
+        },
+        {
+          "x": 660.0,
+          "y": 270.0
+        },
+        {
+          "x": 60.0,
+          "y": 270.0
+        }
+      ],
+      "centroid": {
+        "x": 360.0,
+        "y": 230.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "nurse_station",
+      "label": "Nurse Hub",
+      "type": "nurse_station",
+      "polygon": [
+        {
+          "x": 60.0,
+          "y": 40.0
+        },
+        {
+          "x": 340.0,
+          "y": 40.0
+        },
+        {
+          "x": 340.0,
+          "y": 190.0
+        },
+        {
+          "x": 60.0,
+          "y": 190.0
+        }
+      ],
+      "centroid": {
+        "x": 200.0,
+        "y": 115.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "med_room",
+      "label": "Pharmacy Pyxis",
+      "type": "medication_room",
+      "polygon": [
+        {
+          "x": 360.0,
+          "y": 40.0
+        },
+        {
+          "x": 660.0,
+          "y": 40.0
+        },
+        {
+          "x": 660.0,
+          "y": 190.0
+        },
+        {
+          "x": 360.0,
+          "y": 190.0
+        }
+      ],
+      "centroid": {
+        "x": 510.0,
+        "y": 115.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "patient_201",
+      "label": "Patient Room 201",
+      "type": "patient_room",
+      "polygon": [
+        {
+          "x": 60.0,
+          "y": 270.0
+        },
+        {
+          "x": 340.0,
+          "y": 270.0
+        },
+        {
+          "x": 340.0,
+          "y": 440.0
+        },
+        {
+          "x": 60.0,
+          "y": 440.0
+        }
+      ],
+      "centroid": {
+        "x": 200.0,
+        "y": 355.0
+      },
+      "confidence": null
+    },
+    {
+      "id": "supply_room",
+      "label": "Clean Supply",
+      "type": "supply_room",
+      "polygon": [
+        {
+          "x": 360.0,
+          "y": 270.0
+        },
+        {
+          "x": 660.0,
+          "y": 270.0
+        },
+        {
+          "x": 660.0,
+          "y": 440.0
+        },
+        {
+          "x": 360.0,
+          "y": 440.0
+        }
+      ],
+      "centroid": {
+        "x": 510.0,
+        "y": 355.0
+      },
+      "confidence": null
+    }
+  ],
+  "doors": [
+    {
+      "id": "d_hub",
+      "position": {
+        "x": 200.0,
+        "y": 190.0
+      },
+      "rooms_connected": [
+        "nurse_station",
+        "corridor"
+      ],
+      "confidence": null
+    },
+    {
+      "id": "d_pyxis",
+      "position": {
+        "x": 510.0,
+        "y": 190.0
+      },
+      "rooms_connected": [
+        "med_room",
+        "corridor"
+      ],
+      "confidence": null
+    },
+    {
+      "id": "d_201",
+      "position": {
+        "x": 200.0,
+        "y": 270.0
+      },
+      "rooms_connected": [
+        "patient_201",
+        "corridor"
+      ],
+      "confidence": null
+    },
+    {
+      "id": "d_supply",
+      "position": {
+        "x": 510.0,
+        "y": 270.0
+      },
+      "rooms_connected": [
+        "supply_room",
+        "corridor"
+      ],
+      "confidence": null
+    }
+  ]
+}
