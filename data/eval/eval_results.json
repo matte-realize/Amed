@@ -1,0 +1,413 @@
+{
+  "mode": "live_gemini",
+  "num_plans": 10,
+  "aggregate": {
+    "baseline": {
+      "room_detection_rate": 1.0,
+      "room_precision": 0.5046,
+      "room_label_accuracy": 0.0,
+      "door_detection_rate": 0.8592,
+      "door_precision": 0.95,
+      "mean_room_iou": 0.7971
+    },
+    "verified": {
+      "room_detection_rate": 0.8345,
+      "room_precision": 0.4845,
+      "room_label_accuracy": 0.0,
+      "door_detection_rate": 0.5617,
+      "door_precision": 1.0,
+      "mean_room_iou": 0.7928
+    },
+    "delta": {
+      "room_detection_rate": -0.1655,
+      "room_precision": -0.0201,
+      "room_label_accuracy": 0.0,
+      "door_detection_rate": -0.2975,
+      "door_precision": 0.05,
+      "mean_room_iou": -0.0043
+    }
+  },
+  "plans": [
+    {
+      "plan_id": "cc5k_1041",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1041.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.25,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8439,
+        "matched_rooms": 2,
+        "total_gt_rooms": 2,
+        "total_pred_rooms": 8,
+        "matched_doors": 4,
+        "total_gt_doors": 4,
+        "total_pred_doors": 4
+      },
+      "verified": {
+        "room_detection_rate": 0.5,
+        "room_precision": 0.1429,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.5,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.9025,
+        "matched_rooms": 1,
+        "total_gt_rooms": 2,
+        "total_pred_rooms": 7,
+        "matched_doors": 2,
+        "total_gt_doors": 4,
+        "total_pred_doors": 2
+      },
+      "verification_stats": {
+        "kept": 9,
+        "dropped": 3,
+        "re_extracted": 3,
+        "mean_confidence": 0.6823
+      }
+    },
+    {
+      "plan_id": "cc5k_11260",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11260.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.8182,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8668,
+        "matched_rooms": 9,
+        "total_gt_rooms": 9,
+        "total_pred_rooms": 11,
+        "matched_doors": 10,
+        "total_gt_doors": 10,
+        "total_pred_doors": 10
+      },
+      "verified": {
+        "room_detection_rate": 0.7778,
+        "room_precision": 0.7778,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.3,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8528,
+        "matched_rooms": 7,
+        "total_gt_rooms": 9,
+        "total_pred_rooms": 9,
+        "matched_doors": 3,
+        "total_gt_doors": 10,
+        "total_pred_doors": 3
+      },
+      "verification_stats": {
+        "kept": 12,
+        "dropped": 9,
+        "re_extracted": 4,
+        "mean_confidence": 0.7309
+      }
+    },
+    {
+      "plan_id": "cc5k_1140",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1140.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.5556,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.875,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8958,
+        "matched_rooms": 5,
+        "total_gt_rooms": 5,
+        "total_pred_rooms": 9,
+        "matched_doors": 7,
+        "total_gt_doors": 8,
+        "total_pred_doors": 7
+      },
+      "verified": {
+        "room_detection_rate": 0.8,
+        "room_precision": 0.5,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.75,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.9,
+        "matched_rooms": 4,
+        "total_gt_rooms": 5,
+        "total_pred_rooms": 8,
+        "matched_doors": 6,
+        "total_gt_doors": 8,
+        "total_pred_doors": 6
+      },
+      "verification_stats": {
+        "kept": 14,
+        "dropped": 2,
+        "re_extracted": 5,
+        "mean_confidence": 0.6821
+      }
+    },
+    {
+      "plan_id": "cc5k_1141",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1141.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.625,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.7746,
+        "matched_rooms": 5,
+        "total_gt_rooms": 5,
+        "total_pred_rooms": 8,
+        "matched_doors": 6,
+        "total_gt_doors": 6,
+        "total_pred_doors": 6
+      },
+      "verified": {
+        "room_detection_rate": 0.6,
+        "room_precision": 0.5,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.6667,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.7494,
+        "matched_rooms": 3,
+        "total_gt_rooms": 5,
+        "total_pred_rooms": 6,
+        "matched_doors": 4,
+        "total_gt_doors": 6,
+        "total_pred_doors": 4
+      },
+      "verification_stats": {
+        "kept": 10,
+        "dropped": 4,
+        "re_extracted": 3,
+        "mean_confidence": 0.7626
+      }
+    },
+    {
+      "plan_id": "cc5k_11485",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11485.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.375,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.75,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.7712,
+        "matched_rooms": 3,
+        "total_gt_rooms": 3,
+        "total_pred_rooms": 8,
+        "matched_doors": 3,
+        "total_gt_doors": 4,
+        "total_pred_doors": 3
+      },
+      "verified": {
+        "room_detection_rate": 0.6667,
+        "room_precision": 0.2857,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.5,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.7055,
+        "matched_rooms": 2,
+        "total_gt_rooms": 3,
+        "total_pred_rooms": 7,
+        "matched_doors": 2,
+        "total_gt_doors": 4,
+        "total_pred_doors": 2
+      },
+      "verification_stats": {
+        "kept": 9,
+        "dropped": 2,
+        "re_extracted": 1,
+        "mean_confidence": 0.6666
+      }
+    },
+    {
+      "plan_id": "cc5k_11527",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11527.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.5,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 1.0,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8985,
+        "matched_rooms": 4,
+        "total_gt_rooms": 4,
+        "total_pred_rooms": 8,
+        "matched_doors": 6,
+        "total_gt_doors": 6,
+        "total_pred_doors": 6
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.6667,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.3333,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8985,
+        "matched_rooms": 4,
+        "total_gt_rooms": 4,
+        "total_pred_rooms": 6,
+        "matched_doors": 2,
+        "total_gt_doors": 6,
+        "total_pred_doors": 2
+      },
+      "verification_stats": {
+        "kept": 8,
+        "dropped": 6,
+        "re_extracted": 5,
+        "mean_confidence": 0.6588
+      }
+    },
+    {
+      "plan_id": "cc5k_11565",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11565.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.8889,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.9,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.9448,
+        "matched_rooms": 8,
+        "total_gt_rooms": 8,
+        "total_pred_rooms": 9,
+        "matched_doors": 9,
+        "total_gt_doors": 10,
+        "total_pred_doors": 9
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.8889,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.5,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.9448,
+        "matched_rooms": 8,
+        "total_gt_rooms": 8,
+        "total_pred_rooms": 9,
+        "matched_doors": 5,
+        "total_gt_doors": 10,
+        "total_pred_doors": 5
+      },
+      "verification_stats": {
+        "kept": 14,
+        "dropped": 4,
+        "re_extracted": 0,
+        "mean_confidence": 0.7324
+      }
+    },
+    {
+      "plan_id": "cc5k_11573",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11573.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.5,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.9,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8778,
+        "matched_rooms": 5,
+        "total_gt_rooms": 5,
+        "total_pred_rooms": 10,
+        "matched_doors": 9,
+        "total_gt_doors": 10,
+        "total_pred_doors": 9
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.5,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.9,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.8778,
+        "matched_rooms": 5,
+        "total_gt_rooms": 5,
+        "total_pred_rooms": 10,
+        "matched_doors": 9,
+        "total_gt_doors": 10,
+        "total_pred_doors": 9
+      },
+      "verification_stats": {
+        "kept": 19,
+        "dropped": 0,
+        "re_extracted": 4,
+        "mean_confidence": 0.6769
+      }
+    },
+    {
+      "plan_id": "cc5k_11578",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_11578.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.3333,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.6667,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.6385,
+        "matched_rooms": 2,
+        "total_gt_rooms": 2,
+        "total_pred_rooms": 6,
+        "matched_doors": 2,
+        "total_gt_doors": 3,
+        "total_pred_doors": 2
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.3333,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.6667,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.6385,
+        "matched_rooms": 2,
+        "total_gt_rooms": 2,
+        "total_pred_rooms": 6,
+        "matched_doors": 2,
+        "total_gt_doors": 3,
+        "total_pred_doors": 2
+      },
+      "verification_stats": {
+        "kept": 8,
+        "dropped": 0,
+        "re_extracted": 2,
+        "mean_confidence": 0.7363
+      }
+    },
+    {
+      "plan_id": "cc5k_1165",
+      "image_path": "/Users/lg0/.gemini/antigravity/scratch/empty-repo/data/eval/cubicasa_10/images/cc5k_1165.png",
+      "baseline": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.2,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.5,
+        "door_precision": 0.5,
+        "mean_room_iou": 0.4587,
+        "matched_rooms": 1,
+        "total_gt_rooms": 1,
+        "total_pred_rooms": 5,
+        "matched_doors": 1,
+        "total_gt_doors": 2,
+        "total_pred_doors": 2
+      },
+      "verified": {
+        "room_detection_rate": 1.0,
+        "room_precision": 0.25,
+        "room_label_accuracy": 0.0,
+        "door_detection_rate": 0.5,
+        "door_precision": 1.0,
+        "mean_room_iou": 0.4587,
+        "matched_rooms": 1,
+        "total_gt_rooms": 1,
+        "total_pred_rooms": 4,
+        "matched_doors": 1,
+        "total_gt_doors": 2,
+        "total_pred_doors": 1
+      },
+      "verification_stats": {
+        "kept": 5,
+        "dropped": 2,
+        "re_extracted": 2,
+        "mean_confidence": 0.6636
+      }
+    }
+  ],
+  "markdown_summary": "### Extraction Proof: Baseline (Neon) vs. Verified (Neon + Decisions API)\n\nEvaluated on **10** floor plan(s) (`mode: live_gemini`).\n\n| Metric | Baseline (Neon only) | Verified (Neon + Decisions API) | Delta |\n| --- | ---: | ---: | ---: |\n| Room Detection Rate | 100.0% | 83.5% | -16.6 pp |\n| Room Label Accuracy | 0.0% | 0.0% | +0.0 pp |\n| Door Detection Rate | 85.9% | 56.2% | -29.8 pp |\n| Mean Room IoU | 0.797 | 0.793 | -0.004 |"
+}
