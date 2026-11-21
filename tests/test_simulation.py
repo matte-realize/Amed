@@ -1,0 +1,254 @@
+"""Tests for route graph, Hydrogen schedule parser, and SimPy shift simulation."""
+
+from __future__ import annotations
+
+import math
+import sys
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
+import pytest
+
+from hospital_twin.routing import build_route_graph, room_centroid, shortest_path_with_pixels
+from hospital_twin.schedule_parser import parse_run_description
+from hospital_twin.schemas import Door, Point, Room, ScheduledRun, UnitMap
+from hospital_twin.simulator import simulate_shift
+
+
+def _make_sample_unit(meters_per_pixel: float = 0.05) -> UnitMap:
+    """Build a 5-room hospital unit connected through a central corridor.
+
+    Layout (pixels):
+      - corridor:      centroid (300, 200)
+      - nurse_station: centroid (300, 100), door at (300, 150) -> dist 100 px = 5 m
+      - med_room:      centroid (100, 200), door at (200, 200) -> dist 200 px = 10 m
+      - lab_drop:      centroid (500, 200), door at (400, 200) -> dist 200 px = 10 m
+      - supply_room:   centroid (300, 350), door at (300, 250) -> dist 150 px = 7.5 m
+    """
+    rooms = [
+        Room(
+            id="corridor",
+            label="Main Corridor",
+            type="corridor",
+            polygon=[
+                Point(x=200, y=150),
+                Point(x=400, y=150),
+                Point(x=400, y=250),
+                Point(x=200, y=250),
+            ],
+        ),
+        Room(
+            id="nurse_station",
+            label="Nurse Station",
+            type="nurse_station",
+            polygon=[
+                Point(x=250, y=50),
+                Point(x=350, y=50),
+                Point(x=350, y=150),
+                Point(x=250, y=150),
+            ],
+            centroid=Point(x=300, y=100),
+        ),
+        Room(
+            id="med_room",
+            label="Medication Room",
+            type="medication_room",
+            polygon=[
+                Point(x=0, y=150),
+                Point(x=200, y=150),
+                Point(x=200, y=250),
+                Point(x=0, y=250),
+            ],
+            centroid=Point(x=100, y=200),
+        ),
+        Room(
+            id="lab_drop",
+            label="Lab Drop",
+            type="lab_drop",
+            polygon=[
+                Point(x=400, y=150),
+                Point(x=600, y=150),
+                Point(x=600, y=250),
+                Point(x=400, y=250),
+            ],
+            centroid=Point(x=500, y=200),
+        ),
+        Room(
+            id="supply_room",
+            label="Supply Room",
+            type="supply_room",
+            polygon=[
+                Point(x=250, y=250),
+                Point(x=350, y=250),
+                Point(x=350, y=450),
+                Point(x=250, y=450),
+            ],
+            centroid=Point(x=300, y=350),
+        ),
+    ]
+    doors = [
+        Door(id="d1", position=Point(x=300, y=150), rooms_connected=["nurse_station", "corridor"]),
+        Door(id="d2", position=Point(x=200, y=200), rooms_connected=["med_room", "corridor"]),
+        Door(id="d3", position=Point(x=400, y=200), rooms_connected=["lab_drop", "corridor"]),
+        Door(id="d4", position=Point(x=300, y=250), rooms_connected=["supply_room", "corridor"]),
+    ]
+    return UnitMap(
+        image_width=600,
+        image_height=500,
+        meters_per_pixel=meters_per_pixel,
+        rooms=rooms,
+        doors=doors,
+    )
+
+
+def test_graph_connectivity_and_centroid():
+    unit = _make_sample_unit()
+    corridor = unit.rooms[0]
+    assert corridor.centroid is None
+    c = room_centroid(corridor)
+    assert math.isclose(c.x, 300.0, rel_tol=1e-6)
+    assert math.isclose(c.y, 200.0, rel_tol=1e-6)
+
+    graph = build_route_graph(unit)
+    assert set(graph.nodes) == {"corridor", "nurse_station", "med_room", "lab_drop", "supply_room"}
+    assert graph.number_of_edges() == 4
+    for u in ("nurse_station", "med_room", "lab_drop", "supply_room"):
+        assert graph.has_edge(u, "corridor")
+
+
+def test_shortest_path_distances_and_pixels():
+    unit = _make_sample_unit(meters_per_pixel=0.05)
+    graph = build_route_graph(unit)
+
+    # med_room (100,200) -> d2 (200,200) -> corridor (300,200) -> d1 (300,150) -> nurse_station (300,100)
+    # Total px = 100 + 100 + 50 + 50 = 300 px * 0.05 = 15.0 m
+    node_path, pixel_path, dist_m = shortest_path_with_pixels(
+        graph, unit, "med_room", "nurse_station"
+    )
+    assert node_path == ["med_room", "corridor", "nurse_station"]
+    assert len(pixel_path) == 5
+    assert pixel_path[0] == Point(x=100, y=200)
+    assert pixel_path[1] == Point(x=200, y=200)
+    assert pixel_path[2] == Point(x=300, y=200)
+    assert pixel_path[3] == Point(x=300, y=150)
+    assert pixel_path[4] == Point(x=300, y=100)
+    assert math.isclose(dist_m, 15.0, rel_tol=1e-6)
+
+    # Same-room path
+    same_nodes, same_pixels, same_dist = shortest_path_with_pixels(
+        graph, unit, "med_room", "med_room"
+    )
+    assert same_nodes == ["med_room"]
+    assert same_pixels == [Point(x=100, y=200)]
+    assert same_dist == 0.0
+
+    with pytest.raises(ValueError):
+        shortest_path_with_pixels(graph, unit, "med_room", "unknown_room")
+
+
+def test_schedule_parser_fallback(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    rooms = ["corridor", "nurse_station", "med_room", "lab_drop", "supply_room"]
+    runs = parse_run_description(
+        "pharmacy pickup every 30 minutes, specimens hourly, supply restock twice a shift",
+        rooms,
+    )
+    assert len(runs) == 3
+
+    by_type = {r.run_type: r for r in runs}
+    assert by_type["pharmacy_pickup"].frequency_minutes == 30.0
+    assert by_type["pharmacy_pickup"].origin == "med_room"
+    assert by_type["pharmacy_pickup"].destination == "nurse_station"
+
+    assert by_type["lab_specimen_drop"].frequency_minutes == 60.0
+    assert by_type["lab_specimen_drop"].origin == "nurse_station"
+    assert by_type["lab_specimen_drop"].destination == "lab_drop"
+
+    assert by_type["supply_restock"].frequency_minutes == 240.0
+    assert by_type["supply_restock"].origin == "supply_room"
+    assert by_type["supply_restock"].destination == "nurse_station"
+
+
+def test_schedule_parser_with_mocked_hydrogen(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+
+    mock_response = SimpleNamespace(
+        text='{"runs": [{"run_type": "pharmacy_pickup", "origin": "med_room", "destination": "nurse_station", "frequency_minutes": 45.0, "label": "Meds"}]}'
+    )
+    mock_client = MagicMock()
+    mock_client.models.generate_content.return_value = mock_response
+
+    fake_genai = MagicMock()
+    fake_genai.Client.return_value = mock_client
+    fake_types = MagicMock()
+
+    monkeypatch.setitem(sys.modules, "google", SimpleNamespace(genai=fake_genai))
+    monkeypatch.setitem(sys.modules, "google.genai", fake_genai)
+    monkeypatch.setitem(sys.modules, "google.genai.types", fake_types)
+
+    runs = parse_run_description(
+        "medication run every 45 minutes",
+        ["nurse_station", "med_room", "corridor"],
+    )
+    assert len(runs) == 1
+    assert runs[0].run_type == "pharmacy_pickup"
+    assert runs[0].frequency_minutes == 45.0
+    assert mock_client.models.generate_content.call_args.kwargs["model"] == "gemini-4-hydrogen"
+
+
+def test_simulate_shift_nurse_vs_robots():
+    unit = _make_sample_unit(meters_per_pixel=0.05)
+    schedule = [
+        ScheduledRun(
+            run_type="pharmacy_pickup",
+            origin="med_room",
+            destination="nurse_station",
+            frequency_minutes=30.0,
+        ),
+        ScheduledRun(
+            run_type="lab_specimen_drop",
+            origin="nurse_station",
+            destination="lab_drop",
+            frequency_minutes=60.0,
+        ),
+        ScheduledRun(
+            run_type="supply_restock",
+            origin="supply_room",
+            destination="nurse_station",
+            frequency_minutes=240.0,
+        ),
+    ]
+
+    comp_1 = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1)
+    comp_2 = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=2)
+    comp_3 = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=3)
+
+    # 8h = 480m: 16 pharmacy (0,30..450) + 8 lab (0,60..420) + 2 supply (0,240) = 26 trips
+    assert comp_1.nurse_only.total_trips == 26
+    assert comp_1.nurse_only.num_robots == 0
+    assert comp_1.nurse_only.nurse_minutes_walked > 0
+    assert comp_1.nurse_only.robot_minutes_traveled == 0.0
+
+    for n, comp in [(1, comp_1), (2, comp_2), (3, comp_3)]:
+        assert comp.robot_assisted.num_robots == n
+        assert comp.robot_assisted.total_trips == 26
+        assert comp.robot_assisted.nurse_minutes_walked == 0.0
+        assert comp.robot_assisted.robot_minutes_traveled > 0
+        assert math.isclose(
+            comp.nurse_minutes_saved, comp.nurse_only.nurse_minutes_walked, rel_tol=1e-6
+        )
+        assert comp.assumptions["num_robots"] == n
+        assert comp.assumptions["shift_hours"] == 8.0
+
+        for ev in comp.robot_assisted.events:
+            assert ev.agent_role == "robot"
+            assert ev.distance_m > 0
+            assert ev.end_time_s > ev.start_time_s
+            assert ev.wait_time_s >= 0.0
+            assert len(ev.node_path) >= 2
+            assert len(ev.pixel_path) >= 3
+
+    # Adding robots should reduce or keep equal average delivery wait time
+    assert comp_2.robot_assisted.avg_delivery_wait_s <= comp_1.robot_assisted.avg_delivery_wait_s
+    assert comp_3.robot_assisted.avg_delivery_wait_s <= comp_2.robot_assisted.avg_delivery_wait_s
+    assert comp_3.robot_assisted.avg_delivery_wait_s == 0.0
