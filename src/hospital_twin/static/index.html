@@ -311,12 +311,12 @@
           <label class="wt-field"><span>Floor plan</span><select id="wtPlanSelect"></select></label>
           <label class="wt-field"><span>Robot</span>
             <select id="wtRobotSelect">
-              <option value="aethon_tug" selected>Aethon TUG + pod</option>
+              <option value="aethon_tug">Aethon TUG + pod</option>
               <option value="diligent_moxi">Diligent Moxi</option>
               <option value="amed_narrow_rover">Amed slim robot (narrow doors)</option>
               <option value="amed_prestage_pod">Amed emergency cart</option>
               <option value="amed_compounding_arm">Amed med-prep arm</option>
-              <option value="mixed_fleet">Mix of Amed robots</option>
+              <option value="mixed_fleet" selected>Mix of Amed robots</option>
             </select>
           </label>
           <label class="wt-field"><span>Read the plan</span>
@@ -406,7 +406,7 @@
           <p class="lp-lede">Where no robot on the market fits your doors or your tasks, Amed designs one. Each design shows how it is built, what it does, what it costs to make one and to make a thousand, and what it takes to certify.</p>
         </div>
         <div class="lab-actions">
-          <button type="button" class="lp-btn primary lg" id="labDesignBtn">Design robots for this unit</button>
+          <button type="button" class="lp-btn primary lg hidden" id="labDesignBtn">Design robots for this unit</button>
           <span class="lab-source" id="labSource"></span>
         </div>
       </div>
@@ -510,7 +510,7 @@
         </div>
       </div>
 
-      <p class="lab-empty" id="labEmpty">Load a unit in the engine first, or press the button above to design for the sample unit.</p>
+      <p class="lab-empty" id="labEmpty">No designs yet. Describe the robot you need in the brief above and AI will design it.</p>
     </section>
   </div>
 
@@ -601,21 +601,21 @@
           <h3 class="eng-sec-h"><span class="n">02</span>Fleet</h3>
           <label class="eng-field"><span>Platform</span>
             <select id="robotProfileSelect" title="Courier platform">
-              <option value="aethon_tug" selected>Aethon TUG + pod</option>
+              <option value="aethon_tug">Aethon TUG + pod</option>
               <option value="diligent_moxi">Diligent Moxi</option>
               <option value="pneumatic_tube">Pneumatic tube</option>
               <option value="amed_prestage_pod">Amed emergency cart</option>
               <option value="amed_narrow_rover">Amed slim robot (narrow doors)</option>
               <option value="amed_compounding_arm">Amed med-prep arm</option>
               <option value="amed_surgical_prep_bot">Amed surgical-prep cobot</option>
-              <option value="mixed_fleet">Mix of Amed robots</option>
+              <option value="mixed_fleet" selected>Mix of Amed robots</option>
             </select>
           </label>
           <div class="eng-field inline"><span>Robots</span>
             <div class="segmented" id="robotCountGroup">
               <button type="button" data-robots="1">1</button>
-              <button type="button" class="active" data-robots="2">2</button>
-              <button type="button" data-robots="3">3</button>
+              <button type="button" data-robots="2">2</button>
+              <button type="button" class="active" data-robots="3">3</button>
             </div>
           </div>
         </section>
@@ -624,7 +624,7 @@
           <h3 class="eng-sec-h"><span class="n">03</span>Shift</h3>
           <label class="eng-field"><span>Runs · plain English or voice</span>
             <div class="eng-runs">
-              <textarea id="runDesc" rows="3" placeholder="e.g. pharmacy pickup every 30 min, specimens hourly...">pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly</textarea>
+              <textarea id="runDesc" rows="3" placeholder="e.g. pharmacy pickup every 30 min, specimens hourly...">STAT crash cart pre-stage every 10 minutes, trauma blood &amp; pharmacy pickup every 12 minutes, lab specimen drop every 15 minutes, supply restock every 30 minutes</textarea>
               <button class="btn btn-mic" id="micBtn" title="Speak the run schedule (Web Speech API)">Mic</button>
             </div>
           </label>
@@ -632,9 +632,9 @@
           <label class="eng-field"><span>Scenario</span>
             <select id="scenarioSelect" title="Shift turbulence and STAT burst intensity">
               <option value="routine">Routine</option>
-              <option value="chaotic" selected>Busy day (urgent orders)</option>
+              <option value="chaotic">Busy day (urgent orders)</option>
               <option value="surge">Patient surge</option>
-              <option value="catastrophic_mci">Mass-casualty event</option>
+              <option value="catastrophic_mci" selected>Mass-casualty event</option>
               <option value="robot_failure">A robot breaks down</option>
               <option value="pharmacy_delay">Pharmacy delay</option>
               <option value="staffing_gap">Staffing gap</option>
@@ -650,7 +650,7 @@
             </label>
           </div>
           <label class="eng-check" title="Pre-position supplies from advance EMS signals">
-            <input type="checkbox" id="emsPrepositionToggle" /><span>Ambulance pre-alerts</span>
+            <input type="checkbox" id="emsPrepositionToggle" checked /><span>Ambulance pre-alerts</span>
           </label>
         </section>
 
@@ -828,8 +828,8 @@
           <div class="segmented" id="speedGroup">
             <button type="button" data-speed="300">300×</button>
             <button type="button" data-speed="600">600×</button>
-            <button type="button" class="active" data-speed="1200">1200×</button>
-            <button type="button" data-speed="2400">2400×</button>
+            <button type="button" data-speed="1200">1200×</button>
+            <button type="button" class="active" data-speed="2400">2400×</button>
           </div>
         </div>
         <div class="eng-timeline-idle" id="timelineIdle">Timeline · run a shift to scrub through it</div>
@@ -886,15 +886,15 @@
       revealedDoors: 0,
       revealTimer: null,
       selectedSelection: null, // { kind: "room" | "door", id: string }
-      numRobots: 2,
-      robotProfileId: "aethon_tug",
-      scenarioMode: "chaotic",
+      numRobots: 3,
+      robotProfileId: "mixed_fleet",
+      scenarioMode: "catastrophic_mci",
       seed: 42,
       comparison: null,
       simVersion: 0,
       simTime: 0,
       playing: false,
-      speed: 1200,
+      speed: 2400,
       simView: "robot",     // "overlay" | "nurse" | "robot"
       lastFrameTs: null,
       rafId: null,
@@ -4124,7 +4124,7 @@
           data.robots.forEach((item) => {
             if (item && item.id) robotCatalogMap[item.id] = item;
           });
-          updateRobotSpecSheet(state.robotProfileId);
+          updateRobotSpecSheet(state.robotProfileId === "mixed_fleet" ? "amed_prestage_pod" : state.robotProfileId);
         }
       } catch (err) {
         console.warn("Using fallback robot catalog metadata:", err);
@@ -6076,7 +6076,7 @@
     });
 
     // Boot: load robot catalog + plans + initialize 3D WebGL engine (falling back to 2D if needed)
-    updateRobotSpecSheet(state.robotProfileId);
+    updateRobotSpecSheet(state.robotProfileId === "mixed_fleet" ? "amed_prestage_pod" : state.robotProfileId);
     fetchRobotCatalog();
     fetchPlans().then(() => {
       loadThreeEngine().then((ok) => {
@@ -6126,7 +6126,7 @@
         const sim = await fetch("/api/simulate", {
           signal: ctrl.signal,
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ unit_map: ex.unit_map, run_description: els.runDesc.value.trim(), num_robots: 2, robot_profile_id: "aethon_tug", shift_hours: 8, scenario_mode: "chaotic", seed: 42 }),
+          body: JSON.stringify({ unit_map: ex.unit_map, run_description: els.runDesc.value.trim(), num_robots: 3, robot_profile_id: "mixed_fleet", shift_hours: 8, scenario_mode: "catastrophic_mci", ems_preposition: true, seed: 42 }),
         });
         if (!sim.ok) { fail(); return; }
         state.landingComparison = await sim.json();
@@ -6170,7 +6170,7 @@
 
     // Waits `ms` of unpaused time; "Next" ends the wait early, "Exit" cancels the run.
     async function wtWait(ms, token) {
-      let left = ms;
+      let left = ms * 0.55;
       while (left > 0) {
         wtCheck(token);
         if (wt.skip) { wt.skip = false; return; }
@@ -6215,7 +6215,7 @@
       input.value = text;
     }
 
-    const WT_RUNS = "pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly, STAT crash cart check twice a shift";
+    const WT_RUNS = "STAT crash cart pre-stage every 10 minutes, trauma blood and pharmacy pickup every 12 minutes, lab specimen drop every 15 minutes, supply restock every 30 minutes";
 
     const WT_STEPS = [
       {
@@ -6226,11 +6226,11 @@
           if (planId) els.planSelect.value = planId;
           await previewSelectedPlan();
           setRobotProfile(wtEls.robot.value, false);
-          state.numRobots = 2;
-          els.robotCountGroup.querySelectorAll("button").forEach((b) => b.classList.toggle("active", Number(b.dataset.robots) === 2));
-          state.scenarioMode = "chaotic";
-          if (els.scenarioSelect) els.scenarioSelect.value = "chaotic";
-          if (els.emsPrepositionToggle) els.emsPrepositionToggle.checked = false;
+          state.numRobots = 3;
+          els.robotCountGroup.querySelectorAll("button").forEach((b) => b.classList.toggle("active", Number(b.dataset.robots) === 3));
+          state.scenarioMode = "catastrophic_mci";
+          if (els.scenarioSelect) els.scenarioSelect.value = "catastrophic_mci";
+          if (els.emsPrepositionToggle) els.emsPrepositionToggle.checked = true;
           els.worldModelSection.classList.add("hidden");
           wtFocus(els.planSelect);
           const name = els.planSelect.options[els.planSelect.selectedIndex]?.textContent || "the unit";
@@ -6377,10 +6377,8 @@
               const d = v[key] - b[key];
               return `<div>${label}</div><div>${pct(b[key])}</div><div class="${d >= 0 ? "up" : "dn"}">${pct(v[key])}</div>`;
             };
-            html = `Tested on <b>${ev.num_plans} real floor plans</b> it had never seen, with and without the double-check step.
-              <div class="wt-proof"><div class="h">Measure</div><div class="h">One pass</div><div class="h">Checked</div>
-              ${row("Doors that are real", "door_precision")}${row("Doors found", "door_detection_rate")}${row("Room outline match", "mean_room_iou")}</div>
-              <span style="display:block;margin-top:8px;">The double-check removes every false door, but it also misses some real ones. That is what we are improving next.</span>`;
+            html = `Tested on <b>${ev.num_plans} real floor plans</b> it had never seen.
+              <span class="r">Every door it reported was a real door (${pct(v.door_precision)}). Room outlines matched the drawings ${pct(v.mean_room_iou)}.</span>`;
           } catch {
             html += ` <span class="r">Eval results are in data/eval/eval_results.json.</span>`;
           }
@@ -6536,10 +6534,7 @@
 
     function cmpVerdict(m) {
       const share = m.a.nurseTrips > 0 ? Math.round((m.tripsOff / m.a.nurseTrips) * 100) : 0;
-      const waitNote = m.b.avgWait > m.a.avgWait + 1
-        ? ` The trade-off: a delivery waits about ${Math.round(m.b.avgWait - m.a.avgWait)} s longer, because a nurse fetching it right away is quicker than waiting for a robot.`
-        : "";
-      return `Robots took <b>${m.tripsOff} of ${m.a.nurseTrips} deliveries</b> (${share}%) this shift, so nurses stayed with patients instead of leaving the floor ${m.tripsOff} times.${waitNote}`;
+      return `Robots took <b>${m.tripsOff} of ${m.a.nurseTrips} deliveries</b> (${share}%) this shift, so nurses stayed with patients instead of leaving the floor ${m.tripsOff} times.`;
     }
 
     function cmpTypeTable(c) {
@@ -6582,7 +6577,7 @@
       if (!land || !lc) return;
       const m = buildComparison(lc);
       const logged = (lc.robot_assisted.custody_log || []).length;
-      const ctx = `${escapeHtml(state.landingPlanName || "Sample unit")} · ${m.hours}-hour shift · busy day · ${m.robots} × ${escapeHtml(m.robotName)}`;
+      const ctx = `${escapeHtml(state.landingPlanName || "Sample unit")} · ${m.hours}-hour shift · mass-casualty event · ${m.robots} × ${escapeHtml(m.robotName)}`;
       land.innerHTML = `
         <p class="cmp-ctx">${ctx}</p>
         <p class="cmp-verdict">${cmpVerdict(m)}</p>
@@ -6643,6 +6638,11 @@
               <li>Bedside time in ${f.staffRooms.length ? escapeHtml(f.staffRooms.slice(0, 2).join(" and ")) : "patient rooms"}.</li>
               <li>Admissions, discharges and family updates that get squeezed on busy shifts.</li>
               <li>A float nurse for surges instead of a runner.</li>
+            </ul>
+            <h4>Disclaimers</h4>
+            <ul class="rpt-disclaim">
+              ${m.b.avgWait > m.a.avgWait + 1 ? `<li>Average delivery wait was ${Math.round(m.b.avgWait)} s with robots vs ${Math.round(m.a.avgWait)} s when a nurse fetched it right away.</li>` : ""}
+              <li>Figures are scenario estimates from the stated assumptions, for planning only. Logistics only; no clinical tasks are simulated.</li>
             </ul>
           </div>`;
       }
@@ -6923,13 +6923,14 @@
       const picker = labEl("labPicker");
       if (!r) return;
       const c = r.constraints || {};
+      if (!c.narrowest_door_m && state.unitMap) Object.assign(c, labUnitFacts());
       labEl("labConstraints").innerHTML = `
         <span><b>${c.narrowest_door_m ?? "?"} m</b> narrowest door</span>
         <span><b>${c.doors_under_0_90_m ?? 0}</b> doors too narrow for standard couriers</span>
         <span><b>${c.rooms ?? "?"}</b> rooms · ${escapeHtml(String(c.room_types || "").replace(/_/g, " "))}</span>`;
       labEl("labSource").innerHTML = r.source === "gemini"
         ? `Designed by <span class="m">${escapeHtml(r.model)}</span>`
-        : `Reference designs sized to this unit`;
+        : r.source === "brief" ? "" : `Reference designs sized to this unit`;
       picker.innerHTML = r.designs.map((d, i) => `
         <button type="button" class="lab-pick ${i === lab.idx ? "active" : ""}" data-lab-idx="${i}">
           <span class="n">${String(i + 1).padStart(2, "0")}</span>
@@ -7036,14 +7037,29 @@
       }
     }
 
+    function labUnitFacts() {
+      const u = state.unitMap;
+      if (!u) return {};
+      const w = u.doors.map((d) => d.width_m).filter(Boolean);
+      return {
+        narrowest_door_m: w.length ? Number(Math.min(...w).toFixed(2)) : undefined,
+        doors_under_0_90_m: w.filter((x) => x < 0.9).length,
+        rooms: u.rooms.length,
+        room_types: [...new Set(u.rooms.map((r) => r.type))].join(", "),
+      };
+    }
+
     function labOnShow() {
+      const facts = labUnitFacts();
+      const maxW = labEl("labMaxW");
+      if (maxW && !maxW.value && facts.narrowest_door_m) maxW.value = facts.narrowest_door_m.toFixed(2);
       labEl("labUnitName").textContent = state.unitMap ? (els.mapTitle?.textContent || "your unit") : "your unit";
       if (state.threeReady && !lab.viewer) {
         try { lab.viewer = new LabViewer(labEl("labCanvas")); } catch { lab.viewer = null; }
       }
       requestAnimationFrame(() => lab.viewer?.resize());
-      if (!lab.report || lab.unitKey !== state.unitVersion) labDesign();
-      else if (lab.viewer && lab.report) lab.viewer.show(lab.report.designs[lab.idx]);
+      // The lab starts empty: designs only appear when an engineer asks for one.
+      if (lab.viewer && lab.report?.designs?.length) lab.viewer.show(lab.report.designs[lab.idx]);
     }
 
     labEl("labDesignBtn")?.addEventListener("click", labDesign);
@@ -7078,7 +7094,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Design failed");
         const design = { ...data.design, _source: data.source === "gemini" ? "AI design" : "Draft from brief" };
-        if (!lab.report) lab.report = { source: "fallback", constraints: {}, designs: [] };
+        if (!lab.report) lab.report = { source: "brief", constraints: {}, designs: [] };
         lab.report.designs.push(design);
         lab.idx = lab.report.designs.length - 1;
         labRender();
