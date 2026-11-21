@@ -2259,7 +2259,7 @@
     // Filmic tone mapping + soft image-based light from a neutral "room" environment, so
     // painted walls, steel and plastic read like real materials instead of flat colors.
     function applyRealisticRendering(renderer, scene, exposure = 1.05) {
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMapping = THREE.NeutralToneMapping ?? THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = exposure;
       if ("environmentIntensity" in scene) scene.environmentIntensity = 0.5;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
