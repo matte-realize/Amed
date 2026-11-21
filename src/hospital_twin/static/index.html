@@ -3,10 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amed — Hospital Unit Twin</title>
+  <title>Amed — 3D Hospital Unit Twin</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
   <style>
     :root {
-      --bg: #f4f6f9;
+      --bg: #f1f5f9;
       --surface: #ffffff;
       --surface-alt: #f8fafc;
       --border: #e2e8f0;
@@ -20,8 +28,7 @@
       --robot: #0d9488;
       --robot-soft: #ccfbf1;
       --accent: #2563eb;
-      --amber: #d97706;
-      --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.04);
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 6px 20px rgba(15, 23, 42, 0.05);
       --radius: 12px;
     }
 
@@ -38,7 +45,7 @@
     }
 
     .app-shell {
-      max-width: 1480px;
+      max-width: 1520px;
       margin: 0 auto;
       padding: 12px 18px 20px;
       display: flex;
@@ -61,16 +68,17 @@
       gap: 10px;
     }
     .brand-mark {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
       background: linear-gradient(135deg, #0f766e, #2563eb);
       color: #fff;
       display: grid;
       place-items: center;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 15px;
       letter-spacing: -0.02em;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
     }
     .brand-title {
       font-weight: 700;
@@ -81,7 +89,7 @@
       color: var(--muted);
       font-size: 12px;
       margin-left: 6px;
-      font-weight: 400;
+      font-weight: 500;
     }
 
     .stepper {
@@ -108,6 +116,13 @@
     .step-pill.done {
       background: var(--primary-soft);
       color: var(--primary);
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     /* Control Ribbon */
@@ -226,10 +241,15 @@
       color: var(--muted);
       cursor: pointer;
       border-right: 1px solid var(--border);
+      transition: background 0.15s, color 0.15s;
     }
     .segmented button:last-child { border-right: none; }
     .segmented button.active {
       background: var(--text);
+      color: #fff;
+    }
+    .segmented.view-toggle button.active {
+      background: linear-gradient(135deg, #0f766e, #2563eb);
       color: #fff;
     }
 
@@ -266,13 +286,13 @@
       color: #1e40af;
     }
 
-    /* Centerpiece Canvas Stage */
+    /* Centerpiece Stage */
     .stage {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      min-height: 480px;
+      min-height: 500px;
     }
 
     .single-canvas-card {
@@ -333,17 +353,64 @@
     .canvas-wrap {
       position: relative;
       flex: 1;
-      min-height: 420px;
-      background: #0f172a;
-      border-radius: 8px;
+      min-height: 440px;
+      background: radial-gradient(circle at 50% 35%, #1e293b 0%, #0b1120 100%);
+      border-radius: 10px;
       overflow: hidden;
       display: grid;
       place-items: center;
     }
-    canvas {
+    canvas.canvas-2d {
       display: block;
       max-width: 100%;
       max-height: 100%;
+    }
+    .three-mount {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    .three-mount:active {
+      cursor: grabbing;
+    }
+
+    .cam-hint {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(6px);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-size: 11px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .cam-actions {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      display: flex;
+      gap: 6px;
+      z-index: 6;
+    }
+    .cam-btn {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(6px);
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .cam-btn:hover {
+      background: rgba(30, 41, 59, 0.95);
     }
 
     .dual-grid {
@@ -474,10 +541,10 @@
     <!-- Top Header -->
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">A</div>
+        <div class="brand-mark">3D</div>
         <div>
           <span class="brand-title">Amed</span>
-          <span class="brand-sub">Hospital Unit Twin</span>
+          <span class="brand-sub">3D Hospital Unit Twin</span>
         </div>
       </div>
 
@@ -487,10 +554,16 @@
         <span class="step-pill" data-step="3">3. Animate Shift</span>
       </div>
 
-      <div class="legend">
-        <span><span class="dot-swatch" style="background: var(--nurse);"></span>Nurse</span>
-        <span><span class="dot-swatch" style="background: var(--robot);"></span>Courier Robot</span>
-        <button class="btn" id="resetBtn" title="Reset view">Reset</button>
+      <div class="top-right">
+        <div class="segmented view-toggle" id="viewModeGroup" title="Switch between interactive 3D Twin and top-down 2D Canvas">
+          <button type="button" class="active" data-view="3d">3D Twin</button>
+          <button type="button" data-view="2d">2D Map</button>
+        </div>
+        <div class="legend">
+          <span><span class="dot-swatch" style="background: var(--nurse);"></span>Nurse</span>
+          <span><span class="dot-swatch" style="background: var(--robot);"></span>Courier Robot</span>
+        </div>
+        <button class="btn" id="resetBtn" title="Reset simulation view">Reset</button>
       </div>
     </header>
 
@@ -558,7 +631,13 @@
           <div class="badge hidden" id="verifyBadge"></div>
         </div>
         <div class="canvas-wrap" id="singleWrap">
-          <canvas id="mapCanvas"></canvas>
+          <div class="three-mount" id="threeSingle"></div>
+          <canvas class="canvas-2d hidden" id="mapCanvas"></canvas>
+          <div class="cam-hint" id="camHintSingle">Drag to orbit · Scroll to zoom · Right-drag to pan</div>
+          <div class="cam-actions" id="camActionsSingle">
+            <button type="button" class="cam-btn" data-cam="iso">3D Iso</button>
+            <button type="button" class="cam-btn" data-cam="top">Top Tilt</button>
+          </div>
           <div class="hover-tip" id="hoverTip"></div>
         </div>
       </section>
@@ -577,8 +656,10 @@
               <span class="metric-pill">Trips: <strong id="tripsLeft">0</strong></span>
             </div>
           </div>
-          <div class="canvas-wrap">
-            <canvas id="canvasLeft"></canvas>
+          <div class="canvas-wrap" id="wrapLeft">
+            <div class="three-mount" id="threeLeft"></div>
+            <canvas class="canvas-2d hidden" id="canvasLeft"></canvas>
+            <div class="cam-hint" id="camHintDual">Synced 3D Camera · Drag either side to orbit</div>
           </div>
         </div>
 
@@ -595,8 +676,13 @@
               <span class="metric-pill">Avg Wait: <strong id="waitRight">0</strong>s</span>
             </div>
           </div>
-          <div class="canvas-wrap">
-            <canvas id="canvasRight"></canvas>
+          <div class="canvas-wrap" id="wrapRight">
+            <div class="three-mount" id="threeRight"></div>
+            <canvas class="canvas-2d hidden" id="canvasRight"></canvas>
+            <div class="cam-actions" id="camActionsDual">
+              <button type="button" class="cam-btn" data-cam="iso">3D Iso</button>
+              <button type="button" class="cam-btn" data-cam="top">Top Tilt</button>
+            </div>
           </div>
         </div>
       </section>
@@ -623,29 +709,34 @@
     </main>
   </div>
 
-  <script>
+  <script type="module">
     const ROOM_COLORS = {
-      patient_room:    { fill: "rgba(59, 130, 246, 0.22)", stroke: "#3b82f6" },
-      nurse_station:   { fill: "rgba(225, 29, 72, 0.24)",  stroke: "#e11d48" },
-      medication_room: { fill: "rgba(168, 85, 247, 0.24)", stroke: "#a855f7" },
-      supply_room:     { fill: "rgba(245, 158, 11, 0.24)", stroke: "#f59e0b" },
-      lab_drop:        { fill: "rgba(16, 185, 129, 0.24)", stroke: "#10b981" },
-      corridor:        { fill: "rgba(148, 163, 184, 0.16)",stroke: "#94a3b8" },
-      other:           { fill: "rgba(100, 116, 139, 0.18)",stroke: "#64748b" },
+      patient_room:    { fill: "rgba(59, 130, 246, 0.22)", stroke: "#3b82f6", hex: 0x3b82f6 },
+      nurse_station:   { fill: "rgba(225, 29, 72, 0.24)",  stroke: "#e11d48", hex: 0xe11d48 },
+      medication_room: { fill: "rgba(168, 85, 247, 0.24)", stroke: "#a855f7", hex: 0xa855f7 },
+      supply_room:     { fill: "rgba(245, 158, 11, 0.24)", stroke: "#f59e0b", hex: 0xf59e0b },
+      lab_drop:        { fill: "rgba(16, 185, 129, 0.24)", stroke: "#10b981", hex: 0x10b981 },
+      corridor:        { fill: "rgba(148, 163, 184, 0.16)",stroke: "#94a3b8", hex: 0x94a3b8 },
+      other:           { fill: "rgba(100, 116, 139, 0.18)",stroke: "#64748b", hex: 0x64748b },
     };
 
     const state = {
+      viewMode: "3d", // "3d" | "2d"
+      threeReady: false,
       plans: [],
       selectedPlanId: null,
       uploadedFile: null,
       bgImage: null,
+      bgVersion: 0,
       unitMap: null,
+      unitVersion: 0,
       verification: null,
       revealedRooms: 0,
       revealedDoors: 0,
       revealTimer: null,
       numRobots: 1,
       comparison: null,
+      simVersion: 0,
       simTime: 0,
       playing: false,
       speed: 300,
@@ -654,6 +745,7 @@
     };
 
     const els = {
+      viewModeGroup: document.getElementById("viewModeGroup"),
       planSelect: document.getElementById("planSelect"),
       fileUpload: document.getElementById("fileUpload"),
       mapBtn: document.getElementById("mapBtn"),
@@ -672,9 +764,16 @@
       playbackBar: document.getElementById("playbackBar"),
       assumptionsBar: document.getElementById("assumptionsBar"),
       assumptionsList: document.getElementById("assumptionsList"),
+      threeSingle: document.getElementById("threeSingle"),
+      threeLeft: document.getElementById("threeLeft"),
+      threeRight: document.getElementById("threeRight"),
       mapCanvas: document.getElementById("mapCanvas"),
       canvasLeft: document.getElementById("canvasLeft"),
       canvasRight: document.getElementById("canvasRight"),
+      camHintSingle: document.getElementById("camHintSingle"),
+      camHintDual: document.getElementById("camHintDual"),
+      camActionsSingle: document.getElementById("camActionsSingle"),
+      camActionsDual: document.getElementById("camActionsDual"),
       hoverTip: document.getElementById("hoverTip"),
       mapTitle: document.getElementById("mapTitle"),
       extractBadge: document.getElementById("extractBadge"),
@@ -694,79 +793,718 @@
       savedBadge: document.getElementById("savedBadge"),
     };
 
-    function setStep(activeStep) {
-      document.querySelectorAll("#stepper .step-pill").forEach((pill) => {
-        const s = Number(pill.dataset.step);
-        pill.classList.remove("active", "done");
-        if (s < activeStep) pill.classList.add("done");
-        else if (s === activeStep) pill.classList.add("active");
-      });
-    }
+    // =========================================================================
+    // THREE.JS 3D HOSPITAL TWIN ENGINE (with graceful 2D fallback)
+    // =========================================================================
+    let THREE = null;
+    let OrbitControls = null;
+    let twinSingle = null;
+    let twinLeft = null;
+    let twinRight = null;
+    let syncingCameras = false;
 
-    function showBanner(msg, type = "info", showFallback = false) {
-      els.statusText.textContent = msg;
-      els.statusBanner.className = `status-banner show ${type}`;
-      els.bannerFallbackBtn.classList.toggle("hidden", !showFallback);
-    }
-
-    function hideBanner() {
-      els.statusBanner.className = "status-banner";
-    }
-
-    function loadImageFromUrl(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error("Could not load floor plan image."));
-        img.src = url;
-      });
-    }
-
-    async function fetchPlans() {
+    async function loadThreeEngine() {
       try {
-        const res = await fetch("/api/plans");
-        const data = await res.json();
-        state.plans = data.plans || [];
-        els.planSelect.innerHTML = "";
-        if (state.plans.length === 0) {
-          const opt = document.createElement("option");
-          opt.value = "";
-          opt.textContent = "No demo plans (use Demo Map or Upload)";
-          els.planSelect.appendChild(opt);
-        } else {
-          state.plans.forEach((p) => {
-            const opt = document.createElement("option");
-            opt.value = p.id;
-            opt.textContent = p.name;
-            els.planSelect.appendChild(opt);
-          });
-          state.selectedPlanId = state.plans[0].id;
-          await previewSelectedPlan();
+        const [threeMod, orbitMod] = await Promise.all([
+          import("three"),
+          import("three/addons/controls/OrbitControls.js"),
+        ]);
+        THREE = threeMod;
+        OrbitControls = orbitMod.OrbitControls;
+        return true;
+      } catch (errPrimary) {
+        try {
+          const [threeMod, orbitMod] = await Promise.all([
+            import("https://esm.sh/three@0.169.0"),
+            import("https://esm.sh/three@0.169.0/examples/jsm/controls/OrbitControls.js"),
+          ]);
+          THREE = threeMod;
+          OrbitControls = orbitMod.OrbitControls;
+          return true;
+        } catch (errFallback) {
+          console.warn("Three.js unavailable, falling back to 2D Canvas:", errFallback);
+          return false;
         }
-      } catch (err) {
-        showBanner("Failed to fetch demo plans: " + err.message, "error");
       }
     }
 
-    async function previewSelectedPlan() {
-      const id = els.planSelect.value;
-      state.selectedPlanId = id || null;
-      state.uploadedFile = null;
-      if (!id) {
-        state.bgImage = null;
-        drawSingleMap();
-        return;
+    function makeLabelSprite(text, bgColor = "rgba(15, 23, 42, 0.88)", borderColor = "#38bdf8", scaleFactor = 1.0) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const font = "700 26px -apple-system, Inter, sans-serif";
+      ctx.font = font;
+      const metrics = ctx.measureText(text);
+      const padX = 22;
+      const w = Math.ceil(metrics.width + padX * 2);
+      const h = 48;
+      canvas.width = w;
+      canvas.height = h;
+
+      ctx.font = font;
+      ctx.fillStyle = bgColor;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 3;
+      const r = 14;
+      ctx.beginPath();
+      ctx.moveTo(r, 2);
+      ctx.lineTo(w - r, 2);
+      ctx.quadraticCurveTo(w - 2, 2, w - 2, r);
+      ctx.lineTo(w - 2, h - r);
+      ctx.quadraticCurveTo(w - 2, h - 2, w - r, h - 2);
+      ctx.lineTo(r, h - 2);
+      ctx.quadraticCurveTo(2, h - 2, 2, h - r);
+      ctx.lineTo(2, r);
+      ctx.quadraticCurveTo(2, 2, r, 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, w / 2, h / 2 + 1);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(mat);
+      const aspect = w / h;
+      sprite.scale.set(2.3 * aspect * scaleFactor, 2.3 * scaleFactor, 1);
+      sprite.renderOrder = 20;
+      return sprite;
+    }
+
+    function createNurse3D(tagText = "N") {
+      const group = new THREE.Group();
+
+      // Glowing floor halo
+      const haloGeo = new THREE.RingGeometry(0.9, 1.45, 28);
+      haloGeo.rotateX(-Math.PI / 2);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: 0xf43f5e,
+        transparent: true,
+        opacity: 0.55,
+        side: THREE.DoubleSide,
+      });
+      const halo = new THREE.Mesh(haloGeo, haloMat);
+      halo.position.y = 0.08;
+      group.add(halo);
+
+      // Scrubs body (tapered cylinder)
+      const bodyGeo = new THREE.CylinderGeometry(0.52, 0.72, 2.2, 20);
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0xe11d48,
+        roughness: 0.35,
+        metalness: 0.1,
+        emissive: 0x881337,
+        emissiveIntensity: 0.35,
+      });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = 1.25;
+      group.add(body);
+
+      // Clinical white collar ring
+      const collarGeo = new THREE.TorusGeometry(0.5, 0.09, 10, 20);
+      collarGeo.rotateX(Math.PI / 2);
+      const collarMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+      const collar = new THREE.Mesh(collarGeo, collarMat);
+      collar.position.y = 2.28;
+      group.add(collar);
+
+      // Head
+      const headGeo = new THREE.SphereGeometry(0.52, 20, 20);
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.45 });
+      const head = new THREE.Mesh(headGeo, headMat);
+      head.position.y = 2.88;
+      group.add(head);
+
+      // Direction visor / stethoscope accent on front (+Z)
+      const badgeGeo = new THREE.BoxGeometry(0.45, 0.25, 0.18);
+      const badgeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const badge = new THREE.Mesh(badgeGeo, badgeMat);
+      badge.position.set(0, 1.85, 0.54);
+      group.add(badge);
+
+      const label = makeLabelSprite(tagText, "rgba(190, 18, 60, 0.92)", "#fda4af", 0.72);
+      label.position.y = 4.35;
+      group.add(label);
+
+      return group;
+    }
+
+    function createRobot3D(tagText = "R1") {
+      const group = new THREE.Group();
+
+      // Glowing teal floor ring
+      const haloGeo = new THREE.RingGeometry(1.0, 1.65, 28);
+      haloGeo.rotateX(-Math.PI / 2);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: 0x14b8a6,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+      });
+      const halo = new THREE.Mesh(haloGeo, haloMat);
+      halo.position.y = 0.08;
+      group.add(halo);
+
+      // Base drive chassis
+      const baseGeo = new THREE.CylinderGeometry(0.95, 1.02, 0.55, 24);
+      const baseMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.5 });
+      const base = new THREE.Mesh(baseGeo, baseMat);
+      base.position.y = 0.35;
+      group.add(base);
+
+      // Courier payload cabinet (clinical white + rounded cylinder core)
+      const cabGeo = new THREE.CylinderGeometry(0.84, 0.9, 1.45, 24);
+      const cabMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.15 });
+      const cab = new THREE.Mesh(cabGeo, cabMat);
+      cab.position.y = 1.35;
+      group.add(cab);
+
+      // Glowing cyan LED status ring
+      const ledGeo = new THREE.TorusGeometry(0.88, 0.09, 12, 28);
+      ledGeo.rotateX(Math.PI / 2);
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0x2dd4bf });
+      const led = new THREE.Mesh(ledGeo, ledMat);
+      led.position.y = 1.95;
+      group.add(led);
+
+      // Top LiDAR dome + forward directional headlight (+Z)
+      const lidarGeo = new THREE.CylinderGeometry(0.42, 0.5, 0.32, 20);
+      const lidarMat = new THREE.MeshStandardMaterial({
+        color: 0x0d9488,
+        emissive: 0x14b8a6,
+        emissiveIntensity: 0.65,
+        roughness: 0.2,
+      });
+      const lidar = new THREE.Mesh(lidarGeo, lidarMat);
+      lidar.position.y = 2.24;
+      group.add(lidar);
+
+      const eyeGeo = new THREE.BoxGeometry(0.65, 0.2, 0.22);
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x5eead4 });
+      const eye = new THREE.Mesh(eyeGeo, eyeMat);
+      eye.position.set(0, 1.55, 0.82);
+      group.add(eye);
+
+      const label = makeLabelSprite(tagText, "rgba(15, 118, 110, 0.94)", "#5eead4", 0.75);
+      label.position.y = 3.65;
+      group.add(label);
+
+      return group;
+    }
+
+    function createBlueprintCanvas(w, h) {
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      for (let x = 0; x <= w; x += 50) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
       }
+      for (let y = 0; y <= h; y += 50) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      return c;
+    }
+
+    class ThreeTwinScene {
+      constructor(mountEl) {
+        this.mountEl = mountEl;
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x0b1220);
+
+        this.camera = new THREE.PerspectiveCamera(44, 16 / 10, 0.5, 600);
+        this.camera.position.set(0, 68, 66);
+
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        mountEl.innerHTML = "";
+        mountEl.appendChild(this.renderer.domElement);
+
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.08;
+        this.controls.maxPolarAngle = Math.PI / 2 - 0.05;
+        this.controls.minDistance = 20;
+        this.controls.maxDistance = 220;
+        this.controls.target.set(0, 0, 0);
+
+        // Studio lighting
+        const hemi = new THREE.HemisphereLight(0xe2e8f0, 0x1e293b, 1.25);
+        this.scene.add(hemi);
+
+        const dir1 = new THREE.DirectionalLight(0xffffff, 1.35);
+        dir1.position.set(45, 85, 55);
+        this.scene.add(dir1);
+
+        const dir2 = new THREE.DirectionalLight(0x93c5fd, 0.55);
+        dir2.position.set(-55, 60, -45);
+        this.scene.add(dir2);
+
+        const grid = new THREE.GridHelper(180, 36, 0x334155, 0x1e293b);
+        grid.position.y = -0.95;
+        this.scene.add(grid);
+
+        this.staticGroup = new THREE.Group();
+        this.pathsGroup = new THREE.Group();
+        this.agentsGroup = new THREE.Group();
+        this.ripplesGroup = new THREE.Group();
+        this.scene.add(this.staticGroup, this.pathsGroup, this.agentsGroup, this.ripplesGroup);
+
+        this.staticKey = "";
+        this.pathsKey = "";
+        this.tripVisuals = [];
+        this.agentPool = new Map();
+        this.ripplePool = [];
+
+        this.worldW = 100;
+        this.worldH = 65;
+        this.worldScale = 0.1;
+        this.imgW = 1000;
+        this.imgH = 650;
+
+        this.controls.addEventListener("change", () => {
+          if (this.onCameraChange) this.onCameraChange();
+          if (!state.playing && state.viewMode === "3d") {
+            this.renderOnce();
+          }
+        });
+      }
+
+      pxToWorld(px, py) {
+        return {
+          x: (px - this.imgW / 2) * this.worldScale,
+          z: (py - this.imgH / 2) * this.worldScale,
+        };
+      }
+
+      setPresetCamera(preset) {
+        if (preset === "top") {
+          this.camera.position.set(0, 92, 16);
+        } else {
+          this.camera.position.set(0, 66, 66);
+        }
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+        this.renderOnce();
+      }
+
+      resize() {
+        const w = Math.max(200, this.mountEl.clientWidth);
+        const h = Math.max(200, this.mountEl.clientHeight);
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h, false);
+      }
+
+      clearGroup(group) {
+        while (group.children.length > 0) {
+          const obj = group.children.pop();
+          group.remove(obj);
+        }
+      }
+
+      syncStaticUnit(subtle = false) {
+        const unit = state.unitMap;
+        const imgW = unit ? unit.image_width : (state.bgImage ? state.bgImage.naturalWidth : 1000);
+        const imgH = unit ? unit.image_height : (state.bgImage ? state.bgImage.naturalHeight : 650);
+        const maxRooms = unit ? (subtle ? unit.rooms.length : state.revealedRooms) : 0;
+        const maxDoors = unit ? (subtle ? unit.doors.length : state.revealedDoors) : 0;
+        const nextKey = `${state.unitVersion}:${state.bgVersion}:${imgW}x${imgH}:${maxRooms}:${maxDoors}:${subtle ? 1 : 0}`;
+        if (this.staticKey === nextKey) return;
+        this.staticKey = nextKey;
+
+        this.imgW = imgW;
+        this.imgH = imgH;
+        this.worldScale = 100 / Math.max(imgW, imgH);
+        this.worldW = imgW * this.worldScale;
+        this.worldH = imgH * this.worldScale;
+
+        this.clearGroup(this.staticGroup);
+
+        // Architectural base slab
+        const slabGeo = new THREE.BoxGeometry(this.worldW + 3.2, 0.9, this.worldH + 3.2);
+        const slabMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75, metalness: 0.2 });
+        const slab = new THREE.Mesh(slabGeo, slabMat);
+        slab.position.y = -0.48;
+        this.staticGroup.add(slab);
+
+        // Textured floor plan ground plane
+        const texSource = state.bgImage || createBlueprintCanvas(imgW, imgH);
+        const floorTex = new THREE.Texture(texSource);
+        floorTex.needsUpdate = true;
+        floorTex.colorSpace = THREE.SRGBColorSpace;
+        floorTex.anisotropy = 8;
+
+        const planeGeo = new THREE.PlaneGeometry(this.worldW, this.worldH);
+        planeGeo.rotateX(-Math.PI / 2);
+        const planeMat = new THREE.MeshStandardMaterial({
+          map: floorTex,
+          roughness: 0.85,
+          metalness: 0.02,
+        });
+        const plane = new THREE.Mesh(planeGeo, planeMat);
+        plane.position.y = 0.02;
+        this.staticGroup.add(plane);
+
+        if (!unit) return;
+
+        // Extruded 3D translucent room volumes + glowing architectural rims + labels
+        const rooms = unit.rooms.slice(0, maxRooms);
+        rooms.forEach((room) => {
+          if (!room.polygon || room.polygon.length < 3) return;
+          const style = ROOM_COLORS[room.type] || ROOM_COLORS.other;
+          const isCorridor = room.type === "corridor";
+          const wallHeight = isCorridor ? 0.85 : (subtle ? 3.2 : 4.2);
+
+          const shape = new THREE.Shape();
+          room.polygon.forEach((pt, idx) => {
+            const wPt = this.pxToWorld(pt.x, pt.y);
+            // Shape (x, -z) rotated Rx(-90deg) maps to world (x, [0..wallHeight], +z)
+            if (idx === 0) shape.moveTo(wPt.x, -wPt.z);
+            else shape.lineTo(wPt.x, -wPt.z);
+          });
+          shape.closePath();
+
+          const extrudeGeo = new THREE.ExtrudeGeometry(shape, {
+            depth: wallHeight,
+            bevelEnabled: false,
+          });
+          extrudeGeo.rotateX(-Math.PI / 2);
+
+          const volMat = new THREE.MeshPhongMaterial({
+            color: style.hex,
+            transparent: true,
+            opacity: isCorridor ? 0.12 : (subtle ? 0.18 : 0.30),
+            depthWrite: false,
+            side: THREE.DoubleSide,
+          });
+          const volMesh = new THREE.Mesh(extrudeGeo, volMat);
+          volMesh.position.y = 0.05;
+          this.staticGroup.add(volMesh);
+
+          const edgesGeo = new THREE.EdgesGeometry(extrudeGeo);
+          const edgesMat = new THREE.LineBasicMaterial({
+            color: style.hex,
+            transparent: true,
+            opacity: isCorridor ? 0.35 : (subtle ? 0.55 : 0.9),
+          });
+          const wire = new THREE.LineSegments(edgesGeo, edgesMat);
+          wire.position.y = 0.05;
+          this.staticGroup.add(wire);
+
+          // Floating 3D room badge
+          const cx = room.centroid ? room.centroid.x : room.polygon.reduce((s, p) => s + p.x, 0) / room.polygon.length;
+          const cy = room.centroid ? room.centroid.y : room.polygon.reduce((s, p) => s + p.y, 0) / room.polygon.length;
+          const cWorld = this.pxToWorld(cx, cy);
+
+          const sprite = makeLabelSprite(
+            room.label || room.id,
+            subtle ? "rgba(15, 23, 42, 0.75)" : "rgba(15, 23, 42, 0.90)",
+            style.stroke,
+            subtle ? 0.68 : 0.82
+          );
+          sprite.position.set(cWorld.x, wallHeight + (subtle ? 1.4 : 1.9), cWorld.z);
+          this.staticGroup.add(sprite);
+        });
+
+        // Glowing 3D Door Markers
+        const doors = unit.doors.slice(0, maxDoors);
+        doors.forEach((door) => {
+          const dWorld = this.pxToWorld(door.position.x, door.position.y);
+          const doorGroup = new THREE.Group();
+          doorGroup.position.set(dWorld.x, 0.06, dWorld.z);
+
+          const ringGeo = new THREE.RingGeometry(0.55, 0.95, 24);
+          ringGeo.rotateX(-Math.PI / 2);
+          const ringMat = new THREE.MeshBasicMaterial({
+            color: 0x10b981,
+            transparent: true,
+            opacity: 0.85,
+            side: THREE.DoubleSide,
+          });
+          doorGroup.add(new THREE.Mesh(ringGeo, ringMat));
+
+          const beaconGeo = new THREE.CylinderGeometry(0.32, 0.32, subtle ? 1.5 : 2.3, 16);
+          const beaconMat = new THREE.MeshStandardMaterial({
+            color: 0x10b981,
+            emissive: 0x10b981,
+            emissiveIntensity: 0.7,
+            transparent: true,
+            opacity: 0.88,
+          });
+          const beacon = new THREE.Mesh(beaconGeo, beaconMat);
+          beacon.position.y = subtle ? 0.75 : 1.15;
+          doorGroup.add(beacon);
+
+          this.staticGroup.add(doorGroup);
+        });
+      }
+
+      syncSimulationTrips(summary, sideTag) {
+        const key = `${state.simVersion}:${sideTag}`;
+        if (this.pathsKey === key) return;
+        this.pathsKey = key;
+
+        this.clearGroup(this.pathsGroup);
+        this.clearGroup(this.agentsGroup);
+        this.clearGroup(this.ripplesGroup);
+        this.tripVisuals = [];
+        this.agentPool.clear();
+        this.ripplePool = [];
+
+        if (!summary || !state.unitMap) return;
+
+        summary.events.forEach((ev, idx) => {
+          if (!ev.pixel_path || ev.pixel_path.length < 2) {
+            this.tripVisuals.push(null);
+            return;
+          }
+          // Deduplicate consecutive identical points for CatmullRomCurve3
+          const worldPts = [];
+          ev.pixel_path.forEach((pt) => {
+            const w = this.pxToWorld(pt.x, pt.y);
+            const v = new THREE.Vector3(w.x, 0.38, w.z);
+            if (worldPts.length === 0 || worldPts[worldPts.length - 1].distanceToSquared(v) > 0.01) {
+              worldPts.push(v);
+            }
+          });
+          if (worldPts.length < 2) {
+            this.tripVisuals.push(null);
+            return;
+          }
+
+          const isNurse = ev.agent_role === "nurse";
+          const colorHex = isNurse ? 0xf43f5e : 0x14b8a6;
+
+          // Active 3D glowing ribbon tube
+          const curve = new THREE.CatmullRomCurve3(worldPts, false, "catmullrom", 0.06);
+          const segs = Math.min(64, Math.max(12, worldPts.length * 8));
+          const tubeGeo = new THREE.TubeGeometry(curve, segs, 0.24, 8, false);
+          const tubeMat = new THREE.MeshStandardMaterial({
+            color: colorHex,
+            emissive: colorHex,
+            emissiveIntensity: 0.75,
+            transparent: true,
+            opacity: 0.88,
+            roughness: 0.25,
+          });
+          const activeTube = new THREE.Mesh(tubeGeo, tubeMat);
+          activeTube.visible = false;
+          this.pathsGroup.add(activeTube);
+
+          // Completed subtle floor trail line
+          const trailPts = worldPts.map((p) => new THREE.Vector3(p.x, 0.14, p.z));
+          const lineGeo = new THREE.BufferGeometry().setFromPoints(trailPts);
+          const lineMat = new THREE.LineBasicMaterial({
+            color: colorHex,
+            transparent: true,
+            opacity: 0.24,
+          });
+          const faintLine = new THREE.Line(lineGeo, lineMat);
+          faintLine.visible = false;
+          this.pathsGroup.add(faintLine);
+
+          this.tripVisuals.push({ activeTube, faintLine, endWorld: worldPts[worldPts.length - 1] });
+        });
+      }
+
+      getOrCreateAgentMesh(key, role, agentId) {
+        if (this.agentPool.has(key)) return this.agentPool.get(key);
+        const tag = role === "nurse" ? "Nurse" : ("R" + (agentId.replace(/\D/g, "") || "1"));
+        const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag);
+        mesh.visible = false;
+        this.agentsGroup.add(mesh);
+        this.agentPool.set(key, mesh);
+        return mesh;
+      }
+
+      getOrCreateRipple(idx) {
+        while (this.ripplePool.length <= idx) {
+          const geo = new THREE.RingGeometry(0.6, 1.15, 28);
+          geo.rotateX(-Math.PI / 2);
+          const mat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide,
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.visible = false;
+          this.ripplesGroup.add(mesh);
+          this.ripplePool.push(mesh);
+        }
+        return this.ripplePool[idx];
+      }
+
+      updateSimulationFrame(summary, t, sideTag) {
+        this.syncStaticUnit(true);
+        this.syncSimulationTrips(summary, sideTag);
+
+        // Hide all pooled agents & ripples before activating current ones
+        for (const m of this.agentPool.values()) m.visible = false;
+        for (const r of this.ripplePool) r.visible = false;
+        let rippleIdx = 0;
+
+        summary.events.forEach((ev, idx) => {
+          const vis = this.tripVisuals[idx];
+          if (t < ev.start_time_s) {
+            if (vis) {
+              vis.activeTube.visible = false;
+              vis.faintLine.visible = false;
+            }
+            return;
+          }
+
+          const isActive = t >= ev.start_time_s && t <= ev.end_time_s;
+          if (vis) {
+            vis.activeTube.visible = isActive;
+            vis.faintLine.visible = !isActive;
+          }
+
+          if (isActive && ev.pixel_path && ev.pixel_path.length > 0) {
+            const dur = Math.max(0.1, ev.end_time_s - ev.start_time_s);
+            const frac = Math.min(1, Math.max(0, (t - ev.start_time_s) / dur));
+            const pose = interpolatePolylinePose(ev.pixel_path, frac);
+            const wPos = this.pxToWorld(pose.x, pose.y);
+
+            const agentMesh = this.getOrCreateAgentMesh(idx, ev.agent_role, ev.agent_id);
+            agentMesh.visible = true;
+            const bob = ev.agent_role === "nurse" ? Math.abs(Math.sin(frac * Math.PI * 14)) * 0.22 : 0;
+            agentMesh.position.set(wPos.x, bob, wPos.z);
+            if (Math.hypot(pose.dx, pose.dy) > 1e-4) {
+              agentMesh.rotation.y = Math.atan2(pose.dx, pose.dy);
+            }
+          } else if (vis && t - ev.end_time_s >= 0 && t - ev.end_time_s <= 25) {
+            const age = (t - ev.end_time_s) / 25;
+            const ripple = this.getOrCreateRipple(rippleIdx++);
+            ripple.visible = true;
+            ripple.position.set(vis.endWorld.x, 0.16, vis.endWorld.z);
+            const s = 1 + age * 2.6;
+            ripple.scale.set(s, s, s);
+            ripple.material.color.setHex(ev.agent_role === "nurse" ? 0xf43f5e : 0x14b8a6);
+            ripple.material.opacity = (1 - age) * 0.85;
+          }
+        });
+
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+      }
+
+      renderOnce() {
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    function initThreeViewports() {
+      if (!THREE || !OrbitControls) return false;
       try {
-        state.bgImage = await loadImageFromUrl(`/api/plans/${encodeURIComponent(id)}/image`);
-        els.mapTitle.textContent = els.planSelect.options[els.planSelect.selectedIndex].textContent;
-        drawSingleMap();
-      } catch {
-        state.bgImage = null;
-        drawSingleMap();
+        twinSingle = new ThreeTwinScene(els.threeSingle);
+        twinLeft = new ThreeTwinScene(els.threeLeft);
+        twinRight = new ThreeTwinScene(els.threeRight);
+
+        // Synchronized camera orbit/tilt/zoom between Left and Right 3D twins
+        twinLeft.onCameraChange = () => {
+          if (syncingCameras) return;
+          syncingCameras = true;
+          twinRight.camera.position.copy(twinLeft.camera.position);
+          twinRight.controls.target.copy(twinLeft.controls.target);
+          twinRight.controls.update();
+          if (!state.playing) twinRight.renderer.render(twinRight.scene, twinRight.camera);
+          syncingCameras = false;
+        };
+        twinRight.onCameraChange = () => {
+          if (syncingCameras) return;
+          syncingCameras = true;
+          twinLeft.camera.position.copy(twinRight.camera.position);
+          twinLeft.controls.target.copy(twinRight.controls.target);
+          twinLeft.controls.update();
+          if (!state.playing) twinLeft.renderer.render(twinLeft.scene, twinLeft.camera);
+          syncingCameras = false;
+        };
+        return true;
+      } catch (err) {
+        console.warn("WebGL initialization failed, falling back to 2D:", err);
+        return false;
       }
     }
 
+    // =========================================================================
+    // SHARED GEOMETRY & STATS HELPERS
+    // =========================================================================
+    function interpolatePolylinePose(points, progress) {
+      if (!points || points.length === 0) return { x: 0, y: 0, dx: 0, dy: 1 };
+      if (points.length === 1) return { x: points[0].x, y: points[0].y, dx: 0, dy: 1 };
+
+      const segLens = [];
+      let total = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        const dx = points[i + 1].x - points[i].x;
+        const dy = points[i + 1].y - points[i].y;
+        const len = Math.hypot(dx, dy);
+        segLens.push(len);
+        total += len;
+      }
+      if (total <= 1e-6) return { x: points[0].x, y: points[0].y, dx: 0, dy: 1 };
+
+      const clamped = Math.min(1, Math.max(0, progress));
+      let target = clamped * total;
+      for (let i = 0; i < segLens.length; i++) {
+        if (target <= segLens[i] || i === segLens.length - 1) {
+          const dx = points[i + 1].x - points[i].x;
+          const dy = points[i + 1].y - points[i].y;
+          const frac = segLens[i] > 1e-6 ? target / segLens[i] : 0;
+          return {
+            x: points[i].x + dx * frac,
+            y: points[i].y + dy * frac,
+            dx,
+            dy,
+          };
+        }
+        target -= segLens[i];
+      }
+      const last = points[points.length - 1];
+      const prev = points[points.length - 2];
+      return { x: last.x, y: last.y, dx: last.x - prev.x, dy: last.y - prev.y };
+    }
+
+    function computeShiftMetricsAt(summary, t) {
+      let nurseSec = 0;
+      let robotSec = 0;
+      let waitSum = 0;
+      let startedCount = 0;
+      let completedCount = 0;
+
+      for (const ev of summary.events) {
+        if (t < ev.start_time_s) continue;
+        startedCount++;
+        waitSum += ev.wait_time_s || 0;
+        const dur = Math.max(0.1, ev.end_time_s - ev.start_time_s);
+        const frac = Math.min(1, Math.max(0, (t - ev.start_time_s) / dur));
+        if (ev.agent_role === "nurse") nurseSec += dur * frac;
+        else robotSec += dur * frac;
+        if (t >= ev.end_time_s) completedCount++;
+      }
+
+      return {
+        nurseMin: nurseSec / 60,
+        robotMin: robotSec / 60,
+        avgWait: startedCount > 0 ? waitSum / startedCount : 0,
+        completedCount,
+      };
+    }
+
+    // =========================================================================
+    // 2D CANVAS RENDERER (Top-Down View & Fallback)
+    // =========================================================================
     function getCanvasDims(canvas, targetW, targetH) {
       const parent = canvas.parentElement;
       const maxW = Math.max(320, parent.clientWidth - 4);
@@ -786,7 +1524,7 @@
       return { ctx, scale };
     }
 
-    function drawBackdrop(ctx, w, h) {
+    function drawBackdrop2D(ctx, w, h) {
       if (state.bgImage) {
         ctx.drawImage(state.bgImage, 0, 0, w, h);
       } else {
@@ -803,7 +1541,7 @@
       }
     }
 
-    function drawUnitOverlay(ctx, unit, maxRooms, maxDoors, subtle = false) {
+    function drawUnitOverlay2D(ctx, unit, maxRooms, maxDoors, subtle = false) {
       const rooms = unit.rooms.slice(0, maxRooms);
       rooms.forEach((room) => {
         if (!room.polygon || room.polygon.length < 3) return;
@@ -850,18 +1588,262 @@
       });
     }
 
+    function renderShiftCanvas2D(canvas, summary, t) {
+      const unit = state.unitMap;
+      const w = unit.image_width;
+      const h = unit.image_height;
+      const { ctx } = getCanvasDims(canvas, w, h);
+
+      drawBackdrop2D(ctx, w, h);
+      drawUnitOverlay2D(ctx, unit, unit.rooms.length, unit.doors.length, true);
+
+      const activeEvents = [];
+      for (const ev of summary.events) {
+        if (t < ev.start_time_s) continue;
+        const dur = Math.max(0.1, ev.end_time_s - ev.start_time_s);
+        const frac = Math.min(1, Math.max(0, (t - ev.start_time_s) / dur));
+        const isActive = t >= ev.start_time_s && t <= ev.end_time_s;
+
+        if (ev.pixel_path && ev.pixel_path.length >= 2) {
+          ctx.save();
+          ctx.beginPath();
+          ev.pixel_path.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          });
+          ctx.strokeStyle = ev.agent_role === "nurse"
+            ? (isActive ? "rgba(225, 29, 72, 0.72)" : "rgba(225, 29, 72, 0.14)")
+            : (isActive ? "rgba(13, 148, 136, 0.78)" : "rgba(13, 148, 136, 0.16)");
+          ctx.lineWidth = isActive ? 3 : 1.5;
+          ctx.setLineDash(isActive ? [6, 4] : []);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        if (isActive) {
+          activeEvents.push({ ev, frac });
+        } else if (t - ev.end_time_s >= 0 && t - ev.end_time_s <= 25 && ev.pixel_path && ev.pixel_path.length > 0) {
+          const endPt = ev.pixel_path[ev.pixel_path.length - 1];
+          const age = (t - ev.end_time_s) / 25;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(endPt.x, endPt.y, 6 + age * 14, 0, Math.PI * 2);
+          ctx.strokeStyle = ev.agent_role === "nurse"
+            ? `rgba(225, 29, 72, ${1 - age})`
+            : `rgba(13, 148, 136, ${1 - age})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      for (const { ev, frac } of activeEvents) {
+        const pos = interpolatePolylinePose(ev.pixel_path, frac);
+        const isNurse = ev.agent_role === "nurse";
+        const color = isNurse ? "#e11d48" : "#0d9488";
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+        ctx.fillStyle = isNurse ? "rgba(225, 29, 72, 0.22)" : "rgba(13, 148, 136, 0.25)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 7.5, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+
+        ctx.font = "700 9px Inter, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const tag = isNurse ? "N" : (ev.agent_id.replace(/\D/g, "") || "R");
+        ctx.fillText(tag, pos.x, pos.y + 0.5);
+        ctx.restore();
+      }
+    }
+
+    // =========================================================================
+    // UNIFIED VIEW ORCHESTRATION (3D + 2D)
+    // =========================================================================
+    function applyViewVisibility() {
+      const use3D = state.viewMode === "3d" && state.threeReady;
+      els.threeSingle.classList.toggle("hidden", !use3D);
+      els.threeLeft.classList.toggle("hidden", !use3D);
+      els.threeRight.classList.toggle("hidden", !use3D);
+      els.camHintSingle.classList.toggle("hidden", !use3D);
+      els.camHintDual.classList.toggle("hidden", !use3D);
+      els.camActionsSingle.classList.toggle("hidden", !use3D);
+      els.camActionsDual.classList.toggle("hidden", !use3D);
+
+      els.mapCanvas.classList.toggle("hidden", use3D);
+      els.canvasLeft.classList.toggle("hidden", use3D);
+      els.canvasRight.classList.toggle("hidden", use3D);
+
+      els.viewModeGroup.querySelectorAll("button").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.view === (use3D ? "3d" : "2d"));
+      });
+
+      if (use3D) {
+        if (!els.singleView.classList.contains("hidden") && twinSingle) {
+          twinSingle.resize();
+        }
+        if (!els.dualView.classList.contains("hidden") && twinLeft && twinRight) {
+          twinLeft.resize();
+          twinRight.resize();
+        }
+      }
+
+      if (!els.singleView.classList.contains("hidden")) {
+        drawSingleMap();
+      } else {
+        renderSimulationFrame();
+      }
+    }
+
     function drawSingleMap() {
+      const use3D = state.viewMode === "3d" && state.threeReady;
+      if (use3D && twinSingle) {
+        twinSingle.resize();
+        twinSingle.syncStaticUnit(false);
+        twinSingle.renderOnce();
+        return;
+      }
+
       const w = state.unitMap ? state.unitMap.image_width : (state.bgImage ? state.bgImage.naturalWidth : 900);
       const h = state.unitMap ? state.unitMap.image_height : (state.bgImage ? state.bgImage.naturalHeight : 540);
       const { ctx } = getCanvasDims(els.mapCanvas, w, h);
-      drawBackdrop(ctx, w, h);
+      drawBackdrop2D(ctx, w, h);
       if (state.unitMap) {
-        drawUnitOverlay(ctx, state.unitMap, state.revealedRooms, state.revealedDoors, false);
+        drawUnitOverlay2D(ctx, state.unitMap, state.revealedRooms, state.revealedDoors, false);
       } else if (!state.bgImage) {
         ctx.fillStyle = "#64748b";
         ctx.font = "600 15px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("Upload a floor plan or click Demo Map to begin", w / 2, h / 2);
+      }
+    }
+
+    function formatClock(seconds) {
+      const totalMin = Math.floor(seconds / 60);
+      const hh = String(Math.floor(totalMin / 60)).padStart(2, "0");
+      const mm = String(totalMin % 60).padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
+
+    function renderSimulationFrame() {
+      if (!state.comparison) return;
+      const comp = state.comparison;
+      const t = state.simTime;
+      const dur = comp.nurse_only.shift_duration_s;
+
+      const leftStats = computeShiftMetricsAt(comp.nurse_only, t);
+      const rightStats = computeShiftMetricsAt(comp.robot_assisted, t);
+
+      const use3D = state.viewMode === "3d" && state.threeReady;
+      if (use3D && twinLeft && twinRight) {
+        twinLeft.updateSimulationFrame(comp.nurse_only, t, "left");
+        twinRight.updateSimulationFrame(comp.robot_assisted, t, "right");
+      } else {
+        renderShiftCanvas2D(els.canvasLeft, comp.nurse_only, t);
+        renderShiftCanvas2D(els.canvasRight, comp.robot_assisted, t);
+      }
+
+      els.nurseWalkedLeft.textContent = leftStats.nurseMin.toFixed(1);
+      els.waitLeft.textContent = Math.round(leftStats.avgWait);
+      els.tripsLeft.textContent = `${leftStats.completedCount}/${comp.nurse_only.total_trips}`;
+
+      els.nurseWalkedRight.textContent = rightStats.nurseMin.toFixed(1);
+      els.robotTravelRight.textContent = rightStats.robotMin.toFixed(1);
+      els.waitRight.textContent = Math.round(rightStats.avgWait);
+
+      const savedNow = Math.max(0, leftStats.nurseMin - rightStats.nurseMin);
+      els.savedBadge.textContent = `Saved: ${savedNow.toFixed(1)} nurse min (Shift total: ${comp.nurse_minutes_saved.toFixed(1)} min)`;
+
+      els.scrubber.value = Math.floor(t);
+      els.clockReadout.textContent = `${formatClock(t)} / ${formatClock(dur)}`;
+    }
+
+    // =========================================================================
+    // APP WORKFLOW & API CALLS
+    // =========================================================================
+    function setStep(activeStep) {
+      document.querySelectorAll("#stepper .step-pill").forEach((pill) => {
+        const s = Number(pill.dataset.step);
+        pill.classList.remove("active", "done");
+        if (s < activeStep) pill.classList.add("done");
+        else if (s === activeStep) pill.classList.add("active");
+      });
+    }
+
+    function showBanner(msg, type = "info", showFallback = false) {
+      els.statusText.textContent = msg;
+      els.statusBanner.className = `status-banner show ${type}`;
+      els.bannerFallbackBtn.classList.toggle("hidden", !showFallback);
+    }
+
+    function hideBanner() {
+      els.statusBanner.className = "status-banner";
+    }
+
+    function loadImageFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Could not load floor plan image."));
+        img.src = url;
+      });
+    }
+
+    async function fetchPlans() {
+      try {
+        const res = await fetch("/api/plans");
+        const data = await res.json();
+        state.plans = data.plans || [];
+        els.planSelect.innerHTML = "";
+        if (state.plans.length === 0) {
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "No demo plans (use Demo Map or Upload)";
+          els.planSelect.appendChild(opt);
+        } else {
+          state.plans.forEach((p) => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.name;
+            els.planSelect.appendChild(opt);
+          });
+          state.selectedPlanId = state.plans[0].id;
+          await previewSelectedPlan();
+        }
+      } catch (err) {
+        showBanner("Failed to fetch demo plans: " + err.message, "error");
+      }
+    }
+
+    async function previewSelectedPlan() {
+      const id = els.planSelect.value;
+      state.selectedPlanId = id || null;
+      state.uploadedFile = null;
+      if (!id) {
+        state.bgImage = null;
+        state.bgVersion++;
+        drawSingleMap();
+        return;
+      }
+      try {
+        state.bgImage = await loadImageFromUrl(`/api/plans/${encodeURIComponent(id)}/image`);
+        state.bgVersion++;
+        els.mapTitle.textContent = els.planSelect.options[els.planSelect.selectedIndex].textContent;
+        drawSingleMap();
+      } catch {
+        state.bgImage = null;
+        state.bgVersion++;
+        drawSingleMap();
       }
     }
 
@@ -896,7 +1878,9 @@
 
       els.mapBtn.disabled = true;
       els.fallbackBtn.disabled = true;
-      els.extractBadge.textContent = useFallback ? "Loading pre-traced demo unit..." : "Extracting rooms & doors with Neon + Decisions API...";
+      els.extractBadge.textContent = useFallback
+        ? "Loading pre-traced demo unit..."
+        : "Extracting rooms & doors with Neon + Decisions API...";
 
       try {
         let res;
@@ -924,12 +1908,13 @@
         }
 
         state.unitMap = data.unit_map;
+        state.unitVersion++;
         state.verification = data.verification || {};
 
         if (useFallback && !state.bgImage) {
-          // Try loading sample_unit image if available
           try {
             state.bgImage = await loadImageFromUrl("/api/plans/sample_unit/image");
+            state.bgVersion++;
           } catch {
             state.bgImage = null;
           }
@@ -955,168 +1940,6 @@
         els.mapBtn.disabled = false;
         els.fallbackBtn.disabled = false;
       }
-    }
-
-    function interpolatePolyline(points, progress) {
-      if (!points || points.length === 0) return { x: 0, y: 0 };
-      if (points.length === 1 || progress <= 0) return points[0];
-      if (progress >= 1) return points[points.length - 1];
-
-      const segLens = [];
-      let total = 0;
-      for (let i = 0; i < points.length - 1; i++) {
-        const dx = points[i + 1].x - points[i].x;
-        const dy = points[i + 1].y - points[i].y;
-        const len = Math.hypot(dx, dy);
-        segLens.push(len);
-        total += len;
-      }
-      if (total <= 1e-6) return points[0];
-
-      let target = progress * total;
-      for (let i = 0; i < segLens.length; i++) {
-        if (target <= segLens[i] || i === segLens.length - 1) {
-          const frac = segLens[i] > 1e-6 ? target / segLens[i] : 0;
-          return {
-            x: points[i].x + (points[i + 1].x - points[i].x) * frac,
-            y: points[i].y + (points[i + 1].y - points[i].y) * frac,
-          };
-        }
-        target -= segLens[i];
-      }
-      return points[points.length - 1];
-    }
-
-    function renderShiftCanvas(canvas, summary, t) {
-      const unit = state.unitMap;
-      const w = unit.image_width;
-      const h = unit.image_height;
-      const { ctx } = getCanvasDims(canvas, w, h);
-
-      drawBackdrop(ctx, w, h);
-      drawUnitOverlay(ctx, unit, unit.rooms.length, unit.doors.length, true);
-
-      let nurseSec = 0;
-      let robotSec = 0;
-      let waitSum = 0;
-      let startedCount = 0;
-      let completedCount = 0;
-
-      // Draw faint paths for started trips, then active dots
-      const activeEvents = [];
-      for (const ev of summary.events) {
-        if (t < ev.start_time_s) continue;
-        startedCount++;
-        waitSum += ev.wait_time_s || 0;
-
-        const dur = Math.max(0.1, ev.end_time_s - ev.start_time_s);
-        const frac = Math.min(1, Math.max(0, (t - ev.start_time_s) / dur));
-        if (ev.agent_role === "nurse") nurseSec += dur * frac;
-        else robotSec += dur * frac;
-
-        if (t >= ev.end_time_s) completedCount++;
-
-        const isActive = t >= ev.start_time_s && t <= ev.end_time_s;
-        if (ev.pixel_path && ev.pixel_path.length >= 2) {
-          ctx.save();
-          ctx.beginPath();
-          ev.pixel_path.forEach((pt, idx) => {
-            if (idx === 0) ctx.moveTo(pt.x, pt.y);
-            else ctx.lineTo(pt.x, pt.y);
-          });
-          ctx.strokeStyle = ev.agent_role === "nurse"
-            ? (isActive ? "rgba(225, 29, 72, 0.72)" : "rgba(225, 29, 72, 0.14)")
-            : (isActive ? "rgba(13, 148, 136, 0.78)" : "rgba(13, 148, 136, 0.16)");
-          ctx.lineWidth = isActive ? 3 : 1.5;
-          ctx.setLineDash(isActive ? [6, 4] : []);
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        if (isActive) {
-          activeEvents.push({ ev, frac });
-        } else if (t - ev.end_time_s >= 0 && t - ev.end_time_s <= 25 && ev.pixel_path && ev.pixel_path.length > 0) {
-          // Completion ripple
-          const endPt = ev.pixel_path[ev.pixel_path.length - 1];
-          const age = (t - ev.end_time_s) / 25;
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(endPt.x, endPt.y, 6 + age * 14, 0, Math.PI * 2);
-          ctx.strokeStyle = ev.agent_role === "nurse"
-            ? `rgba(225, 29, 72, ${1 - age})`
-            : `rgba(13, 148, 136, ${1 - age})`;
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-
-      // Draw active agents on top
-      for (const { ev, frac } of activeEvents) {
-        const pos = interpolatePolyline(ev.pixel_path, frac);
-        const isNurse = ev.agent_role === "nurse";
-        const color = isNurse ? "#e11d48" : "#0d9488";
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
-        ctx.fillStyle = isNurse ? "rgba(225, 29, 72, 0.22)" : "rgba(13, 148, 136, 0.25)";
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 7.5, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "#ffffff";
-        ctx.stroke();
-
-        ctx.font = "700 9px Inter, sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        const tag = isNurse ? "N" : (ev.agent_id.replace(/\D/g, "") || "R");
-        ctx.fillText(tag, pos.x, pos.y + 0.5);
-        ctx.restore();
-      }
-
-      return {
-        nurseMin: nurseSec / 60,
-        robotMin: robotSec / 60,
-        avgWait: startedCount > 0 ? waitSum / startedCount : 0,
-        completedCount,
-      };
-    }
-
-    function formatClock(seconds) {
-      const totalMin = Math.floor(seconds / 60);
-      const hh = String(Math.floor(totalMin / 60)).padStart(2, "0");
-      const mm = String(totalMin % 60).padStart(2, "0");
-      return `${hh}:${mm}`;
-    }
-
-    function renderSimulationFrame() {
-      if (!state.comparison) return;
-      const comp = state.comparison;
-      const t = state.simTime;
-      const dur = comp.nurse_only.shift_duration_s;
-
-      const leftStats = renderShiftCanvas(els.canvasLeft, comp.nurse_only, t);
-      const rightStats = renderShiftCanvas(els.canvasRight, comp.robot_assisted, t);
-
-      els.nurseWalkedLeft.textContent = leftStats.nurseMin.toFixed(1);
-      els.waitLeft.textContent = Math.round(leftStats.avgWait);
-      els.tripsLeft.textContent = `${leftStats.completedCount}/${comp.nurse_only.total_trips}`;
-
-      els.nurseWalkedRight.textContent = rightStats.nurseMin.toFixed(1);
-      els.robotTravelRight.textContent = rightStats.robotMin.toFixed(1);
-      els.waitRight.textContent = Math.round(rightStats.avgWait);
-
-      const savedNow = Math.max(0, leftStats.nurseMin - rightStats.nurseMin);
-      els.savedBadge.textContent = `Saved: ${savedNow.toFixed(1)} nurse min (Shift total: ${comp.nurse_minutes_saved.toFixed(1)} min)`;
-
-      els.scrubber.value = Math.floor(t);
-      els.clockReadout.textContent = `${formatClock(t)} / ${formatClock(dur)}`;
     }
 
     function tickAnimation(ts) {
@@ -1174,15 +1997,20 @@
         if (!res.ok) throw new Error(data.detail || "Simulation failed.");
 
         state.comparison = data;
+        state.simVersion++;
         els.singleView.classList.add("hidden");
         els.dualView.classList.remove("hidden");
         els.playbackBar.classList.remove("hidden");
         els.assumptionsBar.classList.remove("hidden");
 
+        if (state.viewMode === "3d" && state.threeReady && twinLeft && twinRight) {
+          twinLeft.resize();
+          twinRight.resize();
+        }
+
         els.robotCountBadge.textContent = `${state.numRobots} Robot${state.numRobots > 1 ? "s" : ""}`;
         els.scrubber.max = Math.floor(data.nurse_only.shift_duration_s);
 
-        // Render stated assumptions
         els.assumptionsList.innerHTML = "";
         Object.entries(data.assumptions || {}).forEach(([k, v]) => {
           const chip = document.createElement("span");
@@ -1229,6 +2057,30 @@
     }
 
     // Event Listeners
+    els.viewModeGroup.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-view]");
+      if (!btn) return;
+      const requested = btn.dataset.view;
+      if (requested === "3d" && !state.threeReady) {
+        showBanner("3D WebGL / Three.js CDN is unavailable in this environment; showing 2D Canvas.", "info");
+        return;
+      }
+      state.viewMode = requested;
+      applyViewVisibility();
+    });
+
+    document.querySelectorAll("[data-cam]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const preset = btn.dataset.cam;
+        if (!els.singleView.classList.contains("hidden") && twinSingle) {
+          twinSingle.setPresetCamera(preset);
+        } else if (twinLeft && twinRight) {
+          twinLeft.setPresetCamera(preset);
+          twinRight.setPresetCamera(preset);
+        }
+      });
+    });
+
     els.planSelect.addEventListener("change", previewSelectedPlan);
     els.fileUpload.addEventListener("change", async (e) => {
       const file = e.target.files[0];
@@ -1237,8 +2089,10 @@
       state.selectedPlanId = null;
       const url = URL.createObjectURL(file);
       state.bgImage = await loadImageFromUrl(url);
+      state.bgVersion++;
       els.mapTitle.textContent = file.name;
       state.unitMap = null;
+      state.unitVersion++;
       els.runSimBtn.disabled = true;
       drawSingleMap();
     });
@@ -1305,10 +2159,10 @@
       els.assumptionsBar.classList.add("hidden");
       els.singleView.classList.remove("hidden");
       setStep(state.unitMap ? 2 : 1);
-      drawSingleMap();
+      applyViewVisibility();
     });
 
-    // Room hover tooltip on single canvas
+    // Room hover tooltip on 2D single canvas
     els.mapCanvas.addEventListener("mousemove", (e) => {
       if (!state.unitMap) return;
       const rect = els.mapCanvas.getBoundingClientRect();
@@ -1341,11 +2195,29 @@
     });
 
     window.addEventListener("resize", () => {
+      if (state.viewMode === "3d" && state.threeReady) {
+        if (!els.singleView.classList.contains("hidden") && twinSingle) twinSingle.resize();
+        if (!els.dualView.classList.contains("hidden") && twinLeft && twinRight) {
+          twinLeft.resize();
+          twinRight.resize();
+        }
+      }
       if (!els.singleView.classList.contains("hidden")) drawSingleMap();
       else renderSimulationFrame();
     });
 
+    // Boot: load plans + initialize 3D WebGL engine (falling back to 2D if needed)
     fetchPlans();
+    loadThreeEngine().then((ok) => {
+      if (ok && initThreeViewports()) {
+        state.threeReady = true;
+        state.viewMode = "3d";
+      } else {
+        state.threeReady = false;
+        state.viewMode = "2d";
+      }
+      applyViewVisibility();
+    });
   </script>
 </body>
 </html>
