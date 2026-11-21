@@ -27,6 +27,8 @@
       --nurse-soft: #ffe4e6;
       --robot: #0d9488;
       --robot-soft: #ccfbf1;
+      --amber: #f59e0b;
+      --amber-soft: #fef3c7;
       --accent: #2563eb;
       --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 6px 20px rgba(15, 23, 42, 0.05);
       --radius: 12px;
@@ -252,6 +254,10 @@
       background: linear-gradient(135deg, #0f766e, #2563eb);
       color: #fff;
     }
+    .segmented.color-toggle button.active {
+      background: #0f766e;
+      color: #fff;
+    }
 
     .run-input-wrap {
       display: flex;
@@ -292,7 +298,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      min-height: 500px;
+      min-height: 510px;
     }
 
     .single-canvas-card {
@@ -319,12 +325,19 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
+    }
+    .header-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
+      gap: 5px;
+      padding: 3px 9px;
       border-radius: 999px;
       font-size: 11px;
       font-weight: 600;
@@ -349,11 +362,29 @@
       font-size: 12px;
       padding: 4px 10px;
     }
+    .autonomy-summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+    .tier-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 3px;
+    }
 
     .canvas-wrap {
       position: relative;
       flex: 1;
-      min-height: 440px;
+      min-height: 450px;
       background: radial-gradient(circle at 50% 35%, #1e293b 0%, #0b1120 100%);
       border-radius: 10px;
       overflow: hidden;
@@ -364,6 +395,7 @@
       display: block;
       max-width: 100%;
       max-height: 100%;
+      cursor: pointer;
     }
     .three-mount {
       position: absolute;
@@ -376,11 +408,87 @@
       cursor: grabbing;
     }
 
+    /* Floating Autonomy Inspector Card */
+    .inspector-card {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 295px;
+      max-width: calc(100% - 24px);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.32);
+      border-radius: 10px;
+      padding: 11px 13px;
+      z-index: 15;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+      font-size: 12px;
+    }
+    .inspector-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .inspector-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #ffffff;
+    }
+    .inspector-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: capitalize;
+    }
+    .inspector-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+    .inspector-close:hover { color: #ffffff; }
+    .tier-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .tier-pill.autonomous { background: rgba(16, 185, 129, 0.22); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); }
+    .tier-pill.assisted   { background: rgba(245, 158, 11, 0.22); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); }
+    .tier-pill.human_only { background: rgba(225, 29, 72, 0.24);  color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.55); }
+    .inspector-reason {
+      color: #e2e8f0;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .inspector-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .inspector-chip {
+      background: rgba(51, 65, 85, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #cbd5e1;
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 11px;
+    }
+
     .cam-hint {
       position: absolute;
       bottom: 10px;
       left: 12px;
-      background: rgba(15, 23, 42, 0.72);
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(6px);
       color: #cbd5e1;
       border: 1px solid rgba(148, 163, 184, 0.25);
@@ -509,7 +617,7 @@
     .legend {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       font-size: 12px;
       color: var(--muted);
     }
@@ -555,6 +663,10 @@
       </div>
 
       <div class="top-right">
+        <div class="segmented color-toggle" id="colorModeGroup" title="Color rooms & doorways by Robot Autonomy Tier or Architectural Room Type">
+          <button type="button" class="active" data-colormode="autonomy">Autonomy Zones</button>
+          <button type="button" data-colormode="room_type">Room Types</button>
+        </div>
         <div class="segmented view-toggle" id="viewModeGroup" title="Switch between interactive 3D Twin and top-down 2D Canvas">
           <button type="button" class="active" data-view="3d">3D Twin</button>
           <button type="button" data-view="2d">2D Map</button>
@@ -628,12 +740,19 @@
             <span id="mapTitle">Unit Floor Plan</span>
             <span class="badge" id="extractBadge">Select or upload a floor plan, then click Map Unit</span>
           </div>
-          <div class="badge hidden" id="verifyBadge"></div>
+          <div class="header-badges">
+            <div class="autonomy-summary-chip hidden" id="autonomySummaryChip"></div>
+            <div class="badge hidden" id="verifyBadge"></div>
+          </div>
         </div>
         <div class="canvas-wrap" id="singleWrap">
           <div class="three-mount" id="threeSingle"></div>
           <canvas class="canvas-2d hidden" id="mapCanvas"></canvas>
-          <div class="cam-hint" id="camHintSingle">Drag to orbit · Scroll to zoom · Right-drag to pan</div>
+
+          <!-- Click-to-Inspect Autonomy & Interior Card -->
+          <div class="inspector-card hidden" id="inspectorSingle"></div>
+
+          <div class="cam-hint" id="camHintSingle">Click any room or doorway to inspect autonomy · Drag to orbit · Scroll to zoom</div>
           <div class="cam-actions" id="camActionsSingle">
             <button type="button" class="cam-btn" data-cam="iso">3D Iso</button>
             <button type="button" class="cam-btn" data-cam="top">Top Tilt</button>
@@ -659,7 +778,8 @@
           <div class="canvas-wrap" id="wrapLeft">
             <div class="three-mount" id="threeLeft"></div>
             <canvas class="canvas-2d hidden" id="canvasLeft"></canvas>
-            <div class="cam-hint" id="camHintDual">Synced 3D Camera · Drag either side to orbit</div>
+            <div class="inspector-card hidden" id="inspectorDual"></div>
+            <div class="cam-hint" id="camHintDual">Synced 3D · Click room/door to inspect · Drag to orbit</div>
           </div>
         </div>
 
@@ -720,8 +840,15 @@
       other:           { fill: "rgba(100, 116, 139, 0.18)",stroke: "#64748b", hex: 0x64748b },
     };
 
+    const AUTONOMY_COLORS = {
+      autonomous: { fill: "rgba(16, 185, 129, 0.24)", stroke: "#10b981", hex: 0x10b981, label: "Autonomous" },
+      assisted:   { fill: "rgba(245, 158, 11, 0.25)", stroke: "#f59e0b", hex: 0xf59e0b, label: "Assisted" },
+      human_only: { fill: "rgba(225, 29, 72, 0.24)",  stroke: "#e11d48", hex: 0xe11d48, label: "Human-Only" },
+    };
+
     const state = {
-      viewMode: "3d", // "3d" | "2d"
+      viewMode: "3d",         // "3d" | "2d"
+      colorMode: "autonomy",  // "autonomy" | "room_type"
       threeReady: false,
       plans: [],
       selectedPlanId: null,
@@ -734,6 +861,7 @@
       revealedRooms: 0,
       revealedDoors: 0,
       revealTimer: null,
+      selectedSelection: null, // { kind: "room" | "door", id: string }
       numRobots: 1,
       comparison: null,
       simVersion: 0,
@@ -745,6 +873,7 @@
     };
 
     const els = {
+      colorModeGroup: document.getElementById("colorModeGroup"),
       viewModeGroup: document.getElementById("viewModeGroup"),
       planSelect: document.getElementById("planSelect"),
       fileUpload: document.getElementById("fileUpload"),
@@ -770,6 +899,9 @@
       mapCanvas: document.getElementById("mapCanvas"),
       canvasLeft: document.getElementById("canvasLeft"),
       canvasRight: document.getElementById("canvasRight"),
+      inspectorSingle: document.getElementById("inspectorSingle"),
+      inspectorDual: document.getElementById("inspectorDual"),
+      autonomySummaryChip: document.getElementById("autonomySummaryChip"),
       camHintSingle: document.getElementById("camHintSingle"),
       camHintDual: document.getElementById("camHintDual"),
       camActionsSingle: document.getElementById("camActionsSingle"),
@@ -793,8 +925,143 @@
       savedBadge: document.getElementById("savedBadge"),
     };
 
+    function getRoomStyle(room) {
+      if (state.colorMode === "autonomy") {
+        const tier = room.autonomy_tier || "autonomous";
+        return AUTONOMY_COLORS[tier] || AUTONOMY_COLORS.autonomous;
+      }
+      return ROOM_COLORS[room.type] || ROOM_COLORS.other;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function updateAutonomySummaryChip() {
+      if (!state.unitMap || !state.unitMap.rooms) {
+        els.autonomySummaryChip.classList.add("hidden");
+        return;
+      }
+      let autoCount = 0;
+      let assistCount = 0;
+      let humanCount = 0;
+      for (const r of state.unitMap.rooms) {
+        const t = r.autonomy_tier || "autonomous";
+        if (t === "autonomous") autoCount++;
+        else if (t === "assisted") assistCount++;
+        else humanCount++;
+      }
+      const passableDoors = (state.unitMap.doors || []).filter((d) => d.robot_passable !== false).length;
+      const totalDoors = (state.unitMap.doors || []).length;
+
+      els.autonomySummaryChip.innerHTML =
+        `<span><span class="tier-dot" style="background:#10b981"></span>${autoCount} Autonomous</span>` +
+        `<span><span class="tier-dot" style="background:#f59e0b"></span>${assistCount} Assisted</span>` +
+        `<span><span class="tier-dot" style="background:#e11d48"></span>${humanCount} Human-Only</span>` +
+        `<span style="color:#94a3b8">· ${passableDoors}/${totalDoors} Passable Doors</span>`;
+      els.autonomySummaryChip.classList.remove("hidden");
+    }
+
+    function renderInspectorCards() {
+      const sel = state.selectedSelection;
+      if (!sel || !state.unitMap) {
+        els.inspectorSingle.classList.add("hidden");
+        els.inspectorDual.classList.add("hidden");
+        return;
+      }
+
+      let html = "";
+      if (sel.kind === "room") {
+        const room = state.unitMap.rooms.find((r) => r.id === sel.id);
+        if (!room) {
+          els.inspectorSingle.classList.add("hidden");
+          els.inspectorDual.classList.add("hidden");
+          return;
+        }
+        const tier = room.autonomy_tier || "autonomous";
+        const tierLabel = (AUTONOMY_COLORS[tier] || AUTONOMY_COLORS.autonomous).label;
+        const conf = room.confidence != null ? ` · ${Math.round(room.confidence * 100)}% conf` : "";
+        const reason = room.autonomy_reason || "Standard hospital zone.";
+        const obstacles = room.obstacles && room.obstacles.length > 0 ? room.obstacles : ["clear floor"];
+        const connectedDoors = (state.unitMap.doors || []).filter(
+          (d) => d.rooms_connected && d.rooms_connected.includes(room.id)
+        );
+
+        html = `
+          <div class="inspector-top">
+            <div>
+              <div class="inspector-title">${escapeHtml(room.label || room.id)}</div>
+              <div class="inspector-sub">${escapeHtml((room.type || "room").replace(/_/g, " "))}${escapeHtml(conf)}</div>
+            </div>
+            <button type="button" class="inspector-close" data-close-inspector="1" title="Close">×</button>
+          </div>
+          <span class="tier-pill ${escapeHtml(tier)}">${escapeHtml(tierLabel)}</span>
+          <div class="inspector-reason">${escapeHtml(reason)}</div>
+          <div class="inspector-chips">
+            ${obstacles.map((o) => `<span class="inspector-chip">Fixture: ${escapeHtml(o.replace(/_/g, " "))}</span>`).join("")}
+            ${connectedDoors.map((d) => {
+              const w = (d.width_m ?? 1.0).toFixed(2);
+              const pass = d.robot_passable !== false ? "Passable" : "Blocked (<0.9m)";
+              return `<span class="inspector-chip">${escapeHtml(d.id)}: ${w}m (${pass})</span>`;
+            }).join("")}
+          </div>
+        `;
+      } else if (sel.kind === "door") {
+        const door = state.unitMap.doors.find((d) => d.id === sel.id);
+        if (!door) {
+          els.inspectorSingle.classList.add("hidden");
+          els.inspectorDual.classList.add("hidden");
+          return;
+        }
+        const passable = door.robot_passable !== false;
+        const widthStr = (door.width_m ?? 1.0).toFixed(2);
+        const roomNames = (door.rooms_connected || []).map((rid) => {
+          const rm = state.unitMap.rooms.find((r) => r.id === rid);
+          return rm ? rm.label : rid;
+        });
+
+        html = `
+          <div class="inspector-top">
+            <div>
+              <div class="inspector-title">Doorway · ${escapeHtml(door.id)}</div>
+              <div class="inspector-sub">Width: ${widthStr} m</div>
+            </div>
+            <button type="button" class="inspector-close" data-close-inspector="1" title="Close">×</button>
+          </div>
+          <span class="tier-pill ${passable ? "autonomous" : "human_only"}">
+            ${passable ? "Robot Passable" : "Narrow — Human Only"}
+          </span>
+          <div class="inspector-reason">
+            ${passable
+              ? `Clear ${widthStr}m doorway allows autonomous courier robot transit.`
+              : `Doorway width (${widthStr}m) is below robot clearance; requires corridor doorway handoff.`}
+          </div>
+          <div class="inspector-chips">
+            <span class="inspector-chip">Connects: ${escapeHtml(roomNames.join(" ↔ "))}</span>
+          </div>
+        `;
+      }
+
+      const singleActive = !els.singleView.classList.contains("hidden");
+      els.inspectorSingle.innerHTML = html;
+      els.inspectorDual.innerHTML = html;
+      els.inspectorSingle.classList.toggle("hidden", !singleActive);
+      els.inspectorDual.classList.toggle("hidden", singleActive);
+    }
+
+    function setSelection(sel) {
+      state.selectedSelection = sel;
+      renderInspectorCards();
+      if (!els.singleView.classList.contains("hidden")) drawSingleMap();
+      else renderSimulationFrame();
+    }
+
     // =========================================================================
-    // THREE.JS 3D HOSPITAL TWIN ENGINE (with graceful 2D fallback)
+    // THREE.JS 3D HOSPITAL TWIN ENGINE (with Interior Fixtures & Raycaster)
     // =========================================================================
     let THREE = null;
     let OrbitControls = null;
@@ -874,10 +1141,208 @@
       return sprite;
     }
 
+    // 3D Interior Room Fixtures (Hospital Beds, Monitors, U-Desk, Shelving, Med Carts, Lab Bench)
+    function createRoomInterior3D(room, bounds) {
+      const group = new THREE.Group();
+      const spanX = bounds.maxX - bounds.minX;
+      const spanZ = bounds.maxZ - bounds.minZ;
+      if (spanX < 3.5 || spanZ < 3.5 || room.type === "corridor") return group;
+
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cz = (bounds.minZ + bounds.maxZ) / 2;
+      // Place back-wall furniture slightly away from central corridor (z ~ 0)
+      const awaySign = cz <= 0 ? -1 : 1;
+      const backZ = cz + awaySign * Math.min(spanZ * 0.24, 4.2);
+
+      const obs = new Set((room.obstacles || []).map((s) => s.toLowerCase()));
+      const rType = room.type;
+
+      // 1. Hospital Bed + Vital Signs Monitor (patient_room or "bed")
+      if (rType === "patient_room" || obs.has("bed")) {
+        const bedGroup = new THREE.Group();
+        const bedW = Math.min(3.4, spanX * 0.32);
+        const bedL = Math.min(6.2, spanZ * 0.44);
+
+        // Frame
+        const frame = new THREE.Mesh(
+          new THREE.BoxGeometry(bedW, 0.55, bedL),
+          new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5, metalness: 0.4 })
+        );
+        frame.position.y = 0.45;
+        bedGroup.add(frame);
+
+        // White Mattress
+        const mat = new THREE.Mesh(
+          new THREE.BoxGeometry(bedW * 0.92, 0.42, bedL * 0.92),
+          new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 })
+        );
+        mat.position.y = 0.92;
+        bedGroup.add(mat);
+
+        // Clinical Blanket (foot side)
+        const blanket = new THREE.Mesh(
+          new THREE.BoxGeometry(bedW * 0.94, 0.45, bedL * 0.52),
+          new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.55 })
+        );
+        blanket.position.set(0, 0.94, -awaySign * bedL * 0.18);
+        bedGroup.add(blanket);
+
+        // Pillow + Headboard (against outer wall)
+        const pillow = new THREE.Mesh(
+          new THREE.BoxGeometry(bedW * 0.62, 0.22, bedL * 0.2),
+          new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+        );
+        pillow.position.set(0, 1.22, awaySign * bedL * 0.3);
+        bedGroup.add(pillow);
+
+        const headboard = new THREE.Mesh(
+          new THREE.BoxGeometry(bedW, 1.45, 0.28),
+          new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.4 })
+        );
+        headboard.position.set(0, 1.0, awaySign * (bedL / 2));
+        bedGroup.add(headboard);
+
+        bedGroup.position.set(cx - spanX * 0.1, 0.05, backZ);
+        group.add(bedGroup);
+
+        // Vital Signs Monitor stand beside bed
+        if (obs.has("monitor") || rType === "patient_room") {
+          const monGroup = new THREE.Group();
+          const pole = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.1, 0.14, 2.2, 10),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.5 })
+          );
+          pole.position.y = 1.1;
+          monGroup.add(pole);
+
+          const screen = new THREE.Mesh(
+            new THREE.BoxGeometry(1.1, 0.78, 0.18),
+            new THREE.MeshStandardMaterial({
+              color: 0x0f172a,
+              emissive: 0x06b6d4,
+              emissiveIntensity: 0.65,
+              roughness: 0.2,
+            })
+          );
+          screen.position.y = 2.25;
+          monGroup.add(screen);
+
+          monGroup.position.set(cx + Math.min(3.2, spanX * 0.22), 0.05, backZ + awaySign * 1.2);
+          group.add(monGroup);
+        }
+      }
+
+      // 2. U-Shaped Nurse Station Desk + Dual Terminals
+      if (rType === "nurse_station" || obs.has("desk")) {
+        const deskGroup = new THREE.Group();
+        const w = Math.min(7.8, spanX * 0.52);
+        const d = Math.min(4.2, spanZ * 0.36);
+        const counterMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.35 });
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
+
+        // Front counter facing corridor
+        const frontBase = new THREE.Mesh(new THREE.BoxGeometry(w, 1.35, 1.05), baseMat);
+        frontBase.position.set(0, 0.68, -awaySign * (d / 2));
+        deskGroup.add(frontBase);
+
+        const frontTop = new THREE.Mesh(new THREE.BoxGeometry(w + 0.3, 0.18, 1.3), counterMat);
+        frontTop.position.set(0, 1.42, -awaySign * (d / 2));
+        deskGroup.add(frontTop);
+
+        // Left & Right U-wings
+        [-1, 1].forEach((side) => {
+          const wing = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.35, d), baseMat);
+          wing.position.set(side * (w / 2 - 0.5), 0.68, 0);
+          deskGroup.add(wing);
+
+          const wingTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.18, d + 0.2), counterMat);
+          wingTop.position.set(side * (w / 2 - 0.5), 1.42, 0);
+          deskGroup.add(wingTop);
+
+          // Glowing workstation terminal
+          const monitor = new THREE.Mesh(
+            new THREE.BoxGeometry(1.15, 0.75, 0.14),
+            new THREE.MeshStandardMaterial({
+              color: 0x0f172a,
+              emissive: 0x38bdf8,
+              emissiveIntensity: 0.7,
+            })
+          );
+          monitor.position.set(side * (w * 0.22), 1.92, -awaySign * (d / 2));
+          deskGroup.add(monitor);
+        });
+
+        deskGroup.position.set(cx, 0.05, cz + awaySign * 0.6);
+        group.add(deskGroup);
+      }
+
+      // 3. Shelving Units & Rolling Med Cart (medication_room / supply_room)
+      if (rType === "medication_room" || rType === "supply_room" || obs.has("shelf") || obs.has("med_cart")) {
+        const rackW = Math.min(6.8, spanX * 0.52);
+        const binColor = rType === "medication_room" ? 0xa855f7 : 0xf59e0b;
+        const rackGroup = new THREE.Group();
+
+        [0.45, 1.35, 2.25].forEach((tierY) => {
+          const shelf = new THREE.Mesh(
+            new THREE.BoxGeometry(rackW, 0.12, 1.35),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.45, roughness: 0.4 })
+          );
+          shelf.position.y = tierY;
+          rackGroup.add(shelf);
+        });
+
+        // Colored storage totes on shelves
+        [-0.3, 0, 0.3].forEach((offsetFrac) => {
+          const bin = new THREE.Mesh(
+            new THREE.BoxGeometry(rackW * 0.24, 0.55, 1.0),
+            new THREE.MeshStandardMaterial({ color: binColor, roughness: 0.4 })
+          );
+          bin.position.set(offsetFrac * rackW, 1.7, 0);
+          rackGroup.add(bin);
+        });
+
+        rackGroup.position.set(cx, 0.05, backZ);
+        group.add(rackGroup);
+
+        if (obs.has("med_cart") || rType === "medication_room") {
+          const cart = new THREE.Mesh(
+            new THREE.BoxGeometry(1.7, 1.65, 1.2),
+            new THREE.MeshStandardMaterial({ color: 0xc084fc, roughness: 0.35, metalness: 0.2 })
+          );
+          cart.position.set(cx - Math.min(2.6, spanX * 0.22), 0.9, cz - awaySign * 0.8);
+          group.add(cart);
+        }
+      }
+
+      // 4. Lab Specimen Bench & Analyzer (lab_drop)
+      if (rType === "lab_drop" || obs.has("bench") || obs.has("centrifuge")) {
+        const benchW = Math.min(6.2, spanX * 0.54);
+        const bench = new THREE.Mesh(
+          new THREE.BoxGeometry(benchW, 1.4, 1.6),
+          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3 })
+        );
+        bench.position.set(cx, 0.75, backZ);
+        group.add(bench);
+
+        const analyzer = new THREE.Mesh(
+          new THREE.BoxGeometry(1.8, 1.05, 1.2),
+          new THREE.MeshStandardMaterial({
+            color: 0x065f46,
+            emissive: 0x10b981,
+            emissiveIntensity: 0.55,
+            roughness: 0.25,
+          })
+        );
+        analyzer.position.set(cx + benchW * 0.22, 1.95, backZ);
+        group.add(analyzer);
+      }
+
+      return group;
+    }
+
     function createNurse3D(tagText = "N") {
       const group = new THREE.Group();
 
-      // Glowing floor halo
       const haloGeo = new THREE.RingGeometry(0.9, 1.45, 28);
       haloGeo.rotateX(-Math.PI / 2);
       const haloMat = new THREE.MeshBasicMaterial({
@@ -890,7 +1355,6 @@
       halo.position.y = 0.08;
       group.add(halo);
 
-      // Scrubs body (tapered cylinder)
       const bodyGeo = new THREE.CylinderGeometry(0.52, 0.72, 2.2, 20);
       const bodyMat = new THREE.MeshStandardMaterial({
         color: 0xe11d48,
@@ -903,7 +1367,6 @@
       body.position.y = 1.25;
       group.add(body);
 
-      // Clinical white collar ring
       const collarGeo = new THREE.TorusGeometry(0.5, 0.09, 10, 20);
       collarGeo.rotateX(Math.PI / 2);
       const collarMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
@@ -911,14 +1374,12 @@
       collar.position.y = 2.28;
       group.add(collar);
 
-      // Head
       const headGeo = new THREE.SphereGeometry(0.52, 20, 20);
       const headMat = new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.45 });
       const head = new THREE.Mesh(headGeo, headMat);
       head.position.y = 2.88;
       group.add(head);
 
-      // Direction visor / stethoscope accent on front (+Z)
       const badgeGeo = new THREE.BoxGeometry(0.45, 0.25, 0.18);
       const badgeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       const badge = new THREE.Mesh(badgeGeo, badgeMat);
@@ -935,7 +1396,6 @@
     function createRobot3D(tagText = "R1") {
       const group = new THREE.Group();
 
-      // Glowing teal floor ring
       const haloGeo = new THREE.RingGeometry(1.0, 1.65, 28);
       haloGeo.rotateX(-Math.PI / 2);
       const haloMat = new THREE.MeshBasicMaterial({
@@ -948,21 +1408,18 @@
       halo.position.y = 0.08;
       group.add(halo);
 
-      // Base drive chassis
       const baseGeo = new THREE.CylinderGeometry(0.95, 1.02, 0.55, 24);
       const baseMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.5 });
       const base = new THREE.Mesh(baseGeo, baseMat);
       base.position.y = 0.35;
       group.add(base);
 
-      // Courier payload cabinet (clinical white + rounded cylinder core)
       const cabGeo = new THREE.CylinderGeometry(0.84, 0.9, 1.45, 24);
       const cabMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.15 });
       const cab = new THREE.Mesh(cabGeo, cabMat);
       cab.position.y = 1.35;
       group.add(cab);
 
-      // Glowing cyan LED status ring
       const ledGeo = new THREE.TorusGeometry(0.88, 0.09, 12, 28);
       ledGeo.rotateX(Math.PI / 2);
       const ledMat = new THREE.MeshBasicMaterial({ color: 0x2dd4bf });
@@ -970,7 +1427,6 @@
       led.position.y = 1.95;
       group.add(led);
 
-      // Top LiDAR dome + forward directional headlight (+Z)
       const lidarGeo = new THREE.CylinderGeometry(0.42, 0.5, 0.32, 20);
       const lidarMat = new THREE.MeshStandardMaterial({
         color: 0x0d9488,
@@ -1037,10 +1493,10 @@
         this.controls.target.set(0, 0, 0);
 
         // Studio lighting
-        const hemi = new THREE.HemisphereLight(0xe2e8f0, 0x1e293b, 1.25);
+        const hemi = new THREE.HemisphereLight(0xe2e8f0, 0x1e293b, 1.3);
         this.scene.add(hemi);
 
-        const dir1 = new THREE.DirectionalLight(0xffffff, 1.35);
+        const dir1 = new THREE.DirectionalLight(0xffffff, 1.4);
         dir1.position.set(45, 85, 55);
         this.scene.add(dir1);
 
@@ -1060,6 +1516,7 @@
 
         this.staticKey = "";
         this.pathsKey = "";
+        this.pickTargets = []; // Meshes tagged with userData.pickInfo = { kind, id }
         this.tripVisuals = [];
         this.agentPool = new Map();
         this.ripplePool = [];
@@ -1070,12 +1527,49 @@
         this.imgW = 1000;
         this.imgH = 650;
 
+        this.raycaster = new THREE.Raycaster();
+        this.pointerDownPos = null;
+
+        this.renderer.domElement.addEventListener("pointerdown", (e) => {
+          this.pointerDownPos = { x: e.clientX, y: e.clientY };
+        });
+        this.renderer.domElement.addEventListener("pointerup", (e) => {
+          if (!this.pointerDownPos) return;
+          const dist = Math.hypot(e.clientX - this.pointerDownPos.x, e.clientY - this.pointerDownPos.y);
+          this.pointerDownPos = null;
+          if (dist < 6) {
+            this.handlePick(e);
+          }
+        });
+
         this.controls.addEventListener("change", () => {
           if (this.onCameraChange) this.onCameraChange();
           if (!state.playing && state.viewMode === "3d") {
             this.renderOnce();
           }
         });
+      }
+
+      handlePick(event) {
+        if (!state.unitMap || this.pickTargets.length === 0) return;
+        const rect = this.renderer.domElement.getBoundingClientRect();
+        const ndc = new THREE.Vector2(
+          ((event.clientX - rect.left) / rect.width) * 2 - 1,
+          -((event.clientY - rect.top) / rect.height) * 2 + 1
+        );
+        this.raycaster.setFromCamera(ndc, this.camera);
+        const hits = this.raycaster.intersectObjects(this.pickTargets, true);
+        if (hits.length > 0) {
+          // Prefer door hit if close to top of intersections
+          const doorHit = hits.find((h) => h.object?.userData?.pickInfo?.kind === "door");
+          const chosen = doorHit || hits[0];
+          const info = chosen.object?.userData?.pickInfo;
+          if (info) {
+            setSelection(info);
+            return;
+          }
+        }
+        setSelection(null);
       }
 
       pxToWorld(px, py) {
@@ -1117,7 +1611,8 @@
         const imgH = unit ? unit.image_height : (state.bgImage ? state.bgImage.naturalHeight : 650);
         const maxRooms = unit ? (subtle ? unit.rooms.length : state.revealedRooms) : 0;
         const maxDoors = unit ? (subtle ? unit.doors.length : state.revealedDoors) : 0;
-        const nextKey = `${state.unitVersion}:${state.bgVersion}:${imgW}x${imgH}:${maxRooms}:${maxDoors}:${subtle ? 1 : 0}`;
+        const selKey = state.selectedSelection ? `${state.selectedSelection.kind}:${state.selectedSelection.id}` : "none";
+        const nextKey = `${state.unitVersion}:${state.bgVersion}:${state.colorMode}:${selKey}:${imgW}x${imgH}:${maxRooms}:${maxDoors}:${subtle ? 1 : 0}`;
         if (this.staticKey === nextKey) return;
         this.staticKey = nextKey;
 
@@ -1128,6 +1623,7 @@
         this.worldH = imgH * this.worldScale;
 
         this.clearGroup(this.staticGroup);
+        this.pickTargets = [];
 
         // Architectural base slab
         const slabGeo = new THREE.BoxGeometry(this.worldW + 3.2, 0.9, this.worldH + 3.2);
@@ -1156,18 +1652,34 @@
 
         if (!unit) return;
 
-        // Extruded 3D translucent room volumes + glowing architectural rims + labels
+        const mpp = unit.meters_per_pixel || 0.05;
+        const worldUnitsPerMeter = (1 / mpp) * this.worldScale;
+
+        // Build room centroid lookup for doorway orientation
+        const roomCentroids = new Map();
+        unit.rooms.forEach((r) => {
+          const cx = r.centroid ? r.centroid.x : r.polygon.reduce((s, p) => s + p.x, 0) / r.polygon.length;
+          const cy = r.centroid ? r.centroid.y : r.polygon.reduce((s, p) => s + p.y, 0) / r.polygon.length;
+          roomCentroids.set(r.id, { x: cx, y: cy });
+        });
+
+        // 1. Extruded 3D translucent rooms + 3D interior fixtures + floating badges
         const rooms = unit.rooms.slice(0, maxRooms);
         rooms.forEach((room) => {
           if (!room.polygon || room.polygon.length < 3) return;
-          const style = ROOM_COLORS[room.type] || ROOM_COLORS.other;
+          const style = getRoomStyle(room);
           const isCorridor = room.type === "corridor";
+          const isSelected = state.selectedSelection?.kind === "room" && state.selectedSelection?.id === room.id;
           const wallHeight = isCorridor ? 0.85 : (subtle ? 3.2 : 4.2);
 
+          let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
           const shape = new THREE.Shape();
           room.polygon.forEach((pt, idx) => {
             const wPt = this.pxToWorld(pt.x, pt.y);
-            // Shape (x, -z) rotated Rx(-90deg) maps to world (x, [0..wallHeight], +z)
+            minX = Math.min(minX, wPt.x);
+            maxX = Math.max(maxX, wPt.x);
+            minZ = Math.min(minZ, wPt.z);
+            maxZ = Math.max(maxZ, wPt.z);
             if (idx === 0) shape.moveTo(wPt.x, -wPt.z);
             else shape.lineTo(wPt.x, -wPt.z);
           });
@@ -1179,70 +1691,136 @@
           });
           extrudeGeo.rotateX(-Math.PI / 2);
 
+          const baseOpacity = isCorridor ? 0.12 : (subtle ? 0.17 : 0.28);
           const volMat = new THREE.MeshPhongMaterial({
             color: style.hex,
+            emissive: isSelected ? style.hex : 0x000000,
+            emissiveIntensity: isSelected ? 0.35 : 0,
             transparent: true,
-            opacity: isCorridor ? 0.12 : (subtle ? 0.18 : 0.30),
+            opacity: isSelected ? Math.min(0.52, baseOpacity + 0.18) : baseOpacity,
             depthWrite: false,
             side: THREE.DoubleSide,
           });
           const volMesh = new THREE.Mesh(extrudeGeo, volMat);
           volMesh.position.y = 0.05;
+          volMesh.userData.pickInfo = { kind: "room", id: room.id };
           this.staticGroup.add(volMesh);
+          this.pickTargets.push(volMesh);
 
           const edgesGeo = new THREE.EdgesGeometry(extrudeGeo);
           const edgesMat = new THREE.LineBasicMaterial({
-            color: style.hex,
+            color: isSelected ? 0xffffff : style.hex,
             transparent: true,
-            opacity: isCorridor ? 0.35 : (subtle ? 0.55 : 0.9),
+            opacity: isSelected ? 1.0 : (isCorridor ? 0.35 : (subtle ? 0.55 : 0.9)),
           });
           const wire = new THREE.LineSegments(edgesGeo, edgesMat);
           wire.position.y = 0.05;
           this.staticGroup.add(wire);
 
-          // Floating 3D room badge
-          const cx = room.centroid ? room.centroid.x : room.polygon.reduce((s, p) => s + p.x, 0) / room.polygon.length;
-          const cy = room.centroid ? room.centroid.y : room.polygon.reduce((s, p) => s + p.y, 0) / room.polygon.length;
-          const cWorld = this.pxToWorld(cx, cy);
+          // 3D Interior Fixtures (beds, monitors, U-desk, shelving, med cart, lab bench)
+          const fixtures = createRoomInterior3D(room, { minX, maxX, minZ, maxZ });
+          this.staticGroup.add(fixtures);
 
+          // Floating 3D room badge
+          const cPx = roomCentroids.get(room.id);
+          const cWorld = this.pxToWorld(cPx.x, cPx.y);
+          const tierTag = state.colorMode === "autonomy" && !isCorridor
+            ? ` · ${(room.autonomy_tier || "auto").replace("human_only", "HUMAN").replace("autonomous", "AUTO").replace("assisted", "ASSIST")}`
+            : "";
           const sprite = makeLabelSprite(
-            room.label || room.id,
-            subtle ? "rgba(15, 23, 42, 0.75)" : "rgba(15, 23, 42, 0.90)",
-            style.stroke,
-            subtle ? 0.68 : 0.82
+            (room.label || room.id) + tierTag,
+            subtle ? "rgba(15, 23, 42, 0.78)" : "rgba(15, 23, 42, 0.92)",
+            isSelected ? "#ffffff" : style.stroke,
+            subtle ? 0.64 : 0.78
           );
           sprite.position.set(cWorld.x, wallHeight + (subtle ? 1.4 : 1.9), cWorld.z);
           this.staticGroup.add(sprite);
         });
 
-        // Glowing 3D Door Markers
+        // 2. 3D Doorway Arches scaled by door.width_m + Robot Passability Ring
         const doors = unit.doors.slice(0, maxDoors);
         doors.forEach((door) => {
           const dWorld = this.pxToWorld(door.position.x, door.position.y);
+          const passable = door.robot_passable !== false;
+          const isSelected = state.selectedSelection?.kind === "door" && state.selectedSelection?.id === door.id;
+          const doorColor = passable ? 0x10b981 : 0xe11d48;
+
+          const widthMeters = door.width_m ?? 1.0;
+          const archSpan = Math.min(4.2, Math.max(1.5, widthMeters * worldUnitsPerMeter));
+          const archH = subtle ? 2.5 : 3.3;
+
+          // Align arch along the wall between the two connected rooms
+          let archRotY = 0;
+          if (door.rooms_connected && door.rooms_connected.length === 2) {
+            const c1 = roomCentroids.get(door.rooms_connected[0]);
+            const c2 = roomCentroids.get(door.rooms_connected[1]);
+            if (c1 && c2 && Math.abs(c1.x - c2.x) > Math.abs(c1.y - c2.y)) {
+              archRotY = Math.PI / 2;
+            }
+          }
+
           const doorGroup = new THREE.Group();
           doorGroup.position.set(dWorld.x, 0.06, dWorld.z);
+          doorGroup.rotation.y = archRotY;
 
-          const ringGeo = new THREE.RingGeometry(0.55, 0.95, 24);
+          const archMat = new THREE.MeshStandardMaterial({
+            color: isSelected ? 0xffffff : doorColor,
+            emissive: doorColor,
+            emissiveIntensity: isSelected ? 1.0 : 0.65,
+            roughness: 0.25,
+          });
+
+          // Left & right doorway pillars
+          [-1, 1].forEach((side) => {
+            const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.28, archH, 0.38), archMat);
+            pillar.position.set(side * (archSpan / 2), archH / 2, 0);
+            pillar.userData.pickInfo = { kind: "door", id: door.id };
+            doorGroup.add(pillar);
+            this.pickTargets.push(pillar);
+          });
+
+          // Overhead lintel bar scaled to door.width_m
+          const lintel = new THREE.Mesh(new THREE.BoxGeometry(archSpan + 0.34, 0.32, 0.44), archMat);
+          lintel.position.set(0, archH, 0);
+          lintel.userData.pickInfo = { kind: "door", id: door.id };
+          doorGroup.add(lintel);
+          this.pickTargets.push(lintel);
+
+          // Invisible wider click hitbox for easy doorway clicking
+          const hitBox = new THREE.Mesh(
+            new THREE.BoxGeometry(archSpan + 0.8, archH + 0.6, 1.4),
+            new THREE.MeshBasicMaterial({ visible: false })
+          );
+          hitBox.position.set(0, archH / 2, 0);
+          hitBox.userData.pickInfo = { kind: "door", id: door.id };
+          doorGroup.add(hitBox);
+          this.pickTargets.push(hitBox);
+
+          // Floor ring (emerald passable pad vs rose warning ring for !robot_passable)
+          const ringInner = passable ? archSpan * 0.28 : archSpan * 0.38;
+          const ringOuter = passable ? archSpan * 0.46 : archSpan * 0.68;
+          const ringGeo = new THREE.RingGeometry(ringInner, ringOuter, 28);
           ringGeo.rotateX(-Math.PI / 2);
           const ringMat = new THREE.MeshBasicMaterial({
-            color: 0x10b981,
+            color: doorColor,
             transparent: true,
-            opacity: 0.85,
+            opacity: passable ? 0.65 : 0.92,
             side: THREE.DoubleSide,
           });
           doorGroup.add(new THREE.Mesh(ringGeo, ringMat));
 
-          const beaconGeo = new THREE.CylinderGeometry(0.32, 0.32, subtle ? 1.5 : 2.3, 16);
-          const beaconMat = new THREE.MeshStandardMaterial({
-            color: 0x10b981,
-            emissive: 0x10b981,
-            emissiveIntensity: 0.7,
-            transparent: true,
-            opacity: 0.88,
-          });
-          const beacon = new THREE.Mesh(beaconGeo, beaconMat);
-          beacon.position.y = subtle ? 0.75 : 1.15;
-          doorGroup.add(beacon);
+          if (!passable) {
+            // Outer second warning halo for narrow !robot_passable doors
+            const warnGeo = new THREE.RingGeometry(ringOuter + 0.22, ringOuter + 0.42, 28);
+            warnGeo.rotateX(-Math.PI / 2);
+            const warnMat = new THREE.MeshBasicMaterial({
+              color: 0xfb7185,
+              transparent: true,
+              opacity: 0.7,
+              side: THREE.DoubleSide,
+            });
+            doorGroup.add(new THREE.Mesh(warnGeo, warnMat));
+          }
 
           this.staticGroup.add(doorGroup);
         });
@@ -1262,12 +1840,11 @@
 
         if (!summary || !state.unitMap) return;
 
-        summary.events.forEach((ev, idx) => {
+        summary.events.forEach((ev) => {
           if (!ev.pixel_path || ev.pixel_path.length < 2) {
             this.tripVisuals.push(null);
             return;
           }
-          // Deduplicate consecutive identical points for CatmullRomCurve3
           const worldPts = [];
           ev.pixel_path.forEach((pt) => {
             const w = this.pxToWorld(pt.x, pt.y);
@@ -1284,7 +1861,6 @@
           const isNurse = ev.agent_role === "nurse";
           const colorHex = isNurse ? 0xf43f5e : 0x14b8a6;
 
-          // Active 3D glowing ribbon tube
           const curve = new THREE.CatmullRomCurve3(worldPts, false, "catmullrom", 0.06);
           const segs = Math.min(64, Math.max(12, worldPts.length * 8));
           const tubeGeo = new THREE.TubeGeometry(curve, segs, 0.24, 8, false);
@@ -1300,7 +1876,6 @@
           activeTube.visible = false;
           this.pathsGroup.add(activeTube);
 
-          // Completed subtle floor trail line
           const trailPts = worldPts.map((p) => new THREE.Vector3(p.x, 0.14, p.z));
           const lineGeo = new THREE.BufferGeometry().setFromPoints(trailPts);
           const lineMat = new THREE.LineBasicMaterial({
@@ -1348,7 +1923,6 @@
         this.syncStaticUnit(true);
         this.syncSimulationTrips(summary, sideTag);
 
-        // Hide all pooled agents & ripples before activating current ones
         for (const m of this.agentPool.values()) m.visible = false;
         for (const r of this.ripplePool) r.visible = false;
         let rippleIdx = 0;
@@ -1411,7 +1985,6 @@
         twinLeft = new ThreeTwinScene(els.threeLeft);
         twinRight = new ThreeTwinScene(els.threeRight);
 
-        // Synchronized camera orbit/tilt/zoom between Left and Right 3D twins
         twinLeft.onCameraChange = () => {
           if (syncingCameras) return;
           syncingCameras = true;
@@ -1545,7 +2118,8 @@
       const rooms = unit.rooms.slice(0, maxRooms);
       rooms.forEach((room) => {
         if (!room.polygon || room.polygon.length < 3) return;
-        const style = ROOM_COLORS[room.type] || ROOM_COLORS.other;
+        const style = getRoomStyle(room);
+        const isSelected = state.selectedSelection?.kind === "room" && state.selectedSelection?.id === room.id;
         ctx.save();
         ctx.beginPath();
         room.polygon.forEach((pt, idx) => {
@@ -1553,10 +2127,10 @@
           else ctx.lineTo(pt.x, pt.y);
         });
         ctx.closePath();
-        ctx.fillStyle = subtle ? "rgba(255,255,255,0.06)" : style.fill;
+        ctx.fillStyle = subtle ? "rgba(255,255,255,0.08)" : style.fill;
         ctx.fill();
-        ctx.lineWidth = subtle ? 1.2 : 2.2;
-        ctx.strokeStyle = subtle ? "rgba(15, 23, 42, 0.35)" : style.stroke;
+        ctx.lineWidth = isSelected ? 3.5 : (subtle ? 1.4 : 2.3);
+        ctx.strokeStyle = subtle && !isSelected ? style.stroke : style.stroke;
         ctx.stroke();
 
         const cx = room.centroid ? room.centroid.x : room.polygon.reduce((s, p) => s + p.x, 0) / room.polygon.length;
@@ -1567,7 +2141,7 @@
         ctx.textBaseline = "middle";
         const label = room.label || room.id;
         const textW = ctx.measureText(label).width;
-        ctx.fillStyle = subtle ? "rgba(255,255,255,0.75)" : "rgba(15, 23, 42, 0.82)";
+        ctx.fillStyle = subtle ? "rgba(255,255,255,0.8)" : "rgba(15, 23, 42, 0.85)";
         ctx.fillRect(cx - textW / 2 - 5, cy - 9, textW + 10, 18);
         ctx.fillStyle = subtle ? "#0f172a" : "#ffffff";
         ctx.fillText(label, cx, cy);
@@ -1576,12 +2150,21 @@
 
       const doors = unit.doors.slice(0, maxDoors);
       doors.forEach((door) => {
+        const passable = door.robot_passable !== false;
+        const radius = Math.max(4, (door.width_m ?? 1.0) * 5.2);
         ctx.save();
+        if (!passable) {
+          ctx.beginPath();
+          ctx.arc(door.position.x, door.position.y, radius + 4, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(225, 29, 72, 0.85)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
         ctx.beginPath();
-        ctx.arc(door.position.x, door.position.y, subtle ? 3.5 : 5.5, 0, Math.PI * 2);
-        ctx.fillStyle = subtle ? "rgba(16, 185, 129, 0.55)" : "#10b981";
+        ctx.arc(door.position.x, door.position.y, subtle ? radius * 0.75 : radius, 0, Math.PI * 2);
+        ctx.fillStyle = passable ? "#10b981" : "#e11d48";
         ctx.fill();
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.6;
         ctx.strokeStyle = "#ffffff";
         ctx.stroke();
         ctx.restore();
@@ -1666,6 +2249,31 @@
       }
     }
 
+    function pick2DCanvas(canvas, event) {
+      if (!state.unitMap) return;
+      const rect = canvas.getBoundingClientRect();
+      const sx = state.unitMap.image_width / rect.width;
+      const sy = state.unitMap.image_height / rect.height;
+      const x = (event.clientX - rect.left) * sx;
+      const y = (event.clientY - rect.top) * sy;
+
+      for (const d of state.unitMap.doors || []) {
+        if (Math.hypot(x - d.position.x, y - d.position.y) <= 14) {
+          setSelection({ kind: "door", id: d.id });
+          return;
+        }
+      }
+      for (const r of state.unitMap.rooms || []) {
+        const xs = r.polygon.map((p) => p.x);
+        const ys = r.polygon.map((p) => p.y);
+        if (x >= Math.min(...xs) && x <= Math.max(...xs) && y >= Math.min(...ys) && y <= Math.max(...ys)) {
+          setSelection({ kind: "room", id: r.id });
+          return;
+        }
+      }
+      setSelection(null);
+    }
+
     // =========================================================================
     // UNIFIED VIEW ORCHESTRATION (3D + 2D)
     // =========================================================================
@@ -1697,6 +2305,7 @@
         }
       }
 
+      renderInspectorCards();
       if (!els.singleView.classList.contains("hidden")) {
         drawSingleMap();
       } else {
@@ -1871,6 +2480,8 @@
       hideBanner();
       if (state.rafId) cancelAnimationFrame(state.rafId);
       state.playing = false;
+      state.selectedSelection = null;
+      renderInspectorCards();
       els.singleView.classList.remove("hidden");
       els.dualView.classList.add("hidden");
       els.playbackBar.classList.add("hidden");
@@ -1880,7 +2491,7 @@
       els.fallbackBtn.disabled = true;
       els.extractBadge.textContent = useFallback
         ? "Loading pre-traced demo unit..."
-        : "Extracting rooms & doors with Neon + Decisions API...";
+        : "Extracting rooms, interior fixtures & autonomy zones...";
 
       try {
         let res;
@@ -1922,6 +2533,7 @@
 
         els.extractBadge.textContent = `${state.unitMap.rooms.length} rooms · ${state.unitMap.doors.length} doors`;
         els.extractBadge.className = "badge ok";
+        updateAutonomySummaryChip();
 
         const conf = state.verification.mean_confidence != null
           ? Math.round(state.verification.mean_confidence * 100) + "% conf"
@@ -2002,6 +2614,7 @@
         els.dualView.classList.remove("hidden");
         els.playbackBar.classList.remove("hidden");
         els.assumptionsBar.classList.remove("hidden");
+        renderInspectorCards();
 
         if (state.viewMode === "3d" && state.threeReady && twinLeft && twinRight) {
           twinLeft.resize();
@@ -2057,6 +2670,16 @@
     }
 
     // Event Listeners
+    els.colorModeGroup.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-colormode]");
+      if (!btn) return;
+      state.colorMode = btn.dataset.colormode;
+      els.colorModeGroup.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (!els.singleView.classList.contains("hidden")) drawSingleMap();
+      else renderSimulationFrame();
+    });
+
     els.viewModeGroup.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-view]");
       if (!btn) return;
@@ -2067,6 +2690,12 @@
       }
       state.viewMode = requested;
       applyViewVisibility();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.target.closest("[data-close-inspector]")) {
+        setSelection(null);
+      }
     });
 
     document.querySelectorAll("[data-cam]").forEach((btn) => {
@@ -2093,6 +2722,9 @@
       els.mapTitle.textContent = file.name;
       state.unitMap = null;
       state.unitVersion++;
+      state.selectedSelection = null;
+      renderInspectorCards();
+      updateAutonomySummaryChip();
       els.runSimBtn.disabled = true;
       drawSingleMap();
     });
@@ -2162,7 +2794,11 @@
       applyViewVisibility();
     });
 
-    // Room hover tooltip on 2D single canvas
+    // Click-to-inspect + hover tooltip on 2D canvases
+    els.mapCanvas.addEventListener("click", (e) => pick2DCanvas(els.mapCanvas, e));
+    els.canvasLeft.addEventListener("click", (e) => pick2DCanvas(els.canvasLeft, e));
+    els.canvasRight.addEventListener("click", (e) => pick2DCanvas(els.canvasRight, e));
+
     els.mapCanvas.addEventListener("mousemove", (e) => {
       if (!state.unitMap) return;
       const rect = els.mapCanvas.getBoundingClientRect();
@@ -2181,8 +2817,8 @@
         }
       }
       if (hit) {
-        const conf = hit.confidence != null ? ` (${Math.round(hit.confidence * 100)}%)` : "";
-        els.hoverTip.textContent = `${hit.label} · ${hit.type.replace(/_/g, " ")}${conf}`;
+        const tier = hit.autonomy_tier ? ` · ${hit.autonomy_tier.replace(/_/g, " ")}` : "";
+        els.hoverTip.textContent = `${hit.label} · ${hit.type.replace(/_/g, " ")}${tier}`;
         els.hoverTip.style.left = (e.clientX - rect.left + 12) + "px";
         els.hoverTip.style.top = (e.clientY - rect.top - 12) + "px";
         els.hoverTip.style.display = "block";
