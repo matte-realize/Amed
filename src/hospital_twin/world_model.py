@@ -11,7 +11,10 @@ from hospital_twin.routing import DEFAULT_ROBOT_CLEARANCE_M
 from hospital_twin.schedule_parser import parse_run_description
 from hospital_twin.schemas import (
     InventoryItem,
+    CustomRdConcept,
     ReadinessReport,
+    RoomDelegationItem,
+    UnitDelegationReport,
     AutonomyRecommendation,
     BottleneckItem,
     CalibrationInput,
@@ -646,4 +649,144 @@ def evaluate_coalition_surge(req: CoalitionSurgeRequest) -> CoalitionSurgeReport
     return CoalitionSurgeReport(
         hospitals=results,
         recommended_diversion=str(best["hospital_name"]),
+    )
+
+
+def analyze_floorplan_delegation(unit: UnitMap) -> UnitDelegationReport:
+    """Delegate every room/zone on a floor plan to mobile robots, stationary robots, human care, or custom R&D."""
+    narrow_rooms: set[str] = set()
+    for door in unit.doors:
+        if not door.robot_passable or door.width_m < DEFAULT_ROBOT_CLEARANCE_M:
+            narrow_rooms.update(door.rooms_connected)
+
+    delegations: list[RoomDelegationItem] = []
+    for room in unit.rooms:
+        if room.type == "medication_room":
+            delegations.append(
+                RoomDelegationItem(
+                    room_id=room.id,
+                    room_label=room.label,
+                    delegation_type="stationary_robot",
+                    assigned_system="Amed 6-DOF Med-Prep Arm + Stationary Pass-Through Locker",
+                    rationale="High-precision pharmaceutical counting, IV prep, and exterior badge-locker handoff without door bottlenecks.",
+                )
+            )
+        elif room.type == "lab_drop":
+            delegations.append(
+                RoomDelegationItem(
+                    room_id=room.id,
+                    room_label=room.label,
+                    delegation_type="stationary_robot",
+                    assigned_system="Pneumatic Tube Station + Automated Specimen Intake",
+                    rationale="Stationary tube terminal cuts stat lab transit from minutes to seconds.",
+                )
+            )
+        elif room.type == "corridor":
+            delegations.append(
+                RoomDelegationItem(
+                    room_id=room.id,
+                    room_label=room.label,
+                    delegation_type="mobile_robot",
+                    assigned_system="Aethon TUG / Amed Pre-Stage Cart",
+                    rationale="Clear main transit spine for mobile autonomous couriers and emergency cart staging.",
+                )
+            )
+        elif room.type == "supply_room":
+            if room.id in narrow_rooms:
+                delegations.append(
+                    RoomDelegationItem(
+                        room_id=room.id,
+                        room_label=room.label,
+                        delegation_type="rd_gap",
+                        assigned_system="Custom Amed Slim Rover (0.72m) / Pass-Through Locker",
+                        rationale="Doorway narrower than 0.90m blocks standard mobile couriers; requires slim chassis or wall locker.",
+                    )
+                )
+            else:
+                delegations.append(
+                    RoomDelegationItem(
+                        room_id=room.id,
+                        room_label=room.label,
+                        delegation_type="mobile_robot",
+                        assigned_system="Amed Pre-Stage Cart / Diligent Moxi",
+                        rationale="Automated supply restock and crash-cart staging.",
+                    )
+                )
+        elif room.type == "nurse_station":
+            delegations.append(
+                RoomDelegationItem(
+                    room_id=room.id,
+                    room_label=room.label,
+                    delegation_type="stationary_robot",
+                    assigned_system="Outer Counter Dock Pad + Pneumatic Tube Terminal",
+                    rationale="Shared clinical hub; stationary dock pad receives mobile deliveries without entering workspace.",
+                )
+            )
+        elif room.autonomy_tier == "human_only" or room.type == "patient_room":
+            if room.id in narrow_rooms:
+                delegations.append(
+                    RoomDelegationItem(
+                        room_id=room.id,
+                        room_label=room.label,
+                        delegation_type="rd_gap",
+                        assigned_system="Threshold Handoff + Custom 0.72m Slim Rover",
+                        rationale="Legacy narrow doorway (<0.90m) + bedside clinical boundary; mobile couriers stage at threshold.",
+                    )
+                )
+            else:
+                delegations.append(
+                    RoomDelegationItem(
+                        room_id=room.id,
+                        room_label=room.label,
+                        delegation_type="human_only",
+                        assigned_system="Clinician Bedside Care (Corridor Threshold Handoff)",
+                        rationale="Direct patient care stays human; robots stage supplies at room threshold.",
+                    )
+                )
+        else:
+            delegations.append(
+                RoomDelegationItem(
+                    room_id=room.id,
+                    room_label=room.label,
+                    delegation_type="mobile_robot",
+                    assigned_system="Aethon TUG / Diligent Moxi",
+                    rationale="General unit logistics zone.",
+                )
+            )
+
+    custom_rd_concepts = [
+        CustomRdConcept(
+            id="rd_slim_rover",
+            title="Amed Slim-Chassis Rover (0.72m)",
+            target_problem=f"Unlocks {len(narrow_rooms)} narrow-doorway room(s) (<0.90m) where commercial TUGs are blocked",
+            system_type="mobile",
+            estimated_bom_usd="~$18k BOM",
+            engineering_summary="46cm-wide narrow-track mobile base with dual sealed specimen/med canisters.",
+        ),
+        CustomRdConcept(
+            id="rd_med_prep_arm",
+            title="Amed 6-DOF Med-Prep & Counting Arm",
+            target_problem="Automates urgent pharmaceutical counting, IV prep, and vial staging inside Medication Rooms",
+            system_type="stationary",
+            estimated_bom_usd="~$42k BOM",
+            engineering_summary="Stationary 6-axis sterile cobot arm with optical barcode verification and syringe gripper.",
+        ),
+        CustomRdConcept(
+            id="rd_pass_through_locker",
+            title="Stationary Pass-Through RFID Locker",
+            target_problem="Eliminates door-opener retrofits at Medication & Supply rooms",
+            system_type="stationary",
+            estimated_bom_usd="~$6.5k BOM",
+            engineering_summary="Wall-mounted dual-sided badge locker with UV-C sanitation cycle and exterior courier dock.",
+        ),
+    ]
+
+    return UnitDelegationReport(
+        total_rooms=len(delegations),
+        mobile_count=sum(1 for d in delegations if d.delegation_type == "mobile_robot"),
+        stationary_count=sum(1 for d in delegations if d.delegation_type == "stationary_robot"),
+        human_only_count=sum(1 for d in delegations if d.delegation_type == "human_only"),
+        rd_gap_count=sum(1 for d in delegations if d.delegation_type == "rd_gap"),
+        delegations=delegations,
+        custom_rd_concepts=custom_rd_concepts,
     )

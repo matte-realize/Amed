@@ -29,6 +29,7 @@ from hospital_twin.schemas import (
     EmsArrivalSignal,
     EmsDispatchPlan,
     ReadinessReport,
+    UnitDelegationReport,
     SimulationComparison,
     StressTestReport,
     UnitMap,
@@ -159,11 +160,14 @@ async def eval_summary() -> dict[str, Any]:
 
 
 @app.post("/api/robot-designs")
-async def robot_designs(unit: UnitMap) -> dict[str, Any]:
-    """Custom robot designs sized to this unit (Gemini 4 Carbon, deterministic fallback)."""
+def robot_designs(unit: UnitMap, live: bool = True) -> dict[str, Any]:
+    """Custom robot designs sized to this unit (Gemini 4 Carbon, deterministic fallback).
+
+    ``live=false`` skips the model call and returns the sized reference designs instantly.
+    """
     from hospital_twin.robot_designer import design_custom_robots
 
-    return design_custom_robots(unit).model_dump()
+    return design_custom_robots(unit, live=live).model_dump()
 
 
 @app.get("/api/plans")
@@ -442,6 +446,13 @@ async def readiness_check(unit: UnitMap) -> ReadinessReport:
     from hospital_twin.world_model import check_unit_readiness
 
     return check_unit_readiness(unit)
+
+
+@app.post("/api/unit-audit", response_model=UnitDelegationReport)
+async def unit_audit(unit: UnitMap) -> UnitDelegationReport:
+    from hospital_twin.world_model import analyze_floorplan_delegation
+
+    return analyze_floorplan_delegation(unit)
 
 
 if __name__ == "__main__":

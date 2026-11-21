@@ -262,3 +262,30 @@ class ReadinessReport(BaseModel):
     ready_count: int
     flagged_items: list[InventoryItem]
     summary: str
+
+
+class RoomDelegationItem(BaseModel):
+    room_id: str
+    room_label: str
+    delegation_type: Literal["mobile_robot", "stationary_robot", "human_only", "rd_gap"]
+    assigned_system: str
+    rationale: str
+
+
+class CustomRdConcept(BaseModel):
+    id: str
+    title: str
+    target_problem: str
+    system_type: Literal["mobile", "stationary", "retrofit"]
+    estimated_bom_usd: str
+    engineering_summary: str
+
+
+class UnitDelegationReport(BaseModel):
+    total_rooms: int
+    mobile_count: int
+    stationary_count: int
+    human_only_count: int
+    rd_gap_count: int
+    delegations: list[RoomDelegationItem]
+    custom_rd_concepts: list[CustomRdConcept]

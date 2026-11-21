@@ -209,7 +209,7 @@
             <button type="button" class="showcase-pill" data-showcase-robot="pneumatic_tube">Pneumatic tube</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_prestage_pod">Amed pre-stage</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_narrow_rover">Amed slim rover</button>
-            <button type="button" class="showcase-pill" data-showcase-robot="amed_compounding_arm">6-DOF arm</button>
+            <button type="button" class="showcase-pill" data-showcase-robot="amed_compounding_arm">Med-prep arm</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_surgical_prep_bot">Surgical prep</button>
           </div>
         </div>
@@ -227,8 +227,8 @@
           <div class="spec-grid">
             <div class="spec-item"><div class="spec-lbl">Typical cost</div><div class="spec-val" id="specCost">~$4,500/mo lease or $120k–$160k unit</div></div>
             <div class="spec-item"><div class="spec-lbl">Dimensions</div><div class="spec-val" id="specDimensions">96.5 cm L × 56 cm W × 112 cm H</div></div>
-            <div class="spec-item full"><div class="spec-lbl">Speed &amp; door width needed</div><div class="spec-val" id="specSpeedClearance">0.76 m/s cruise · 0.90m min door clearance · 20s handoff · 3 compartments</div></div>
-            <div class="spec-item full"><div class="spec-lbl">How it is built</div><div class="spec-val" id="specDesign">Low-profile differential-drive AMR base with 270° LiDAR, top-mounted 3-compartment custodial pod, and badge-actuated locker doors.</div></div>
+            <div class="spec-item full"><div class="spec-lbl">Speed &amp; door width</div><div class="spec-val" id="specSpeedClearance">0.76 m/s cruise · 0.90m min door clearance · 20s handoff · 3 compartments</div></div>
+            <div class="spec-item full lp-hide"><div class="spec-lbl">How it is built</div><div class="spec-val" id="specDesign">Low-profile differential-drive AMR base with 270° LiDAR, top-mounted 3-compartment custodial pod, and badge-actuated locker doors.</div></div>
             <div class="spec-item full"><div class="spec-lbl">Why it helps</div><div class="spec-val" id="specWhyHelpful">Eliminates 20–35 min of routine nurse walking per shift while maintaining chain-of-custody logs.</div></div>
           </div>
           <div class="spec-foot">
@@ -305,10 +305,10 @@
             <select id="wtRobotSelect">
               <option value="aethon_tug" selected>Aethon TUG + pod</option>
               <option value="diligent_moxi">Diligent Moxi</option>
-              <option value="amed_narrow_rover">Amed slim rover 0.72 m</option>
-              <option value="amed_prestage_pod">Amed pre-stage cart</option>
-              <option value="amed_compounding_arm">Amed 6-DOF compounding arm</option>
-              <option value="mixed_fleet">All robotics (mixed fleet — 3 custom robots)</option>
+              <option value="amed_narrow_rover">Amed slim robot (narrow doors)</option>
+              <option value="amed_prestage_pod">Amed emergency cart</option>
+              <option value="amed_compounding_arm">Amed med-prep arm</option>
+              <option value="mixed_fleet">Mix of Amed robots</option>
             </select>
           </label>
           <label class="wt-field"><span>Read the plan</span>
@@ -324,11 +324,11 @@
 
       <ol class="wt-plan" aria-label="Walkthrough steps">
         <li><span class="n">01</span><b>Open the floor plan</b><span>Any unit, any hospital</span></li>
-        <li><span class="n">02</span><b>Find rooms &amp; doors</b><span class="m">gemini-4-neon</span></li>
-        <li><span class="n">03</span><b>Double-check them</b><span class="m">gemini-decision-1</span></li>
+        <li><span class="n">02</span><b>Find rooms &amp; doors</b><span>Read from the image</span></li>
+        <li><span class="n">03</span><b>Double-check them</b><span>Remove anything unsure</span></li>
         <li><span class="n">04</span><b>Will the robot fit?</b><span>Door by door</span></li>
         <li><span class="n">05</span><b>Inside the rooms</b><span>Tasks robots can take</span></li>
-        <li><span class="n">06</span><b>Describe the shift</b><span class="m">gemini-4-hydrogen</span></li>
+        <li><span class="n">06</span><b>Describe the shift</b><span>In plain words</span></li>
         <li><span class="n">07</span><b>Run it twice</b><span>Nurses only vs with robots</span></li>
         <li><span class="n">08</span><b>Try a bad day</b><span>Surges, breakdowns</span></li>
         <li><span class="n">09</span><b>How accurate is it?</b><span>Tested on 10 new plans</span></li>
@@ -489,16 +489,16 @@
         </div>
         <div class="eng-tb-group right">
           <div class="segmented stage-toggle" id="stageModeGroup" title="Single-unit audit or the shift simulation (both runs overlaid on one plan)">
-            <button type="button" class="active" data-stage="audit">Audit</button>
-            <button type="button" data-stage="sim" id="stageSimBtn" disabled>Shift sim</button>
+            <button type="button" class="active" data-stage="audit">Floor plan</button>
+            <button type="button" data-stage="sim" id="stageSimBtn" disabled>Shift</button>
           </div>
           <div class="segmented view-toggle" id="viewModeGroup" title="3D twin or 2D map">
             <button type="button" class="active" data-view="3d">3D</button>
             <button type="button" data-view="2d">2D</button>
           </div>
           <div class="segmented color-toggle" id="colorModeGroup" title="Color rooms by autonomy tier or room type">
-            <button type="button" class="active" data-colormode="autonomy">Autonomy</button>
-            <button type="button" data-colormode="room_type">Rooms</button>
+            <button type="button" class="active" data-colormode="autonomy">Robot access</button>
+            <button type="button" data-colormode="room_type">Room type</button>
           </div>
           <button class="btn" id="resetBtn" title="Reset simulation view">Reset</button>
           <button class="btn" data-page-tab-link="lab" title="Design custom robots for this unit">Robot lab →</button>
@@ -531,7 +531,7 @@
             <button class="btn btn-primary" id="mapBtn" title="Extract rooms and doors with Gemini 4 Neon, verify with Decision 1">Map unit</button>
             <button class="btn" id="fallbackBtn" title="Load the pre-traced demo unit">Demo map</button>
           </div>
-          <p class="eng-hint"><span class="m">gemini-4-neon</span> extracts · <span class="m">gemini-decision-1</span> verifies</p>
+          <p class="eng-hint">Amed reads every room and door from the image, then double-checks them.</p>
         </section>
 
         <section class="eng-sec">
@@ -540,12 +540,12 @@
             <select id="robotProfileSelect" title="Courier platform">
               <option value="aethon_tug" selected>Aethon TUG + pod</option>
               <option value="diligent_moxi">Diligent Moxi</option>
-              <option value="pneumatic_tube">Pneumatic tube hybrid</option>
-              <option value="amed_prestage_pod">Amed pre-stage cart</option>
-              <option value="amed_narrow_rover">Amed slim rover 0.72 m</option>
-              <option value="amed_compounding_arm">Amed 6-DOF compounding arm</option>
+              <option value="pneumatic_tube">Pneumatic tube</option>
+              <option value="amed_prestage_pod">Amed emergency cart</option>
+              <option value="amed_narrow_rover">Amed slim robot (narrow doors)</option>
+              <option value="amed_compounding_arm">Amed med-prep arm</option>
               <option value="amed_surgical_prep_bot">Amed surgical-prep cobot</option>
-              <option value="mixed_fleet">All robotics (mixed fleet)</option>
+              <option value="mixed_fleet">Mix of Amed robots</option>
             </select>
           </label>
           <div class="eng-field inline"><span>Robots</span>
@@ -565,17 +565,17 @@
               <button class="btn btn-mic" id="micBtn" title="Speak the run schedule (Web Speech API)">Mic</button>
             </div>
           </label>
-          <p class="eng-hint"><span class="m">gemini-4-hydrogen</span> parses the schedule</p>
+          <p class="eng-hint">Write it the way you would tell a colleague.</p>
           <label class="eng-field"><span>Scenario</span>
             <select id="scenarioSelect" title="Shift turbulence and STAT burst intensity">
               <option value="routine">Routine</option>
-              <option value="chaotic" selected>Chaotic (STAT surges)</option>
-              <option value="surge">Mass surge</option>
-              <option value="catastrophic_mci">Catastrophic MCI (Clinicians at Bedside)</option>
-              <option value="robot_failure">Robot failure</option>
+              <option value="chaotic" selected>Busy day (urgent orders)</option>
+              <option value="surge">Patient surge</option>
+              <option value="catastrophic_mci">Mass-casualty event</option>
+              <option value="robot_failure">A robot breaks down</option>
               <option value="pharmacy_delay">Pharmacy delay</option>
               <option value="staffing_gap">Staffing gap</option>
-              <option value="crash_cart_missing">Crash cart missing</option>
+              <option value="crash_cart_missing">Crash cart not ready</option>
             </select>
           </label>
           <div class="eng-row2">
@@ -583,11 +583,11 @@
               <select id="shiftHours"><option value="4">4 h</option><option value="8" selected>8 h</option><option value="12">12 h</option></select>
             </label>
             <label class="eng-field"><span>Seed</span>
-              <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll the random seed">Seed #42</button>
+              <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll the random seed">Variation #42</button>
             </label>
           </div>
           <label class="eng-check" title="Pre-position supplies from advance EMS signals">
-            <input type="checkbox" id="emsPrepositionToggle" /><span>EMS pre-stage signals</span>
+            <input type="checkbox" id="emsPrepositionToggle" /><span>Ambulance pre-alerts</span>
           </label>
         </section>
 
@@ -595,8 +595,8 @@
           <h3 class="eng-sec-h"><span class="n">04</span>Run</h3>
           <button class="btn btn-accent eng-run" id="runSimBtn" disabled>Run shift</button>
           <div class="eng-row2">
-            <button class="btn" id="stressSweepBtn" disabled title="15-run stress sweep: 1–3 robots × 5 seeds">Stress sweep</button>
-            <button type="button" class="btn" id="calibrateBtn" title="Calibrate speeds and handoff time from mock-drill observations">Calibrate</button>
+            <button class="btn" id="stressSweepBtn" disabled title="15-run stress sweep: 1–3 robots × 5 seeds">Test bad days</button>
+            <button type="button" class="btn" id="calibrateBtn" title="Calibrate speeds and handoff time from mock-drill observations">Match a drill</button>
           </div>
           <div class="calibration-panel hidden" id="calibrationPanel">
             <label class="calibration-field"><span>Nurse m/s</span><input type="number" id="calNurseSpeed" value="1.2" step="0.05" min="0.2" max="5.0" /></label>
@@ -646,6 +646,7 @@
                 <span><span class="dot-swatch" style="background:var(--nurse);"></span>Nurses, with robots</span>
               </div>
               <span class="badge ok" id="robotCountBadge">1 robot</span>
+              <span class="badge sim-robot-name" id="simRobotName"></span>
               <span class="badge nurse hidden" id="statSurgeBadge">0 STAT</span>
             </div>
             <div class="sim-stats">
@@ -689,7 +690,7 @@
       <!-- Right: results -->
       <aside class="eng-panel eng-right" aria-label="Results">
         <section class="eng-sec">
-          <h3 class="eng-sec-h"><span class="n">R1</span>Nurses only vs. with robots</h3>
+          <h3 class="eng-sec-h"><span class="n">R1</span>Shift report</h3>
           <div id="cmpEngine"><p class="eng-empty">Run a shift to compare.</p></div>
           <div class="eng-kpi">
             <span class="badge saved" id="savedBadge">Saved: 0.0 nurse min</span>
@@ -708,17 +709,25 @@
         </section>
 
         <section class="eng-sec hidden" id="custodyLogSection">
-          <h3 class="eng-sec-h"><span class="n">R3</span>Custody log <span class="badge ok" id="custodyCountBadge">0 handoffs</span></h3>
+          <h3 class="eng-sec-h"><span class="n">R3</span>Delivery log <span class="badge ok" id="custodyCountBadge">0 handoffs</span></h3>
           <div class="custody-log" id="custodyLogBody"></div>
         </section>
 
         <section class="eng-sec hidden" id="worldModelSection">
-          <h3 class="eng-sec-h"><span class="n">R4</span>Stress sweep</h3>
+          <h3 class="eng-sec-h"><span class="n">R4</span>Test bad days</h3>
           <div class="bar-head">
             <span class="badge saved" id="tippingPointBadge">Tipping point</span>
-            <button type="button" class="btn sm hidden" id="downloadAarBtn">After-action .md</button>
+            <button type="button" class="btn sm hidden" id="downloadAarBtn">Download report</button>
           </div>
           <div class="sweep-grid" id="worldModelBody"></div>
+        </section>
+
+        <section class="eng-sec hidden" id="unitDelegationSection">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h3 class="eng-sec-h"><span class="n">R4b</span>Floor-Plan Delegation &amp; Custom R&amp;D</h3>
+            <span class="badge ok" id="delegationSummaryBadge">0 mobile · 0 stationary · 0 R&amp;D gaps</span>
+          </div>
+          <div id="unitDelegationBody" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; font-size:12px;"></div>
         </section>
 
         <section class="eng-sec hidden" id="assumptionsBar">
@@ -859,6 +868,9 @@
       worldModelSection: document.getElementById("worldModelSection"),
       tippingPointBadge: document.getElementById("tippingPointBadge"),
       worldModelBody: document.getElementById("worldModelBody"),
+      unitDelegationSection: document.getElementById("unitDelegationSection"),
+      delegationSummaryBadge: document.getElementById("delegationSummaryBadge"),
+      unitDelegationBody: document.getElementById("unitDelegationBody"),
       emsPrepositionToggle: document.getElementById("emsPrepositionToggle"),
       downloadAarBtn: document.getElementById("downloadAarBtn"),
       assumptionsBar: document.getElementById("assumptionsBar"),
@@ -1130,9 +1142,9 @@
             <label>
               <span>Autonomy Tier</span>
               <select data-edit-room-tier="${escapeHtml(room.id)}">
-                <option value="autonomous" ${tier === "autonomous" ? "selected" : ""}>autonomous</option>
-                <option value="assisted" ${tier === "assisted" ? "selected" : ""}>assisted</option>
-                <option value="human_only" ${tier === "human_only" ? "selected" : ""}>human_only</option>
+                <option value="autonomous" ${tier === "autonomous" ? "selected" : ""}>robot-ready</option>
+                <option value="assisted" ${tier === "assisted" ? "selected" : ""}>needs hand-off</option>
+                <option value="human_only" ${tier === "human_only" ? "selected" : ""}>staff only</option>
               </select>
             </label>
           </div>
@@ -2524,7 +2536,7 @@
       if (state.bgImage) {
         ctx.drawImage(state.bgImage, 0, 0, imgW, imgH);
         // Subtle architectural vinyl sheen & 60cm grout micro-grid without opaque neon blocks
-        ctx.fillStyle = "rgba(248, 250, 252, 0.08)";
+        ctx.fillStyle = "rgba(251, 248, 245, 0.62)";
         ctx.fillRect(0, 0, imgW, imgH);
         ctx.strokeStyle = "rgba(100, 116, 139, 0.10)";
         ctx.lineWidth = 1;
@@ -3100,16 +3112,15 @@
           // Floating 3D room badge
           const cPx = roomCentroids.get(room.id);
           const cWorld = this.pxToWorld(cPx.x, cPx.y);
-          const tierTag = state.colorMode === "autonomy" && !isCorridor
-            ? ` · ${(room.autonomy_tier || "auto").replace("human_only", "HUMAN").replace("autonomous", "AUTO").replace("assisted", "ASSIST")}`
-            : "";
           const sprite = makeLabelSprite(
-            (room.label || room.id) + tierTag,
-            subtle ? "rgba(15, 23, 42, 0.78)" : "rgba(15, 23, 42, 0.92)",
+            room.label || room.id,
+            subtle ? "rgba(23, 38, 43, 0.72)" : "rgba(23, 38, 43, 0.9)",
             isSelected ? "#ffffff" : style.stroke,
-            subtle ? 0.64 : 0.78
+            subtle ? 0.56 : 0.66
           );
-          sprite.position.set(cWorld.x, wallHeight + (subtle ? 1.4 : 1.9), cWorld.z);
+          // Corridors get a lower, smaller tag so room names read first.
+          if (isCorridor) sprite.scale.multiplyScalar(0.8);
+          sprite.position.set(cWorld.x, wallHeight + (isCorridor ? 0.6 : subtle ? 1.2 : 1.6), cWorld.z);
           this.staticGroup.add(sprite);
         });
 
@@ -3308,7 +3319,8 @@
         const activeProfile = evProfileId || state.robotProfileId;
         const poolKey = (ghost ? "ghost:" : "") + (role === "nurse" ? `nurse:${key}` : `robot:${key}:${activeProfile}`);
         if (this.agentPool.has(poolKey)) return this.agentPool.get(poolKey);
-        const tag = role === "nurse" ? "Nurse" : ("R" + (agentId.replace(/\D/g, "") || "1"));
+        const ROBOT_SHORT = { aethon_tug: "TUG", diligent_moxi: "MOXI", pneumatic_tube: "TUBE", amed_prestage_pod: "CART", amed_narrow_rover: "SLIM", amed_compounding_arm: "ARM", amed_surgical_prep_bot: "PREP", alta_transfer_robot: "ALTA" };
+        const tag = role === "nurse" ? "Nurse" : `${ROBOT_SHORT[activeProfile] || "BOT"} ${agentId.replace(/\D/g, "") || "1"}`;
         const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, activeProfile);
         mesh.traverse((obj) => {
           if (obj.isMesh) {
@@ -4319,7 +4331,9 @@
             opt.textContent = p.name;
             els.planSelect.appendChild(opt);
           });
-          state.selectedPlanId = state.plans[0].id;
+          const preferred = state.plans.find((p) => p.id === "st_elizabeths_ward") || state.plans[0];
+          state.selectedPlanId = preferred.id;
+          els.planSelect.value = preferred.id;
           await previewSelectedPlan();
           if (typeof wtSyncPlans === "function") wtSyncPlans();
         }
@@ -4474,11 +4488,12 @@
         const conf = state.verification.mean_confidence != null
           ? Math.round(state.verification.mean_confidence * 100) + "% conf"
           : "verified";
-        els.verifyBadge.textContent = `Kept ${state.verification.kept ?? state.unitMap.rooms.length} · Dropped ${state.verification.dropped ?? 0} · ${conf}`;
+        els.verifyBadge.textContent = `Checked: ${state.verification.kept ?? state.unitMap.rooms.length} kept, ${state.verification.dropped ?? 0} removed`;
         els.verifyBadge.classList.remove("hidden");
 
         els.runSimBtn.disabled = false;
         if (els.stressSweepBtn) els.stressSweepBtn.disabled = false;
+        loadUnitDelegation(state.unitMap);
         setStep(2);
         startRevealAnimation();
       } catch (err) {
@@ -4980,6 +4995,40 @@
       });
     }
 
+    async function loadUnitDelegation(unitMap) {
+      if (!unitMap || !els.unitDelegationSection) return;
+      try {
+        const res = await fetch("/api/unit-audit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(unitMap),
+        });
+        if (!res.ok) return;
+        const rep = await res.json();
+        els.unitDelegationSection.classList.remove("hidden");
+        els.delegationSummaryBadge.textContent = `${rep.mobile_count} mobile · ${rep.stationary_count} stationary · ${rep.human_only_count} human · ${rep.rd_gap_count} R&D gaps`;
+        const delHtml = rep.delegations.slice(0, 8).map((d) => {
+          const tag = d.delegation_type === "stationary_robot" ? "Stationary" : d.delegation_type === "mobile_robot" ? "Mobile" : d.delegation_type === "rd_gap" ? "R&D Gap" : "Human";
+          return `<div><strong>${d.room_label}</strong> [${tag}]: ${d.assigned_system}</div>`;
+        }).join("");
+        const rdHtml = rep.custom_rd_concepts.map((c) =>
+          `<div><strong>${c.title}</strong> (${c.system_type}, ${c.estimated_bom_usd}): ${c.target_problem}</div>`
+        ).join("");
+        els.unitDelegationBody.innerHTML = `
+          <div style="padding:8px 10px; border:1px solid var(--line); border-radius:6px;">
+            <div style="font-weight:700; margin-bottom:4px;">Room-by-Room Autonomy Delegation</div>
+            ${delHtml}
+          </div>
+          <div style="padding:8px 10px; border:1px solid var(--line); border-radius:6px;">
+            <div style="font-weight:700; margin-bottom:4px;">Custom R&amp;D Solutions Pipeline</div>
+            ${rdHtml}
+          </div>
+        `;
+      } catch (_) {
+        // Non-blocking audit panel
+      }
+    }
+
     async function coordinateEmtDispatch() {
       const transcript = els.emtTranscriptInput ? els.emtTranscriptInput.value.trim() : "";
       if (!transcript) {
@@ -5264,7 +5313,7 @@
     if (els.rerollSeedBtn) {
       els.rerollSeedBtn.addEventListener("click", () => {
         state.seed = Math.floor(Math.random() * 9000) + 1000;
-        els.rerollSeedBtn.textContent = `🎲 #${state.seed}`;
+        els.rerollSeedBtn.textContent = `Variation #${state.seed}`;
         if (state.unitMap) {
           runSimulation();
         }
@@ -5502,7 +5551,7 @@
           let fellBack = false;
           state.unitMap = null;
           if (wt.mode === "live") {
-            wtSay(`Reading the drawing: every room, what it is used for, and every doorway with its width. <span class="m">gemini-4-neon</span>`);
+            wtSay(`Reading the drawing: every room, what it is used for, and every doorway with its width.`);
             await extractUnit(false);
             wtCheck(token);
             if (!state.unitMap) {
@@ -5575,7 +5624,7 @@
         title: "Describe the shift",
         async run(token) {
           wtFocus(els.runDesc);
-          wtSay(`A charge nurse types or says what a normal shift looks like. Amed turns it into a delivery schedule. <span class="m">gemini-4-hydrogen</span>`);
+          wtSay(`A charge nurse types or says what a normal shift looks like. Amed turns it into a delivery schedule.`);
           await wtTypeInto(els.runDesc, WT_RUNS, token);
           await wtWait(1600, token);
         },
@@ -5599,7 +5648,7 @@
           await wtWait(6500, token);
           wtFocus(els.dualView);
           wtSay(`Both runs play on the same floor plan. Faded red: the nurses-only shift. Solid: the shift with robots. Same unit, same orders.
-            <span class="r">Nurse walking ${n0.toFixed(0)} → ${n1.toFixed(0)} min · ${c.nurse_minutes_saved.toFixed(0)} min back per shift · ${c.robot_assisted.total_trips} robot trips</span>`);
+            <span class="r">Nurse delivery trips ${buildComparison(c).a.nurseTrips} → ${buildComparison(c).b.nurseTrips} · ${buildComparison(c).b.robotTrips} handled by robots</span>`);
           await wtWait(9000, token);
         },
       },
@@ -5773,59 +5822,50 @@
     function fmtInt(n) { return Math.round(n).toLocaleString("en-US"); }
     function fmtMoney(n) { return (n < 0 ? "−$" : "$") + fmtInt(Math.abs(n)); }
 
+    const RUN_LABEL = { pharmacy_pickup: "Pharmacy pickups", lab_specimen_drop: "Lab specimens", supply_restock: "Supply restocks" };
+
+    function tripsByType(c) {
+      const rows = {};
+      const add = (summary, key) => summary.events.forEach((e) => {
+        const t = e.run_type || "other";
+        rows[t] = rows[t] || { before: 0, robot: 0, nurse: 0 };
+        if (key === "before") rows[t].before++;
+        else if (e.agent_role === "nurse") rows[t].nurse++;
+        else rows[t].robot++;
+      });
+      add(c.nurse_only, "before");
+      add(c.robot_assisted, "after");
+      return rows;
+    }
+
     function cmpVerdict(m) {
       const share = m.a.nurseTrips > 0 ? Math.round((m.tripsOff / m.a.nurseTrips) * 100) : 0;
       const waitNote = m.b.avgWait > m.a.avgWait + 1
-        ? ` The trade-off: a delivery waits about ${Math.round(m.b.avgWait - m.a.avgWait)} s longer on average, because a nurse fetching it right away is quicker than waiting for a robot.`
-        : ` Deliveries arrive as fast as when nurses fetched them.`;
-      return `Robots took <b>${m.tripsOff} of ${m.a.nurseTrips} delivery trips</b> (${share}%) off nurses this shift: <b>${m.a.nurseKm.toFixed(1)} km</b> of walking down to ${m.b.nurseKm.toFixed(2)} km.${waitNote}`;
+        ? ` The trade-off: a delivery waits about ${Math.round(m.b.avgWait - m.a.avgWait)} s longer, because a nurse fetching it right away is quicker than waiting for a robot.`
+        : "";
+      return `Robots took <b>${m.tripsOff} of ${m.a.nurseTrips} deliveries</b> (${share}%) this shift, so nurses stayed with patients instead of leaving the floor ${m.tripsOff} times.${waitNote}`;
     }
 
-    function cmpRows(m) {
-      const row = (label, x, y, unit, better) => {
-        const cls = x === y ? "" : better(x, y) ? "up" : "dn";
-        return `<tr><th>${label}</th><td>${x}${unit}</td><td class="${cls}">${y}${unit}</td></tr>`;
-      };
-      const lower = (x, y) => parseFloat(y) < parseFloat(x);
-      const higher = (x, y) => parseFloat(y) > parseFloat(x);
+    function cmpTypeTable(c) {
+      const rows = tripsByType(c);
       return `
         <table class="cmp-table">
-          <thead><tr><th></th><th>Nurses only</th><th>With ${m.robots} robot${m.robots === 1 ? "" : "s"}</th></tr></thead>
-          <tbody>
-            ${row("Delivery trips nurses make", m.a.nurseTrips, m.b.nurseTrips, "", lower)}
-            ${row("Distance nurses walk", m.a.nurseKm.toFixed(2), m.b.nurseKm.toFixed(2), " km", lower)}
-            ${row("Nurse time spent walking", m.a.nurseMin.toFixed(0), m.b.nurseMin.toFixed(0), " min", lower)}
-            ${row("Trips handled by robots", m.a.robotTrips, m.b.robotTrips, "", higher)}
-            ${row("Average wait for a delivery", m.a.avgWait.toFixed(0), m.b.avgWait.toFixed(0), " s", lower)}
-            ${row("Longest wait", m.a.maxWait.toFixed(0), m.b.maxWait.toFixed(0), " s", lower)}
+          <thead><tr><th>Who did the deliveries</th><th>Nurses only</th><th>With robots</th></tr></thead>
+          <tbody>${Object.entries(rows).map(([t, r]) => `
+            <tr><th>${escapeHtml(RUN_LABEL[t] || t.replace(/_/g, " "))}</th>
+              <td>${r.before} by nurses</td>
+              <td class="up">${r.robot} by robots${r.nurse ? `<small>${r.nurse} still by nurses</small>` : ""}</td></tr>`).join("")}
           </tbody>
         </table>`;
     }
 
-    function cmpYear(m) {
-      return `
-        <div class="cmp-year">
-          <div><span class="v">${fmtInt(m.year.trips)}</span><span class="k">trips off nurses a year</span></div>
-          <div><span class="v">${fmtInt(m.year.km)} km</span><span class="k">less walking a year</span></div>
-          <div><span class="v">${fmtInt(m.year.hours)} h</span><span class="k">nurse time back a year</span></div>
-        </div>`;
-    }
-
-    function cmpCost(m) {
-      const value = m.year.hours * cmpInputs.nurseRate;
-      const cost = m.robots * cmpInputs.leasePerMonth * 12;
-      return `
-        <div class="cmp-cost">
-          <div class="cmp-cost-in">
-            <label>Nurse cost $/h <input type="number" min="0" step="1" data-cmp="nurseRate" value="${cmpInputs.nurseRate}" /></label>
-            <label>Lease $/robot/mo <input type="number" min="0" step="100" data-cmp="leasePerMonth" value="${cmpInputs.leasePerMonth}" /></label>
-          </div>
-          <div class="cmp-cost-out">
-            <div><span class="k">Nurse time freed / yr</span><span class="v">${fmtMoney(value)}</span></div>
-            <div><span class="k">${m.robots} robot lease${m.robots === 1 ? "" : "s"} / yr</span><span class="v">${fmtMoney(cost)}</span></div>
-          </div>
-          <p class="cmp-note">Counts walking time on this one unit only. A fleet shared across several units, or freed time spent on patient care, changes the math. Edit the rates to match your hospital.</p>
-        </div>`;
+    function reportFacts(c, m) {
+      const log = c.robot_assisted.custody_log || [];
+      const exceptions = log.filter((x) => x.flagged_uncollected).length;
+      const stat = Number(c.assumptions?.stat_trips) || 0;
+      const humanOnlyTrips = Number(c.assumptions?.human_only_trips) || m.b.nurseTrips;
+      const staffRooms = (state.unitMap?.rooms || []).filter((r) => r.autonomy_tier === "human_only" && r.type !== "corridor").map((r) => r.label || r.id);
+      return { log, exceptions, stat, humanOnlyTrips, staffRooms };
     }
 
     function renderComparisons() {
@@ -5834,15 +5874,49 @@
       const eng = document.getElementById("cmpEngine");
       if (!c) return;
       const m = buildComparison(c);
-      const ctx = `${escapeHtml(els.mapTitle?.textContent || "Sample unit")} · ${m.hours}-hour shift · ${escapeHtml(m.scenario.replace(/_/g, " "))} day · ${escapeHtml(m.robotName)}`;
+      const f = reportFacts(c, m);
+      const nameEl = document.getElementById("simRobotName");
+      if (nameEl) nameEl.textContent = `Robot: ${m.robotName}`;
+      const ctx = `${escapeHtml(els.mapTitle?.textContent || "Sample unit")} · ${m.hours}-hour shift · ${escapeHtml(m.scenario.replace(/_/g, " "))} · ${m.robots} × ${escapeHtml(m.robotName)}`;
+      const yearTrips = Math.round(m.year.trips).toLocaleString("en-US");
       if (land) {
         land.innerHTML = `
           <p class="cmp-ctx">${ctx}</p>
           <p class="cmp-verdict">${cmpVerdict(m)}</p>
-          <div class="cmp-grid">${cmpRows(m)}${cmpYear(m)}</div>`;
+          <div class="cmp-grid">${cmpTypeTable(c)}
+            <div class="cmp-year">
+              <div><span class="v">${Math.round((m.tripsOff / Math.max(1, m.a.nurseTrips)) * 100)}%</span><span class="k">of deliveries handled by robots</span></div>
+              <div><span class="v">${f.log.length}</span><span class="k">handoffs logged with who, when, where</span></div>
+              <div><span class="v">${yearTrips}</span><span class="k">trips a year handed to robots</span></div>
+            </div>
+          </div>`;
       }
       if (eng) {
-        eng.innerHTML = `<p class="cmp-verdict sm">${cmpVerdict(m)}</p>${cmpRows(m)}${cmpYear(m)}${cmpCost(m)}`;
+        eng.innerHTML = `
+          <div class="rpt">
+            <p class="rpt-ctx">${ctx}</p>
+            <p class="cmp-verdict sm">${cmpVerdict(m)}</p>
+            <h4>1 · Work handed to robots</h4>
+            ${cmpTypeTable(c)}
+            <h4>2 · Where robots do better</h4>
+            <ul>
+              <li><b>Every handoff is on record.</b> ${f.log.length} handoffs logged with who, when and where${f.exceptions ? `, ${f.exceptions} left uncollected over 10 min and flagged` : ", none left uncollected"}. Hand-carried deliveries leave no record.</li>
+              <li><b>No one leaves the floor to fetch.</b> ${m.tripsOff} fewer times a nurse steps away from patients this shift.</li>
+              ${f.stat ? `<li><b>Urgent orders keep moving.</b> ${f.stat} urgent orders were handled during the shift without pulling a nurse off the unit.</li>` : ""}
+            </ul>
+            <h4>3 · What still needs people</h4>
+            <ul>
+              <li>${m.b.nurseTrips} delivery trip${m.b.nurseTrips === 1 ? "" : "s"} stayed with nurses, where robots can't reach or the task needs a person.</li>
+              ${f.staffRooms.length ? `<li>Staff-only rooms: ${f.staffRooms.slice(0, 5).map(escapeHtml).join(", ")}.</li>` : ""}
+              <li>Bedside care, clinical decisions and anything unusual stay with staff.</li>
+            </ul>
+            <h4>4 · Where to put people instead</h4>
+            <ul>
+              <li>Bedside time in ${f.staffRooms.length ? escapeHtml(f.staffRooms.slice(0, 2).join(" and ")) : "patient rooms"}.</li>
+              <li>Admissions, discharges and family updates that get squeezed on busy shifts.</li>
+              <li>A float nurse for surges instead of a runner.</li>
+            </ul>
+          </div>`;
       }
     }
 
@@ -5969,11 +6043,6 @@
       ring.rotation.x = -Math.PI / 2;
       ring.position.set(bot.position.x, 0.06, bot.position.z);
       group.add(ring);
-      try {
-        const tag = makeLabelSprite(spec.station.label, "rgba(11, 110, 102, 0.92)", "#0b6e66", 0.6);
-        tag.position.set(bot.position.x, 4.2, bot.position.z);
-        group.add(tag);
-      } catch { /* label sprites are optional */ }
       return group;
     }
 
@@ -6081,7 +6150,13 @@
         if (this.robot) this.scene.remove(this.robot);
         const tag = design.name.replace(/^Amed\s+/i, "").split(/\s+/)[0].toUpperCase().slice(0, 6);
         this.robot = createRobot3D(tag, design.base_model);
-        this.robot.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        // Drop the simulator's name tag and selection ring: this view is about the hardware.
+        const decor = [];
+        this.robot.traverse((o) => {
+          if (o.isSprite || (o.geometry && o.geometry.type === "RingGeometry")) decor.push(o);
+          else if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
+        });
+        decor.forEach((o) => o.parent && o.parent.remove(o));
         const box = new THREE.Box3().setFromObject(this.robot);
         const size = box.getSize(new THREE.Vector3());
         const s = 2.6 / Math.max(size.x, size.y, size.z, 0.01);
@@ -6117,10 +6192,10 @@
       labEl("labConstraints").innerHTML = `
         <span><b>${c.narrowest_door_m ?? "?"} m</b> narrowest door</span>
         <span><b>${c.doors_under_0_90_m ?? 0}</b> doors too narrow for standard couriers</span>
-        <span><b>${c.rooms ?? "?"}</b> rooms · ${escapeHtml(String(c.room_types || ""))}</span>`;
+        <span><b>${c.rooms ?? "?"}</b> rooms · ${escapeHtml(String(c.room_types || "").replace(/_/g, " "))}</span>`;
       labEl("labSource").innerHTML = r.source === "gemini"
         ? `Designed by <span class="m">${escapeHtml(r.model)}</span>`
-        : `Amed reference designs, sized to this unit <span class="m">(offline)</span>`;
+        : `Reference designs sized to this unit`;
       picker.innerHTML = r.designs.map((d, i) => `
         <button type="button" class="lab-pick ${i === lab.idx ? "active" : ""}" data-lab-idx="${i}">
           <span class="n">${String(i + 1).padStart(2, "0")}</span>
@@ -6194,17 +6269,27 @@
       btn.disabled = true;
       btn.textContent = "Designing…";
       labEl("labSource").textContent = "Reading the unit's doors and rooms…";
+      const post = (live) => fetch(`/api/robot-designs?live=${live}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state.unitMap),
+      });
       try {
-        const res = await fetch("/api/robot-designs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(state.unitMap),
-        });
+        // Show reference designs sized to this unit right away...
+        const res = await post(false);
         if (!res.ok) throw new Error((await res.json()).detail || "Design failed");
         lab.report = await res.json();
         lab.idx = 0;
         lab.unitKey = state.unitVersion;
         labRender();
+        labEl("labSource").innerHTML = `Reference designs sized to this unit · <span class="m">custom designs on the way…</span>`;
+        // ...then ask Gemini for designs specific to this unit and swap them in if they arrive.
+        const unitKey = state.unitVersion;
+        post(true).then((r) => r.ok ? r.json() : null).then((live) => {
+          if (!live || unitKey !== state.unitVersion) return;
+          if (live.source === "gemini") { lab.report = live; lab.idx = 0; labRender(); }
+          else labEl("labSource").innerHTML = `Reference designs sized to this unit`;
+        }).catch(() => { labEl("labSource").innerHTML = `Reference designs sized to this unit`; });
       } catch (err) {
         labEl("labSource").textContent = `Could not design robots: ${err.message}`;
       } finally {

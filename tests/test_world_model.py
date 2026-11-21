@@ -101,7 +101,7 @@ def test_robotics_catalog_struggles_and_endpoints():
     from hospital_twin.simulator import simulate_shift
     from hospital_twin.schemas import ScheduledRun
 
-    assert len(ROBOT_CATALOG) == 8
+    assert len(ROBOT_CATALOG) == 9
     assert len(HOSPITAL_STRUGGLES) >= 4
     assert get_robot_profile("amed_narrow_rover").clearance_m == 0.72
     assert get_robot_profile("amed_surgical_prep_bot").id == "amed_surgical_prep_bot"
@@ -123,9 +123,9 @@ def test_robotics_catalog_struggles_and_endpoints():
     client = TestClient(app)
     robots_res = client.get("/api/robots")
     assert robots_res.status_code == 200
-    assert len(robots_res.json()["robots"]) == 8
+    assert len(robots_res.json()["robots"]) == 9
     robots = robots_res.json()["robots"]
-    assert len(robots) == 8
+    assert len(robots) == 9
     for r in robots:
         for field in ("design_notes", "cost_estimate_usd", "why_helpful", "dimensions"):
             assert isinstance(r.get(field), str) and r[field].strip(), f"{r.get('id')} missing {field}"
@@ -302,3 +302,25 @@ def test_emt_dispatch_coordination_and_surgical_prep():
     assert urgent_body["acuity"] == "urgent"
     assert urgent_body["eta_minutes"] == 7.5
     assert urgent_body["coordinated_tasks"]
+
+
+def test_floorplan_delegation_mobile_stationary_and_rd():
+    from hospital_twin.app import app
+    from hospital_twin.world_model import analyze_floorplan_delegation
+
+    unit = _make_sample_unit()
+    for d in unit.doors:
+        if d.id == "d4":
+            d.width_m = 0.80
+            d.robot_passable = False
+
+    rep = analyze_floorplan_delegation(unit)
+    assert rep.stationary_count >= 2  # medication_room, lab_drop, nurse_station
+    assert rep.mobile_count >= 1
+    assert rep.rd_gap_count >= 1
+    assert len(rep.custom_rd_concepts) == 3
+
+    client = TestClient(app)
+    res = client.post("/api/unit-audit", json=unit.model_dump())
+    assert res.status_code == 200
+    assert res.json()["stationary_count"] >= 2
