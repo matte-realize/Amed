@@ -1370,7 +1370,7 @@
       const group = new THREE.Group();
       const spanX = bounds.maxX - bounds.minX;
       const spanZ = bounds.maxZ - bounds.minZ;
-      if (spanX < 3.5 || spanZ < 3.5 || room.type === "corridor") return group;
+      if (spanX < 3.5 || spanZ < 3.5) return group;
 
       const cx = (bounds.minX + bounds.maxX) / 2;
       const cz = (bounds.minZ + bounds.maxZ) / 2;
@@ -1380,6 +1380,54 @@
 
       const obs = new Set((room.obstacles || []).map((s) => s.toLowerCase()));
       const rType = room.type;
+      const tier = room.autonomy_tier || "assisted";
+
+      // 0. Robotic Solution Hardware Props (AMR Lane / Courier Dock / Threshold Locker)
+      if (rType === "corridor") {
+        const laneLen = Math.max(spanX, spanZ) * 0.88;
+        const alongX = spanX >= spanZ;
+        const lane = new THREE.Mesh(
+          new THREE.BoxGeometry(alongX ? laneLen : 1.1, 0.06, alongX ? 1.1 : laneLen),
+          new THREE.MeshStandardMaterial({
+            color: 0x10b981,
+            emissive: 0x10b981,
+            emissiveIntensity: 0.45,
+            transparent: true,
+            opacity: 0.55,
+          })
+        );
+        lane.position.set(cx, 0.08, cz);
+        group.add(lane);
+        return group;
+      }
+
+      if (tier === "assisted") {
+        // Glowing Courier Docking Pad near doorway-facing side
+        const pad = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.15, 1.25, 0.14, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0x0d9488,
+            emissive: 0x14b8a6,
+            emissiveIntensity: 0.7,
+            roughness: 0.3,
+          })
+        );
+        pad.position.set(cx + Math.min(2.2, spanX * 0.18), 0.12, cz - awaySign * Math.min(2.6, spanZ * 0.22));
+        group.add(pad);
+      } else if (tier === "human_only") {
+        // Corridor-Threshold Drop Locker outside clinical zone
+        const locker = new THREE.Mesh(
+          new THREE.BoxGeometry(1.4, 1.35, 0.9),
+          new THREE.MeshStandardMaterial({
+            color: 0xf59e0b,
+            emissive: 0xf59e0b,
+            emissiveIntensity: 0.35,
+            roughness: 0.35,
+          })
+        );
+        locker.position.set(cx - Math.min(2.4, spanX * 0.2), 0.72, cz - awaySign * Math.min(3.2, spanZ * 0.3));
+        group.add(locker);
+      }
 
       // 1. Hospital Bed + Vital Signs Monitor (patient_room or "bed")
       if (rType === "patient_room" || obs.has("bed")) {
@@ -3158,9 +3206,13 @@
           state.viewMode = "2d";
         }
         applyViewVisibility();
-        // Auto-reconstruct the demo unit in 3D on boot so the 3D twin is immediately active
+        // Auto-reconstruct the demo unit in 3D and run robotic shift simulation on boot
         if (!state.unitMap && state.plans.length > 0) {
-          extractUnit(true);
+          extractUnit(true).then(() => {
+            if (state.unitMap && !state.comparison) {
+              runShift();
+            }
+          });
         }
       });
     });
