@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import base64
+import concurrent.futures
 import io
 import json
 import os
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -265,8 +267,9 @@ def verify_unit_map(
     unit_map: UnitMap,
     confidence_threshold: float = 0.6,
     re_extract_threshold: float = 0.35,
+    max_workers: int = 8,
 ) -> tuple[UnitMap, dict]:
-    """Verify each extracted room and door crop using the Decisions API.
+    """Verify each extracted room and door crop in parallel using the Decisions API.
 
     Low-confidence items in [re_extract_threshold, confidence_threshold) are
     re-extracted against their cropped region; items below re_extract_threshold
@@ -274,18 +277,22 @@ def verify_unit_map(
     """
     with Image.open(image_path) as img:
         rgb_img = img.convert("RGB")
+        room_crops = [(room, crop_room_region(rgb_img, room)) for room in unit_map.rooms]
+        door_crops = [(door, crop_door_region(rgb_img, door)) for door in unit_map.doors]
 
     decision_client = _get_client(api_version="v1beta")
     neon_client: Optional[genai.Client] = None
+    neon_lock = threading.Lock()
 
-    kept_rooms: list[Room] = []
-    kept_doors: list[Door] = []
-    dropped = 0
-    re_extracted = 0
-    confidences: list[float] = []
+    def _get_neon_client() -> genai.Client:
+        nonlocal neon_client
+        with neon_lock:
+            if neon_client is None:
+                neon_client = _get_client()
+            return neon_client
 
-    for room in unit_map.rooms:
-        crop = crop_room_region(rgb_img, room)
+    def _verify_room(item: tuple[Room, Image.Image]) -> tuple[Optional[Room], Optional[float], bool]:
+        room, crop = item
         b64_crop = _image_to_base64_png(crop)
         res = decision_client.decisions.create(
             model=DECISION_MODEL,
@@ -303,16 +310,13 @@ def verify_unit_map(
                 }
             },
         )
-        answer = res.answers["is_room_label"]
-        p_valid = float(answer.noul)
+        p_valid = float(res.answers["is_room_label"].noul)
 
         if p_valid >= confidence_threshold:
-            kept_rooms.append(room.model_copy(update={"confidence": round(p_valid, 4)}))
-            confidences.append(p_valid)
-        elif p_valid >= re_extract_threshold:
-            if neon_client is None:
-                neon_client = _get_client()
-            patched = _re_extract_room_label(crop, room, neon_client)
+            return room.model_copy(update={"confidence": round(p_valid, 4)}), p_valid, False
+
+        if p_valid >= re_extract_threshold:
+            patched = _re_extract_room_label(crop, room, _get_neon_client())
             if patched is not None:
                 re_res = decision_client.decisions.create(
                     model=DECISION_MODEL,
@@ -332,22 +336,12 @@ def verify_unit_map(
                 )
                 re_p = float(re_res.answers["is_room_label"].noul)
                 if re_p >= confidence_threshold:
-                    kept_rooms.append(patched.model_copy(update={"confidence": round(re_p, 4)}))
-                    confidences.append(re_p)
-                    re_extracted += 1
-                    continue
-            dropped += 1
-        else:
-            dropped += 1
+                    return patched.model_copy(update={"confidence": round(re_p, 4)}), re_p, True
 
-    surviving_room_ids = {r.id for r in kept_rooms}
+        return None, None, False
 
-    for door in unit_map.doors:
-        if not all(rid in surviving_room_ids for rid in door.rooms_connected):
-            dropped += 1
-            continue
-
-        crop = crop_door_region(rgb_img, door)
+    def _verify_door(item: tuple[Door, Image.Image]) -> tuple[Optional[Door], Optional[float]]:
+        door, crop = item
         b64_crop = _image_to_base64_png(crop)
         res = decision_client.decisions.create(
             model=DECISION_MODEL,
@@ -365,14 +359,44 @@ def verify_unit_map(
                 }
             },
         )
-        answer = res.answers["is_door"]
-        p_door = float(answer.noul)
-
+        p_door = float(res.answers["is_door"].noul)
         if p_door >= confidence_threshold:
-            kept_doors.append(door.model_copy(update={"confidence": round(p_door, 4)}))
-            confidences.append(p_door)
-        else:
-            dropped += 1
+            return door.model_copy(update={"confidence": round(p_door, 4)}), p_door
+        return None, None
+
+    kept_rooms: list[Room] = []
+    kept_doors: list[Door] = []
+    dropped = 0
+    re_extracted = 0
+    confidences: list[float] = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        room_futures = [executor.submit(_verify_room, item) for item in room_crops]
+        door_futures = [executor.submit(_verify_door, item) for item in door_crops]
+
+        for fut in room_futures:
+            verified_room, conf, was_re_extracted = fut.result()
+            if verified_room is not None and conf is not None:
+                kept_rooms.append(verified_room)
+                confidences.append(conf)
+                if was_re_extracted:
+                    re_extracted += 1
+            else:
+                dropped += 1
+
+        surviving_room_ids = {r.id for r in kept_rooms}
+
+        for fut in door_futures:
+            verified_door, conf = fut.result()
+            if (
+                verified_door is not None
+                and conf is not None
+                and all(rid in surviving_room_ids for rid in verified_door.rooms_connected)
+            ):
+                kept_doors.append(verified_door)
+                confidences.append(conf)
+            else:
+                dropped += 1
 
     mean_conf = sum(confidences) / len(confidences) if confidences else 0.0
     verified_unit = UnitMap(

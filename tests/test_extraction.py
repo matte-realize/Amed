@@ -175,23 +175,26 @@ class TestMockedGenAIExtractionAndVerification(unittest.TestCase):
             ],
         )
 
-        # Decisions sequence:
-        # 1. room_101 -> 0.92 (keep)
-        # 2. nurse_station -> 0.45 (re-extract trigger)
-        # 3. re-verified nurse_station -> 0.88 (keep, re_extracted += 1)
-        # 4. hallucinated_room -> 0.12 (drop)
-        # 5. door_101 -> 0.85 (keep)
-        # (door_bad is auto-dropped because hallucinated_room was dropped)
-        decision_responses = [
-            SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.92, confidence=0.92)}),
-            SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.45, confidence=0.55)}),
-            SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.88, confidence=0.88)}),
-            SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.12, confidence=0.88)}),
-            SimpleNamespace(answers={"is_door": SimpleNamespace(noul=0.85, confidence=0.85)}),
-        ]
+        def fake_decision_create(*, model, input, questions):
+            text = input[1]["text"]
+            if "is_room_label" in questions:
+                if "Room 101" in text:
+                    return SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.92, confidence=0.92)})
+                if "Station?" in text:
+                    return SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.45, confidence=0.55)})
+                if "Nurse Station" in text:
+                    return SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.88, confidence=0.88)})
+                if "Helipad" in text:
+                    return SimpleNamespace(answers={"is_room_label": SimpleNamespace(noul=0.12, confidence=0.88)})
+            if "is_door" in questions:
+                if "door_101" in text:
+                    return SimpleNamespace(answers={"is_door": SimpleNamespace(noul=0.85, confidence=0.85)})
+                if "door_bad" in text:
+                    return SimpleNamespace(answers={"is_door": SimpleNamespace(noul=0.80, confidence=0.80)})
+            raise AssertionError(f"Unexpected decision request: {text}")
 
         mock_decision_client = MagicMock()
-        mock_decision_client.decisions.create.side_effect = decision_responses
+        mock_decision_client.decisions.create.side_effect = fake_decision_create
 
         mock_neon_client = MagicMock()
         mock_neon_client.models.generate_content.return_value = SimpleNamespace(
