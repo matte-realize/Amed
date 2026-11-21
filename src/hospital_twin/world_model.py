@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import re
+from uuid import uuid4
 
+from hospital_twin.robotics import ROBOT_CATALOG
 from hospital_twin.routing import DEFAULT_ROBOT_CLEARANCE_M
 from hospital_twin.schedule_parser import parse_run_description
 from hospital_twin.schemas import (
@@ -15,7 +18,9 @@ from hospital_twin.schemas import (
     CalibrationResult,
     CoalitionSurgeReport,
     CoalitionSurgeRequest,
+    CoordinatedRobotTask,
     DoorOverride,
+    EmtCoordinationResponse,
     EmsArrivalSignal,
     EmsDispatchPlan,
     RoomOverride,
@@ -430,6 +435,168 @@ def plan_ems_prestaging(unit: UnitMap, signal: EmsArrivalSignal) -> EmsDispatchP
         incident_id=signal.incident_id,
         pre_stage_minutes=pre_stage_minutes,
         scheduled_runs=scheduled_runs,
+        summary=summary,
+    )
+
+
+def _extract_eta_minutes(transcript: str, eta_minutes: float | None) -> float:
+    """Resolve EMS ETA in minutes from explicit override or transcript text."""
+    if eta_minutes is not None:
+        return round(max(1.0, float(eta_minutes)), 1)
+    match = re.search(
+        r"\beta\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(?:min|mins|minutes|m)?\b",
+        transcript,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        match = re.search(
+            r"\b(\d+(?:\.\d+)?)\s*(?:min|mins|minutes)\b",
+            transcript,
+            flags=re.IGNORECASE,
+        )
+    if match:
+        return round(max(1.0, float(match.group(1))), 1)
+    return 5.0
+
+
+def _detect_acuity(transcript: str) -> str:
+    """Classify incoming EMT transcript into routine, urgent, or critical acuity."""
+    lower = transcript.lower()
+    if re.search(r"\b(trauma|arrest|stat|surgery|or|crash|bleeding|code)\b", lower):
+        return "critical"
+    if re.search(r"\b(chest|stroke|iv|oxygen)\b", lower):
+        return "urgent"
+    return "routine"
+
+
+def _make_robot_task(
+    robot_id: str,
+    task: str,
+    target_room: str,
+    eta_ready_s: float,
+) -> CoordinatedRobotTask:
+    profile = ROBOT_CATALOG[robot_id]
+    return CoordinatedRobotTask(
+        robot_id=profile.id,
+        robot_name=profile.name,
+        task=task,
+        target_room=target_room,
+        eta_ready_s=round(eta_ready_s, 1),
+    )
+
+
+def coordinate_emt_dispatch(
+    unit: UnitMap,
+    transcript: str,
+    eta_minutes: float | None = None,
+) -> EmtCoordinationResponse:
+    """Translate an incoming EMT radio transcript into coordinated multi-robot pre-staging tasks."""
+    if not unit.rooms:
+        raise ValueError("UnitMap contains no rooms.")
+    if not transcript.strip():
+        raise ValueError("EMT transcript must not be empty.")
+
+    resolved_eta = _extract_eta_minutes(transcript, eta_minutes)
+    acuity = _detect_acuity(transcript)
+    eta_seconds = resolved_eta * 60.0
+    freq_minutes = max(5, int(round(resolved_eta)))
+
+    non_corridor = next((r.id for r in unit.rooms if r.type != "corridor"), unit.rooms[0].id)
+    nurse_station = _find_room_id(unit, "nurse_station", ("nurse", "station", "hub"), non_corridor)
+    med_room = _find_room_id(unit, "medication_room", ("med", "pharm", "rx"), nurse_station)
+    supply_room = _find_room_id(unit, "supply_room", ("supply", "stor", "closet"), nurse_station)
+    lab_drop = _find_room_id(unit, "lab_drop", ("lab", "spec", "path"), nurse_station)
+    trauma_or_room = _find_room_id(
+        unit,
+        "patient_room",
+        ("or", "operating", "trauma", "surg", "resus"),
+        nurse_station,
+    )
+
+    lower = transcript.lower()
+    needs_meds = bool(re.search(r"\b(med|meds|epi|epinephrine|iv|pharm|pharmacy)\b", lower))
+    needs_lab = bool(re.search(r"\b(blood|lab|specimen|specimens)\b", lower))
+    needs_surgical = bool(
+        re.search(r"\b(surgery|surgical|or|trauma|cart|supply|supplies|crash|arrest)\b", lower)
+    )
+
+    coordinated_tasks: list[CoordinatedRobotTask] = []
+    run_segments: list[str] = []
+
+    if needs_meds:
+        coordinated_tasks.append(
+            _make_robot_task(
+                "amed_compounding_arm",
+                "Compound & stage STAT IV / emergency medications",
+                med_room,
+                min(eta_seconds * 0.45, 90.0),
+            )
+        )
+        run_segments.append(
+            f"pharmacy pickup from {med_room} to {nurse_station} every {freq_minutes} minutes"
+        )
+
+    if needs_lab:
+        coordinated_tasks.append(
+            _make_robot_task(
+                "amed_narrow_rover",
+                "Shuttle STAT blood type/crossmatch & specimen kits via narrow corridors",
+                lab_drop,
+                min(eta_seconds * 0.55, 110.0),
+            )
+        )
+        run_segments.append(
+            f"lab specimen drop from {nurse_station} to {lab_drop} every {freq_minutes} minutes"
+        )
+
+    if needs_surgical:
+        coordinated_tasks.append(
+            _make_robot_task(
+                "amed_surgical_prep_bot",
+                "Stage sterile surgical/trauma instrument tray and OR turnover kit",
+                trauma_or_room,
+                min(eta_seconds * 0.65, 130.0),
+            )
+        )
+        coordinated_tasks.append(
+            _make_robot_task(
+                "amed_prestage_pod",
+                "Pre-stage crash cart, defibrillator, and emergency trauma supplies",
+                nurse_station,
+                min(eta_seconds * 0.50, 100.0),
+            )
+        )
+        run_segments.append(
+            f"supply restock from {supply_room} to {nurse_station} every {freq_minutes} minutes"
+        )
+
+    if not coordinated_tasks:
+        coordinated_tasks.append(
+            _make_robot_task(
+                "amed_prestage_pod",
+                "Pre-stage intake readiness cart and baseline supplies",
+                nurse_station,
+                min(eta_seconds * 0.60, 120.0),
+            )
+        )
+        run_segments.append(
+            f"supply restock from {supply_room} to {nurse_station} every {freq_minutes} minutes"
+        )
+
+    incident_id = f"EMT-{uuid4().hex[:6].upper()}"
+    run_description = "; ".join(run_segments)
+    robot_list = ", ".join(t.robot_id for t in coordinated_tasks)
+    summary = (
+        f"Incident {incident_id} [{acuity.upper()}], ETA {resolved_eta:.1f}m: "
+        f"dispatched {len(coordinated_tasks)} coordinated task(s) ({robot_list}) "
+        f"ahead of EMS arrival."
+    )
+    return EmtCoordinationResponse(
+        incident_id=incident_id,
+        acuity=acuity,  # type: ignore[arg-type]
+        eta_minutes=resolved_eta,
+        run_description=run_description,
+        coordinated_tasks=coordinated_tasks,
         summary=summary,
     )
 

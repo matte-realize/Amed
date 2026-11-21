@@ -208,6 +208,7 @@
             <button type="button" class="showcase-pill" data-showcase-robot="amed_prestage_pod">Amed pre-stage</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_narrow_rover">Amed slim rover</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_compounding_arm">6-DOF arm</button>
+            <button type="button" class="showcase-pill" data-showcase-robot="amed_surgical_prep_bot">Surgical prep</button>
           </div>
         </div>
 
@@ -417,6 +418,13 @@
           <button class="btn" id="resetBtn" title="Reset simulation view">Reset</button>
           <span class="engine-status-badge" id="engineStatusBadge"><span class="engine-status-dot"></span>3D engine ready</span>
         </div>
+        <div id="emtDispatchBar" style="flex-basis: 100%; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--rule);">
+          <span class="mono" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3);">EMT Radio</span>
+          <button type="button" class="btn sm" id="emtMicBtn" title="Listen to live EMT radio via Web Speech API">Listen EMT Radio</button>
+          <input type="text" id="emtTranscriptInput" value="Medic 14 inbound ETA 4 minutes, trauma patient, start IV fluids, stat epinephrine, blood draw, and prep OR surgical tray" placeholder="Live EMT dispatch transcript..." style="flex: 1 1 320px; min-width: 220px; font-size: 12px; padding: 4px 8px; border: 1px solid var(--rule-2); background: var(--paper-2); color: var(--ink);" />
+          <button type="button" class="btn sm btn-primary" id="emtDispatchBtn">Coordinate Fleet</button>
+          <span id="emtDispatchResult" class="mono" style="font-size: 11px; color: var(--accent);"></span>
+        </div>
       </header>
 
       <!-- Left: properties -->
@@ -450,6 +458,7 @@
               <option value="amed_prestage_pod">Amed pre-stage cart</option>
               <option value="amed_narrow_rover">Amed slim rover 0.72 m</option>
               <option value="amed_compounding_arm">Amed 6-DOF compounding arm</option>
+              <option value="amed_surgical_prep_bot">Amed surgical-prep cobot</option>
               <option value="mixed_fleet">All robotics (mixed fleet)</option>
             </select>
           </label>
@@ -727,6 +736,10 @@
       fallbackBtn: document.getElementById("fallbackBtn"),
       runDesc: document.getElementById("runDesc"),
       micBtn: document.getElementById("micBtn"),
+      emtMicBtn: document.getElementById("emtMicBtn"),
+      emtTranscriptInput: document.getElementById("emtTranscriptInput"),
+      emtDispatchBtn: document.getElementById("emtDispatchBtn"),
+      emtDispatchResult: document.getElementById("emtDispatchResult"),
       robotCountGroup: document.getElementById("robotCountGroup"),
       robotProfileSelect: document.getElementById("robotProfileSelect"),
       scenarioSelect: document.getElementById("scenarioSelect"),
@@ -2129,6 +2142,117 @@
         group.userData.armTurret = armTurret;
         group.userData.armShoulder = armShoulder;
         group.userData.armElbow = armElbow;
+      } else if (profileId === "amed_surgical_prep_bot") {
+        // Sterile OR Surgical-Prep Cobot: 4-wheel mobile base, white/teal pedestal column,
+        // stainless sterile instrument tray, dual articulated assist arms, overhead surgical ring light
+        const baseDeck = new THREE.Mesh(new THREE.BoxGeometry(1.56, 0.28, 1.72), whiteMat);
+        baseDeck.position.y = 0.28;
+        group.add(baseDeck);
+        const baseSkirt = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.10, 1.82), darkMat);
+        baseSkirt.position.y = 0.14;
+        group.add(baseSkirt);
+        [[-0.78, 0.58], [0.78, 0.58], [-0.78, -0.58], [0.78, -0.58]].forEach(([wx, wz]) => {
+          addWheel(wx, 0.16, wz, 0.16, 0.11);
+        });
+
+        // Front sterile LiDAR/depth sensor strip
+        const sensorBar = new THREE.Mesh(
+          new THREE.BoxGeometry(0.72, 0.10, 0.08),
+          new THREE.MeshBasicMaterial({ color: 0x2dd4bf })
+        );
+        sensorBar.position.set(0, 0.30, 0.87);
+        group.add(sensorBar);
+
+        // Sterile white/teal pedestal column
+        const colBase = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.22, 24), tealMat);
+        colBase.position.set(0, 0.52, -0.18);
+        group.add(colBase);
+        const pedestalCol = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.32, 1.48, 24), whiteMat);
+        pedestalCol.position.set(0, 1.36, -0.18);
+        group.add(pedestalCol);
+        [0.92, 1.56, 1.98].forEach((ry) => {
+          const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.29, 0.06, 22), tealMat);
+          collar.position.set(0, ry, -0.18);
+          group.add(collar);
+        });
+
+        // Stainless sterile surgical instrument tray (cantilevered forward)
+        const trayBracket = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.10, 0.58), steelMat);
+        trayBracket.position.set(0, 1.24, 0.16);
+        group.add(trayBracket);
+        const trayPlate = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.06, 0.86), steelMat);
+        trayPlate.position.set(0, 1.30, 0.38);
+        group.add(trayPlate);
+        const sterileDrape = new THREE.Mesh(
+          new THREE.BoxGeometry(1.22, 0.03, 0.72),
+          new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.45, metalness: 0.08 })
+        );
+        sterileDrape.position.set(0, 1.34, 0.38);
+        group.add(sterileDrape);
+        // Sterile instrument silhouettes on tray
+        [-0.36, -0.12, 0.12, 0.36].forEach((ix, idx) => {
+          const inst = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.022, 0.018, 0.44 - (idx % 2) * 0.08, 10),
+            steelMat
+          );
+          inst.rotation.x = Math.PI / 2;
+          inst.position.set(ix, 1.37, 0.38);
+          group.add(inst);
+        });
+
+        // Dual articulated assist arms (left & right)
+        [-1, 1].forEach((side) => {
+          const sx = side * 0.42;
+          const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 14), tealMat);
+          shoulder.position.set(sx, 1.72, -0.16);
+          group.add(shoulder);
+
+          const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.56, 14), whiteMat);
+          upperArm.position.set(sx + side * 0.14, 1.56, 0.02);
+          upperArm.rotation.z = side * -0.45;
+          upperArm.rotation.x = 0.52;
+          group.add(upperArm);
+
+          const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.095, 12, 12), steelMat);
+          elbow.position.set(sx + side * 0.24, 1.44, 0.20);
+          group.add(elbow);
+
+          const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.48, 14), whiteMat);
+          forearm.position.set(sx + side * 0.16, 1.44, 0.42);
+          forearm.rotation.x = 1.48;
+          forearm.rotation.z = side * 0.28;
+          group.add(forearm);
+
+          const wrist = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.10, 12), tealMat);
+          wrist.rotation.x = Math.PI / 2;
+          wrist.position.set(sx + side * 0.08, 1.44, 0.66);
+          group.add(wrist);
+
+          [-0.045, 0.045].forEach((gx) => {
+            const finger = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.05, 0.14), steelMat);
+            finger.position.set(sx + side * 0.08 + gx, 1.44, 0.76);
+            group.add(finger);
+          });
+        });
+
+        // Overhead surgical ring light mast + ring housing + LED emitter
+        const lightMast = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.52, 14), steelMat);
+        lightMast.position.set(0, 2.26, -0.18);
+        group.add(lightMast);
+        const lightBoom = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.10, 0.68), whiteMat);
+        lightBoom.position.set(0, 2.52, 0.10);
+        group.add(lightBoom);
+        const ringHousing = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.075, 14, 32), steelMat);
+        ringHousing.rotation.x = Math.PI / 2;
+        ringHousing.position.set(0, 2.48, 0.42);
+        group.add(ringHousing);
+        const ringEmitter = new THREE.Mesh(
+          new THREE.TorusGeometry(0.46, 0.048, 12, 32),
+          new THREE.MeshBasicMaterial({ color: 0xe0f2fe })
+        );
+        ringEmitter.rotation.x = Math.PI / 2;
+        ringEmitter.position.set(0, 2.42, 0.42);
+        group.add(ringEmitter);
       } else {
         // Default: aethon_tug — Layered AMR base, 4 wheels, LiDAR turret, open-frame 3-module custodial tower
         const amrBase = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.38, 1.96), darkMat);
@@ -3350,6 +3474,7 @@
           amed_prestage_pod: "POD",
           amed_narrow_rover: "SLIM",
           amed_compounding_arm: "ARM",
+          amed_surgical_prep_bot: "SURG",
         };
         const mesh = createRobot3D(tagMap[profileId] || "BOT", profileId);
         if (mesh.userData.halo) mesh.remove(mesh.userData.halo);
@@ -3497,6 +3622,21 @@
         description: "6-DOF articulated sterile pharmacy compounding arm with dual parallel vial gripper and 3-axis wrist gimbal.",
         design_notes: "Heavy circular pedestal with leveling feet, rotating turret, exposed servo housings, internal cable conduit, and sterile vial gripper.",
         why_helpful: "Automates repetitive IV admixture and STAT vial preparation inside pharmacy cleanrooms.",
+      },
+      amed_surgical_prep_bot: {
+        id: "amed_surgical_prep_bot",
+        name: "Amed Surgical-Prep Cobot",
+        vendor: "Custom Amed",
+        is_custom: true,
+        speed_mps: 0.72,
+        clearance_m: 0.88,
+        compartments: 2,
+        handoff_seconds: 10,
+        dimensions: "92 cm L × 58 cm W × 165 cm H",
+        cost_estimate_usd: "~$85k–$110k custom build",
+        description: "Sterile OR surgical-prep cobot with stainless instrument tray, dual articulated assist arms, and overhead surgical ring light.",
+        design_notes: "4-wheel sterile mobile base, white/teal pedestal column, stainless sterile surgical instrument tray, dual articulated assist arms, and overhead surgical ring light.",
+        why_helpful: "Pre-stages sterile surgical trays and assists OR/trauma teams with rapid instrument handoffs before arrival.",
       },
     };
     let robotCatalogMap = { ...ROBOT_METADATA_FALLBACK };
@@ -4713,6 +4853,122 @@
         recognition.start();
       }
     });
+
+    // Live EMT Radio Web Speech API listener + Fleet Coordination
+    let emtRecognition = null;
+    if (SpeechRecognition && els.emtMicBtn && els.emtTranscriptInput) {
+      emtRecognition = new SpeechRecognition();
+      emtRecognition.continuous = false;
+      emtRecognition.interimResults = true;
+      emtRecognition.lang = "en-US";
+      emtRecognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        els.emtTranscriptInput.value = transcript.trim();
+      };
+      emtRecognition.onend = () => {
+        els.emtMicBtn.classList.remove("listening");
+        els.emtMicBtn.textContent = "Listen EMT Radio";
+      };
+      emtRecognition.onerror = () => {
+        els.emtMicBtn.classList.remove("listening");
+        els.emtMicBtn.textContent = "Listen EMT Radio";
+      };
+    }
+
+    if (els.emtMicBtn) {
+      els.emtMicBtn.addEventListener("click", () => {
+        if (!emtRecognition) {
+          showBanner("Web Speech API is not supported in this browser. Please type the EMT dispatch.", "info");
+          return;
+        }
+        if (els.emtMicBtn.classList.contains("listening")) {
+          emtRecognition.stop();
+        } else {
+          els.emtMicBtn.classList.add("listening");
+          els.emtMicBtn.textContent = "Listening...";
+          emtRecognition.start();
+        }
+      });
+    }
+
+    async function coordinateEmtDispatch() {
+      const transcript = els.emtTranscriptInput ? els.emtTranscriptInput.value.trim() : "";
+      if (!transcript) {
+        showBanner("Enter or speak an EMT radio dispatch first.", "error");
+        return;
+      }
+      if (!els.emtDispatchBtn) return;
+      hideBanner();
+      els.emtDispatchBtn.disabled = true;
+      els.emtDispatchBtn.textContent = "Coordinating...";
+      try {
+        const resp = await fetch("/api/emt-dispatch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transcript,
+            unit_map: state.unitMap || null,
+          }),
+        });
+        const res = await resp.json();
+        if (!resp.ok) throw new Error(res.detail || "EMT dispatch coordination failed.");
+
+        if (els.emtDispatchResult) {
+          const summary =
+            res.summary ||
+            res.preparation_summary ||
+            res.message ||
+            (Array.isArray(res.assignments)
+              ? res.assignments.map((a) => `${a.robot || a.role || "Robot"}: ${a.task || a.action || ""}`).join(" · ")
+              : "Fleet coordinated for incoming EMS.");
+          els.emtDispatchResult.textContent = summary;
+        }
+
+        setRobotProfile("mixed_fleet", false);
+
+        state.numRobots = 3;
+        if (els.robotCountGroup) {
+          els.robotCountGroup.querySelectorAll("button").forEach((b) => {
+            b.classList.toggle("active", Number(b.dataset.robots) === 3);
+          });
+        }
+
+        if (els.emsPrepositionToggle) {
+          els.emsPrepositionToggle.checked = true;
+        }
+
+        const isCritical = Boolean(
+          res.is_critical ||
+          res.critical ||
+          res.severity === "critical" ||
+          res.scenario_mode === "catastrophic_mci"
+        );
+        if (isCritical && els.scenarioSelect) {
+          els.scenarioSelect.value = "catastrophic_mci";
+          state.scenarioMode = "catastrophic_mci";
+        }
+
+        if (res.run_description && els.runDesc) {
+          els.runDesc.value = res.run_description;
+        }
+
+        if (state.unitMap) {
+          await runSimulation();
+        }
+      } catch (err) {
+        showBanner(err.message, "error");
+      } finally {
+        els.emtDispatchBtn.disabled = false;
+        els.emtDispatchBtn.textContent = "Coordinate Fleet";
+      }
+    }
+
+    if (els.emtDispatchBtn) {
+      els.emtDispatchBtn.addEventListener("click", coordinateEmtDispatch);
+    }
 
     els.robotCountGroup.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-robots]");

@@ -192,6 +192,33 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
         solves_problem="Patient handling and safe transfer",
         description="Patient-handling mobile platform for doorway clearance and corridor safety testing.",
     ),
+    "amed_surgical_prep_bot": RobotProfile(
+        id="amed_surgical_prep_bot",
+        name="Amed Surgical-Prep & OR Cobot",
+        vendor="Amed Custom",
+        is_custom=True,
+        speed_mps=0.95,
+        clearance_m=0.85,
+        length_m=0.95,
+        compartments=3,
+        handoff_seconds=10.0,
+        supported_runs=["supply_restock", "pharmacy_pickup"],
+        dimensions="95 cm L x 60 cm W x 145 cm H",
+        cost_estimate_usd="~$65k BOM target (sterile tray + dual assist arms)",
+        design_notes=(
+            "Sterile-grade mobile surgical-prep cobot with HEPA-filtered instrument tray, "
+            "dual articulated assist arms, and OR turnover beacon."
+        ),
+        why_helpful=(
+            "Stages sterile surgical kits, sutures, and meds ahead of incoming trauma/OR "
+            "cases so surgeons and OR teams start on the dot."
+        ),
+        solves_problem="OR turnover & surgical-prep delays",
+        description=(
+            "Sterile-grade mobile surgical-prep cobot with HEPA-filtered instrument tray "
+            "and dual articulated assist arms for OR turnover and trauma staging."
+        ),
+    ),
 }
 
 HOSPITAL_STRUGGLES: list[dict[str, str]] = [

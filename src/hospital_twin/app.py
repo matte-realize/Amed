@@ -24,6 +24,8 @@ from hospital_twin.schemas import (
     CalibrationResult,
     CoalitionSurgeReport,
     CoalitionSurgeRequest,
+    EmtCoordinationResponse,
+    EmtDispatchRequest,
     EmsArrivalSignal,
     EmsDispatchPlan,
     ReadinessReport,
@@ -154,6 +156,14 @@ async def eval_summary() -> dict[str, Any]:
         "num_plans": data.get("num_plans"),
         "aggregate": data.get("aggregate", {}),
     }
+
+
+@app.post("/api/robot-designs")
+async def robot_designs(unit: UnitMap) -> dict[str, Any]:
+    """Custom robot designs sized to this unit (Gemini 4 Carbon, deterministic fallback)."""
+    from hospital_twin.robot_designer import design_custom_robots
+
+    return design_custom_robots(unit).model_dump()
 
 
 @app.get("/api/plans")
@@ -401,6 +411,18 @@ async def ems_feed(req: EmsFeedRequest) -> EmsDispatchPlan:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"EMS pre-staging failed: {exc}") from exc
+
+
+@app.post("/api/emt-dispatch", response_model=EmtCoordinationResponse)
+async def emt_dispatch(req: EmtDispatchRequest) -> EmtCoordinationResponse:
+    from hospital_twin.world_model import coordinate_emt_dispatch
+
+    try:
+        return coordinate_emt_dispatch(req.unit_map, req.transcript, req.eta_minutes)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"EMT dispatch coordination failed: {exc}") from exc
 
 
 @app.post("/api/coalition-surge", response_model=CoalitionSurgeReport)

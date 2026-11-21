@@ -187,6 +187,29 @@ class EmsDispatchPlan(BaseModel):
     summary: str
 
 
+class CoordinatedRobotTask(BaseModel):
+    robot_id: str
+    robot_name: str
+    task: str
+    target_room: str
+    eta_ready_s: float
+
+
+class EmtDispatchRequest(BaseModel):
+    unit_map: UnitMap
+    transcript: str = Field(min_length=1)
+    eta_minutes: Optional[float] = None
+
+
+class EmtCoordinationResponse(BaseModel):
+    incident_id: str
+    acuity: Literal["routine", "urgent", "critical"]
+    eta_minutes: float
+    run_description: str
+    coordinated_tasks: list[CoordinatedRobotTask]
+    summary: str
+
+
 class CoalitionUnitInput(BaseModel):
     hospital_name: str
     unit_map: UnitMap
