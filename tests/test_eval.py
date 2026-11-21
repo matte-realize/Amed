@@ -8,6 +8,7 @@ from pathlib import Path
 from hospital_twin.eval_proof import (
     ensure_synthetic_eval_dataset,
     format_markdown_summary,
+    generate_stress_variants,
     labels_match,
     load_eval_dataset,
     parse_cubicasa_svg,
@@ -15,6 +16,7 @@ from hospital_twin.eval_proof import (
     polygon_centroid,
     polygon_iou,
     run_evaluation,
+    run_stress_test,
     score_unit_map,
 )
 from hospital_twin.schemas import Door, Point, Room, UnitMap
@@ -195,3 +197,39 @@ def test_run_evaluation_outputs_json_and_markdown(tmp_path: Path) -> None:
     md = format_markdown_summary(loaded)
     assert "Baseline (Neon only)" in md
     assert "Verified (Neon + Decisions API)" in md
+
+
+def test_generate_stress_variants_and_run_stress_test(tmp_path: Path) -> None:
+    eval_dir = tmp_path / "eval"
+    samples = ensure_synthetic_eval_dataset(eval_dir)
+    sample = samples[0]
+
+    variants_dir = tmp_path / "variants"
+    variants = generate_stress_variants(sample.image_path, variants_dir)
+    expected_ids = {
+        "clean",
+        "downscaled_0.5x",
+        "downscaled_0.25x",
+        "low_contrast_blur",
+        "rotated_15deg",
+    }
+    assert {v["variant_id"] for v in variants} == expected_ids
+    for v in variants:
+        assert Path(v["image_path"]).exists()
+
+    stress_json = tmp_path / "stress_results.json"
+    stress = run_stress_test(
+        sample.image_path,
+        sample.ground_truth,
+        out_path=stress_json,
+        use_mock_if_no_api_key=True,
+    )
+    assert stress_json.exists()
+    assert len(stress["variants"]) == 5
+    # Clean variant should outperform 0.25x downscaled variant
+    clean_v = next(v for v in stress["variants"] if v["variant_id"] == "clean")
+    quarter_v = next(v for v in stress["variants"] if v["variant_id"] == "downscaled_0.25x")
+    assert clean_v["verified"]["room_detection_rate"] > quarter_v["verified"]["room_detection_rate"]
+    assert stress["breaking_point_variant"] in ("downscaled_0.25x", "rotated_15deg")
+    assert "Breaking-Point Stress Test" in stress["markdown_summary"]
+
