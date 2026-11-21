@@ -4528,7 +4528,7 @@
             opt.textContent = p.name;
             els.planSelect.appendChild(opt);
           });
-          const preferred = state.plans.find((p) => p.id === "st_elizabeths_ward") || state.plans[0];
+          const preferred = state.plans.find((p) => p.id === "icu_wing") || state.plans[0];
           state.selectedPlanId = preferred.id;
           els.planSelect.value = preferred.id;
           await previewSelectedPlan();
