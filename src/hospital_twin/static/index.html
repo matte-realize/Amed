@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amed — 3D Hospital Unit Twin</title>
+  <title>Amed — Hospital Logistics World Model</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Cpath d='M14 7h4v7h7v4h-7v7h-4v-7H7v-4h7V7z' fill='%23ffffff'/%3E%3Ccircle cx='24' cy='8' r='3' fill='%235eead4'/%3E%3C/svg%3E" />
   <script type="importmap">
   {
     "imports": {
@@ -1062,105 +1063,224 @@
       margin-top: 3px;
       line-height: 1.35;
     }
+
+    /* Clean Light-Clinical Overrides for Amed Landing & Target Aims */
+    .amed-hero-wrap {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+      color: var(--text) !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 24px 18px 24px !important;
+    }
+    .amed-hero-top {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: 20px !important;
+      align-items: start !important;
+    }
+    @media (max-width: 980px) {
+      .amed-hero-top { grid-template-columns: 1fr !important; }
+    }
+    .amed-eyebrow {
+      color: var(--primary) !important;
+      background: var(--primary-soft) !important;
+      border: none !important;
+    }
+    .amed-hero-title {
+      color: var(--text) !important;
+      font-size: clamp(22px, 2.5vw, 30px) !important;
+      letter-spacing: -0.03em !important;
+    }
+    .amed-hero-sub {
+      color: var(--muted) !important;
+      max-width: 620px !important;
+    }
+    .amed-targets-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .amed-target-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .amed-target-num {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 12px;
+      display: grid;
+      place-items: center;
+    }
+    .btn-launch {
+      background: var(--primary) !important;
+      color: #fff !important;
+      box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25) !important;
+    }
+    .btn-collapse-hero {
+      background: var(--surface) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
+    }
+    .amed-section-label {
+      color: var(--muted) !important;
+    }
+    .struggle-card {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    }
+    .struggle-stat { color: var(--nurse) !important; }
+    .struggle-title { color: var(--text) !important; }
+    .struggle-desc, .struggle-meta { color: var(--muted) !important; }
+    .btn-simulate-struggle {
+      background: var(--surface-alt) !important;
+      color: var(--primary) !important;
+      border: 1px solid var(--border) !important;
+    }
+    .btn-simulate-struggle:hover {
+      background: var(--primary-soft) !important;
+      border-color: var(--primary) !important;
+      color: var(--primary) !important;
+    }
+    .fleet-card {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text) !important;
+    }
+    .fleet-card.active {
+      background: #f0fdfa !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 0 1px var(--primary) !important;
+    }
+    .fleet-card-tag {
+      background: var(--surface-alt) !important;
+      color: var(--muted) !important;
+      border: 1px solid var(--border) !important;
+    }
+    .fleet-card-tag.custom {
+      background: var(--amber-soft) !important;
+      color: #b45309 !important;
+      border-color: #fde68a !important;
+    }
+    .fleet-card-name { color: var(--text) !important; }
+    .fleet-card-spec { color: var(--muted) !important; }
   </style>
 </head>
 <body>
-  <!-- Amed Landing Hero & Problem-Driven Section -->
+  <!-- Amed Market Research & Target Aims -->
   <section class="amed-hero-wrap" id="amedLandingHero">
     <div class="amed-hero-inner">
       <div class="amed-hero-top">
         <div class="amed-pitch-block">
-          <div class="amed-eyebrow">Amed · Hospital World Model</div>
-          <h1 class="amed-hero-title">Hospital World Model — Build a 3D twin from any floor plan, test existing &amp; custom robotics, and prove reliability on the hospital's worst day.</h1>
-          <p class="amed-hero-sub">Upload a unit blueprint, inspect corridor clearances and autonomy zones in 3D, and benchmark nurse-only vs. robot-assisted logistics under STAT surges, pharmacy delays, and equipment bottlenecks.</p>
+          <div class="amed-eyebrow">Amed · Hospital Logistics Twin</div>
+          <h1 class="amed-hero-title">Test hospital robots on your floor plan before you buy or deploy.</h1>
+          <p class="amed-hero-sub">Upload any unit floor plan, check doorway clearances in 3D, and measure how much nurse walking a courier robot saves under real shift surges.</p>
+          <div class="amed-hero-actions" style="margin-top:6px;">
+            <button type="button" class="btn-launch" id="launchTwinBtn">Open Live 3D Twin ↓</button>
+            <button type="button" class="btn-collapse-hero" id="toggleHeroBodyBtn" aria-expanded="true">Hide Research</button>
+          </div>
         </div>
-        <div class="amed-hero-actions">
-          <button type="button" class="btn-launch" id="launchTwinBtn">Launch Interactive Twin ↓</button>
-          <button type="button" class="btn-collapse-hero" id="toggleHeroBodyBtn" aria-expanded="true">Collapse Brief</button>
+        <div class="amed-targets-box">
+          <div class="amed-section-label" style="margin-bottom:2px;">Target Aims</div>
+          <div class="amed-target-item"><span class="amed-target-num">1</span><span><strong>Give nurses time back:</strong> Move routine pharmacy, specimen, and supply trips onto couriers.</span></div>
+          <div class="amed-target-item"><span class="amed-target-num">2</span><span><strong>Catch building blockers early:</strong> Flag narrow doors and human-only zones before hardware arrives.</span></div>
+          <div class="amed-target-item"><span class="amed-target-num">3</span><span><strong>Test bad days first:</strong> Stress-test STAT surges, pharmacy stalls, and robot outages in simulation.</span></div>
         </div>
       </div>
 
       <div id="amedHeroBody" style="display:flex; flex-direction:column; gap:14px;">
         <div>
-          <div class="amed-section-label">Sourced Hospital Struggles — Click Any Failure Mode to Simulate on the 3D Twin</div>
+          <div class="amed-section-label">Market Research — Where Hospitals Lose Time Today (Click to Test Live)</div>
           <div class="struggles-grid">
             <article class="struggle-card">
               <div>
                 <div class="struggle-stat">30.1%</div>
                 <div class="struggle-title">Delayed Defibrillation</div>
-                <p class="struggle-desc">In-hospital cardiac arrests suffer &gt;2 min defibrillation delays when crash carts or AEDs are staged away from patient bays.</p>
+                <p class="struggle-desc">In-hospital cardiac arrests face delays when crash carts sit far from patient bays.</p>
               </div>
-              <div style="display:flex; flex-direction:column; gap:7px;">
-                <div class="struggle-meta">Scenario: Crash Cart Missing · Fleet: Amed Pre-Stage Cart</div>
-                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="crash_cart_missing" data-struggle-robot="amed_prestage_pod" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Simulate This Struggle</button>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <div class="struggle-meta">Test with: Amed Pre-Stage Cart</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="crash_cart_missing" data-struggle-robot="amed_prestage_pod" data-struggle-ems="true" data-struggle-runs="STAT crash cart pre-stage every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Test This Scenario →</button>
               </div>
             </article>
 
             <article class="struggle-card">
               <div>
                 <div class="struggle-stat">0.95 / min</div>
-                <div class="struggle-title">Pediatric Epinephrine Survival</div>
-                <p class="struggle-desc">Every minute of delay to first epinephrine dose drops odds of survival (aOR ~0.95/min) during congested pharmacy runs.</p>
+                <div class="struggle-title">Epinephrine Delay Risk</div>
+                <p class="struggle-desc">Each minute of delay to first epinephrine lowers survival odds during pharmacy bottlenecks.</p>
               </div>
-              <div style="display:flex; flex-direction:column; gap:7px;">
-                <div class="struggle-meta">Scenario: Pharmacy Delay · Fleet: Amed Slim Rover 0.72m</div>
-                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="pharmacy_delay" data-struggle-robot="amed_narrow_rover" data-struggle-ems="false" data-struggle-runs="STAT epinephrine &amp; pharmacy pickup every 15 minutes, lab specimen drop hourly">Simulate This Struggle</button>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <div class="struggle-meta">Test with: Amed Slim Rover (0.72m)</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="pharmacy_delay" data-struggle-robot="amed_narrow_rover" data-struggle-ems="false" data-struggle-runs="STAT epinephrine &amp; pharmacy pickup every 15 minutes, lab specimen drop hourly">Test This Scenario →</button>
               </div>
             </article>
 
             <article class="struggle-card">
               <div>
                 <div class="struggle-stat">$661k</div>
-                <div class="struggle-title">Avg Diagnostic Indemnity</div>
-                <p class="struggle-desc">Delayed lab specimen handoffs and missed diagnostic follow-ups drive high-severity malpractice indemnity claims.</p>
+                <div class="struggle-title">Diagnostic Delay Claims</div>
+                <p class="struggle-desc">Slow specimen handoffs and missed follow-ups drive high-severity diagnostic claims.</p>
               </div>
-              <div style="display:flex; flex-direction:column; gap:7px;">
-                <div class="struggle-meta">Scenario: Mass Surge · Fleet: Pneumatic Tube Hybrid</div>
-                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="surge" data-struggle-robot="pneumatic_tube" data-struggle-ems="false" data-struggle-runs="lab specimen drop every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Simulate This Struggle</button>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <div class="struggle-meta">Test with: Pneumatic Tube Hybrid</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="surge" data-struggle-robot="pneumatic_tube" data-struggle-ems="false" data-struggle-runs="lab specimen drop every 20 minutes, pharmacy pickup every 30 minutes, supply restock twice a shift">Test This Scenario →</button>
               </div>
             </article>
 
             <article class="struggle-card">
               <div>
                 <div class="struggle-stat">23 / 23</div>
-                <div class="struggle-title">Drain &amp; Utility Outbreaks</div>
-                <p class="struggle-desc">Hospital outbreak investigations linked 23/23 sink &amp; utility-route exposures to shared clinical/custodial traffic.</p>
+                <div class="struggle-title">Utility-Route Exposures</div>
+                <p class="struggle-desc">Outbreak reviews linked utility &amp; sink routes to shared clinical/custodial foot traffic.</p>
               </div>
-              <div style="display:flex; flex-direction:column; gap:7px;">
-                <div class="struggle-meta">Scenario: Staffing Gap · Fleet: Aethon TUG + Pod</div>
-                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="staffing_gap" data-struggle-robot="aethon_tug" data-struggle-ems="false" data-struggle-runs="supply restock every 45 minutes, lab specimen drop hourly, pharmacy pickup every 30 minutes">Simulate This Struggle</button>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <div class="struggle-meta">Test with: Aethon TUG + Pod</div>
+                <button type="button" class="btn-simulate-struggle" data-struggle-scenario="staffing_gap" data-struggle-robot="aethon_tug" data-struggle-ems="false" data-struggle-runs="supply restock every 45 minutes, lab specimen drop hourly, pharmacy pickup every 30 minutes">Test This Scenario →</button>
               </div>
             </article>
           </div>
         </div>
 
         <div>
-          <div class="amed-section-label">Robotics Fleet Selector — Existing Hospital Couriers &amp; Custom Amed Platforms</div>
+          <div class="amed-section-label">Robot Options — Existing Couriers &amp; Custom Amed Concepts</div>
           <div class="fleet-grid" id="landingFleetGrid">
             <button type="button" class="fleet-card active" data-robot-profile="aethon_tug">
               <span class="fleet-card-tag">Existing</span>
               <div class="fleet-card-name">Aethon TUG + Pod</div>
-              <div class="fleet-card-spec">AMR base + LiDAR puck + 3-bay custodial &amp; supply pod</div>
+              <div class="fleet-card-spec">0.76 m/s · 0.90m doors · 3-bay pod</div>
             </button>
             <button type="button" class="fleet-card" data-robot-profile="diligent_moxi">
               <span class="fleet-card-tag">Existing</span>
               <div class="fleet-card-name">Diligent Moxi</div>
-              <div class="fleet-card-spec">Slim base + vertical column + articulated arm + LED visor</div>
+              <div class="fleet-card-spec">0.90 m/s · 0.85m doors · cobot arm</div>
             </button>
             <button type="button" class="fleet-card" data-robot-profile="pneumatic_tube">
               <span class="fleet-card-tag">Existing</span>
               <div class="fleet-card-name">Pneumatic Tube Hybrid</div>
-              <div class="fleet-card-spec">High-speed specimen capsule transfer + last-meter courier</div>
+              <div class="fleet-card-spec">3.50 m/s · specimens &amp; meds only</div>
             </button>
             <button type="button" class="fleet-card" data-robot-profile="amed_prestage_pod">
               <span class="fleet-card-tag custom">Custom Amed</span>
               <div class="fleet-card-name">Amed Pre-Stage Cart</div>
-              <div class="fleet-card-spec">Wide 4-bay emergency cart + amber strobe beacon</div>
+              <div class="fleet-card-spec">1.10 m/s · 4-bay emergency staging</div>
             </button>
             <button type="button" class="fleet-card" data-robot-profile="amed_narrow_rover">
               <span class="fleet-card-tag custom">Custom Amed</span>
-              <div class="fleet-card-name">Amed Slim Rover 0.72m</div>
-              <div class="fleet-card-spec">Compact slim-chassis rover + dual specimen/med canisters</div>
+              <div class="fleet-card-name">Amed Slim Rover</div>
+              <div class="fleet-card-spec">0.85 m/s · fits 0.72m legacy doors</div>
             </button>
           </div>
         </div>
@@ -1172,10 +1292,16 @@
     <!-- Top Header -->
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">3D</div>
+        <div class="brand-mark" style="background:none; box-shadow:none; width:34px; height:34px;">
+          <svg viewBox="0 0 36 36" width="34" height="34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Amed Logo">
+            <rect width="36" height="36" rx="10" fill="#0f766e"/>
+            <path d="M16 9h4v7h7v4h-7v7h-4v-7H9v-4h7V9z" fill="#ffffff"/>
+            <circle cx="27" cy="9" r="3.5" fill="#5eead4"/>
+          </svg>
+        </div>
         <div>
           <span class="brand-title">Amed</span>
-          <span class="brand-sub">3D Hospital Unit Twin</span>
+          <span class="brand-sub">Hospital Logistics World Model</span>
         </div>
       </div>
 
@@ -3654,17 +3780,17 @@
         const recent = visible.slice(-24).reverse();
         els.custodyLogBody.innerHTML = recent.length
           ? recent.map((c) => {
-              const color = c.flagged_uncollected ? "#f87171" : c.action === "DELIVER" ? "#34d399" : "#93c5fd";
+              const color = c.flagged_uncollected ? "#e11d48" : c.action === "DELIVER" ? "#0f766e" : "#2563eb";
               const tag = c.flagged_uncollected ? "FLAG >10m" : c.action;
-              return `<div style="display:flex; gap:10px; padding:2px 6px; border-radius:4px; background:rgba(15,23,42,0.55); border-left:3px solid ${color};">
-                <span style="color:#94a3b8; min-width:56px;">${c.when_formatted}</span>
-                <span style="color:#e2e8f0; font-weight:600; min-width:66px;">${c.order_number}</span>
-                <span style="color:${color}; font-weight:600; min-width:86px;">${tag}</span>
-                <span style="color:#cbd5e1; min-width:120px;">${c.who}</span>
-                <span style="color:#94a3b8;">@ ${c.where} (${c.run_type.replace(/_/g, " ")})</span>
+              return `<div style="display:flex; gap:10px; padding:4px 8px; border-radius:6px; background:var(--surface-alt); border:1px solid var(--border); border-left:3px solid ${color};">
+                <span style="color:var(--muted); min-width:56px;">${c.when_formatted}</span>
+                <span style="color:var(--text); font-weight:600; min-width:66px;">${c.order_number}</span>
+                <span style="color:${color}; font-weight:700; min-width:86px;">${tag}</span>
+                <span style="color:var(--text); min-width:120px;">${c.who}</span>
+                <span style="color:var(--muted);">@ ${c.where} (${c.run_type.replace(/_/g, " ")})</span>
               </div>`;
             }).join("")
-          : `<div style="color:#64748b;">Waiting for first robot handoff...</div>`;
+          : `<div style="color:var(--muted);">Waiting for first robot handoff...</div>`;
       }
     }
 
@@ -3976,10 +4102,20 @@
         els.scrubber.max = Math.floor(data.nurse_only.shift_duration_s);
 
         els.assumptionsList.innerHTML = "";
-        Object.entries(data.assumptions || {}).forEach(([k, v]) => {
+        const a = data.assumptions || {};
+        const prettyChips = [
+          a.robot_profile_name ? `Fleet: ${a.robot_profile_name}` : null,
+          a.nurse_speed_mps != null ? `Nurse: ${a.nurse_speed_mps} m/s` : null,
+          a.robot_speed_mps != null ? `Robot: ${a.robot_speed_mps} m/s` : null,
+          a.handoff_seconds != null ? `Handoff: ${a.handoff_seconds}s` : null,
+          a.robot_clearance_m != null ? `Min Door: ${a.robot_clearance_m}m` : null,
+          a.meters_per_pixel != null ? `Scale: ${a.meters_per_pixel} m/px` : null,
+          a.shift_hours != null ? `Shift: ${a.shift_hours}h` : null,
+        ].filter(Boolean);
+        prettyChips.forEach((label) => {
           const chip = document.createElement("span");
           chip.className = "assumption-chip";
-          chip.textContent = `${k.replace(/_/g, " ")}: ${v}`;
+          chip.textContent = label;
           els.assumptionsList.appendChild(chip);
         });
 
@@ -4041,18 +4177,18 @@
         rep.autonomy_plan.forEach((a) => { planCounts[a.category] = (planCounts[a.category] || 0) + 1; });
 
         els.worldModelBody.innerHTML = `
-          <div style="background:rgba(15,23,42,0.55); padding:8px; border-radius:6px;">
-            <div style="font-weight:700; margin-bottom:4px; color:#93c5fd;">Fleet Sweep (${rep.runs_evaluated} parallel runs)</div>
+          <div style="background:var(--surface-alt); border:1px solid var(--border); padding:10px 12px; border-radius:8px;">
+            <div style="font-weight:700; margin-bottom:4px; color:var(--primary);">Fleet Sweep (${rep.runs_evaluated} runs)</div>
             ${sweepHtml}
           </div>
-          <div style="background:rgba(15,23,42,0.55); padding:8px; border-radius:6px;">
-            <div style="font-weight:700; margin-bottom:4px; color:#fcd34d;">Ranked Bottlenecks</div>
+          <div style="background:var(--surface-alt); border:1px solid var(--border); padding:10px 12px; border-radius:8px;">
+            <div style="font-weight:700; margin-bottom:4px; color:#b45309;">Top Bottlenecks</div>
             ${bottleneckHtml}
           </div>
-          <div style="background:rgba(15,23,42,0.55); padding:8px; border-radius:6px;">
-            <div style="font-weight:700; margin-bottom:4px; color:#34d399;">Autonomy Plan &amp; After-Action</div>
+          <div style="background:var(--surface-alt); border:1px solid var(--border); padding:10px 12px; border-radius:8px;">
+            <div style="font-weight:700; margin-bottom:4px; color:var(--text);">Action Plan</div>
             <div>Use Robot: ${planCounts.use_robot} · Redesign: ${planCounts.redesign_process} · Keep Human: ${planCounts.keep_human}</div>
-            <div style="margin-top:4px; color:#94a3b8;">${rep.after_action_summary}</div>
+            <div style="margin-top:4px; color:var(--muted);">${rep.after_action_summary}</div>
           </div>
         `;
       } catch (err) {

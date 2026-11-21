@@ -1,19 +1,32 @@
-# Amed — 3D Hospital Unit Twin (Gemini 4 NYC Hackathon)
+# Amed — Hospital Logistics World Model
 
-Built completely from scratch during the **Gemini 4 NYC Hackathon (Nov 21, 2026)** for **Element 119**.
+Amed converts any hospital unit floor plan and facility specification into an interactive 3D digital twin. Operations teams and robotics engineers use it to test existing and custom courier platforms, catch doorway and layout blockers early, and stress-test nurse vs. robot workflows before deploying hardware.
 
-> "Nurses spend part of every shift walking supplies around the unit. Give us a floor plan, and we show what changes when robots take those trips."
+> *"Nurses spend part of every shift walking supplies around the unit. Give us a floor plan, and we show what changes when robots take those trips."*
 
-## Model Jobs & Pipeline
-Three Gemini 4 models carry distinct jobs (Carbon omitted to stay within the 4-hour build window):
-1. **Gemini 4 Neon (`gemini-4-neon`)**: Extracts rooms (`label`, `type`, `polygon`, `obstacles`, `autonomy_tier`, `autonomy_reason`) and doors (`position`, `rooms_connected`, `width_m`, `robot_passable`) from a floor plan image into `unit.json`.
-2. **Decisions API (`gemini-decision-1`)**: Verifies each extracted room and door crop in parallel (`ThreadPoolExecutor`) with calibrated confidence; re-extracts or drops low-confidence items into `verified_unit.json`.
-3. **Gemini 4 Hydrogen (`gemini-4-hydrogen`)**: Parses spoken or typed shift run descriptions (e.g., *"pharmacy pickup every 30 minutes, specimens hourly, supply restock twice a shift"*) into structured `ScheduledRun` items.
-4. **NetworkX + SimPy**: Converts `verified_unit.json` into a weighted meter route graph and simulates nurse-only (`1.2 m/s`) vs. 1–3 courier robots (`0.8 m/s`) over an 8-hour shift.
-5. **Interactive 3D Twin (Three.js + 2D fallback)**: Renders extruded 3D rooms, interior fixtures (`bed`, `desk`, `med_cart`, `shelf`), doorway arches, **Autonomy Zone** overlays (`Autonomous` / `Assisted` / `Human-Only`), and animated 3D nurse & robot figures side-by-side.
+## Core Capabilities
 
-## Proof: Live Extraction Evaluation (10 Unseen CubiCasa5K Plans)
-Evaluated live against 10 real, unseen architectural floor plans from `CubiCasa5K` (`Tristan12138/cubicasa5k-skv4` test split, `data/eval/cubicasa_10/`):
+1. **Floor Plan & Facility Spec Extraction (`gemini-4-neon` + `gemini-decision-1`)**
+   - Extracts rooms (`label`, `type`, `polygon`, `obstacles`, `autonomy_tier`) and doorways (`position`, `rooms_connected`, `width_m`, `robot_passable`) from floor plan images and optional `.pdf` / `.txt` / `.csv` facility specs.
+   - Verifies extracted room and door crops in parallel via the Decisions API (`gemini-decision-1`), re-extracting or pruning low-confidence detections into `verified_unit.json`.
+2. **Natural-Language & Voice Run Schedules (`gemini-4-hydrogen`)**
+   - Parses spoken (Web Speech API) or typed logistics routines (e.g., *"pharmacy pickup every 30 minutes, specimens hourly, supply restock twice a shift"*) into structured `ScheduledRun` schedules.
+3. **Existing & Custom Robotics Simulation (`NetworkX` + `SimPy`)**
+   - Compares **Nurse-Only** (`1.2 m/s`) vs. **1–3 Courier Robots** across 5 platforms:
+     - **Existing:** `Aethon TUG + 3-Bay Pod` (`0.76 m/s`, `0.90m` clearance), `Diligent Moxi Cobot` (`0.90 m/s`, `0.85m`), `Pneumatic Tube Hybrid` (`3.50 m/s`, specimens/meds).
+     - **Custom Amed Concepts:** `Amed Pre-Stage Cart` (`1.10 m/s`, 4-bay emergency staging), `Amed Slim Rover` (`0.85 m/s`, `0.72m` narrow-door clearance).
+   - Models 20s badge-and-unlock handoffs, 3-compartment pod batching, doorway clearance fit checks, live **Custody Log** tracking, and `>10 min` uncollected delivery flagging.
+4. **World Model Stress Sweeps & Calibration**
+   - Stress-test modes: `routine`, `chaotic`, `surge`, `robot_failure`, `pharmacy_delay`, `staffing_gap`, `crash_cart_missing`, plus `EMS Pre-Stage` advance signal modeling.
+   - Multi-seed fleet sweeps (`POST /api/stress-test`) locate tipping points, rank bottlenecks, generate an **Autonomy Plan** (`use_robot`, `redesign_process`, `keep_human`), and export Markdown After-Action Reports.
+   - Mock-drill calibration (`POST /api/calibrate`), live staff room/door editing (`POST /api/review-unit`), NEMSIS-style EMS arrival adapter (`POST /api/ems-feed`), and regional coalition surge balancing (`POST /api/coalition-surge`).
+5. **Interactive 3D Twin (Three.js + 2D Canvas Fallback)**
+   - Renders extruded 3D rooms, clinical equipment (hospital beds with IV poles, curved nurse stations, Pyxis-style med cabinets, supply racks, lab stations), red/green doorway fit checks, distinct 3D robot meshes, and articulated 3D nurses side-by-side.
+
+## Validation & Benchmarks
+
+### Unseen Floor Plan Extraction (`data/eval/cubicasa_10/`)
+Evaluated against 10 unseen architectural floor plans from `CubiCasa5K` (`Tristan12138/cubicasa5k-skv4` test split):
 
 | Metric | Baseline (Neon only) | Verified (Neon + Decisions API) | Delta |
 | --- | ---: | ---: | ---: |
@@ -22,13 +35,10 @@ Evaluated live against 10 real, unseen architectural floor plans from `CubiCasa5
 | Door Precision | 95.0% | 100.0% | +5.0 pp |
 | Mean Room IoU | 0.797 | 0.793 | -0.004 |
 
-### What Failed & What We Changed
-- **Coordinate Frame Mismatch (fixed in `2d7119c`):** Initial eval scored 17.9% room detection because `cubicasa5k-skv4` ground-truth polygons are in a `1024.0` reference frame while the PNGs are ~`256×335` px. Scaling by `max(w, h) / frame` revealed Neon's true `100.0%` room recall and `0.797` mean IoU.
-- **Over-Pruning Unlabeled Rooms (fixed in `bcc0185`):** Decisions API initially dropped valid rooms (75.6% → 83.5% after fix) when asked to verify hospital-style labels against residential/unlabeled plans. Switching the check to structural room validity recovered +7.9 pp room recall while preserving `100.0%` door precision.
-- **Remaining Breaking Points:** On low-res (`~256×335`) CubiCasa5K thumbnails, small door crops lose wall-arc context so Decisions API conservatively rejects ~30% of true doors; handwritten or unscaled plans without a reference width require manual `meters_per_pixel` calibration.
+- **Key Fixes:** Resolved `1024.0` reference-frame scaling mismatch (`2d7119c`) and switched Decisions API room checks to structural validity (`bcc0185`), preserving `100.0%` door precision.
+- **Known Limits:** Low-resolution (`~256×335`) thumbnails lose wall-arc context on ~30% of true doors; unscaled plans require manual `meters_per_pixel` calibration.
 
-### Live Breaking-Point Stress Test (`data/eval/stress_results.json`)
-Evaluated live (`gemini-4-neon` + `gemini-decision-1`) across progressive degradations of `data/eval/synthetic_icu_west.png`:
+### Degradation Stress Test (`data/eval/stress_results.json`)
 
 | Variant | Effective Res | Baseline Rooms | Verified Rooms | Verified Label Acc | Verified Doors | Status |
 | --- | :---: | ---: | ---: | ---: | ---: | --- |
@@ -38,28 +48,26 @@ Evaluated live (`gemini-4-neon` + `gemini-decision-1`) across progressive degrad
 | Low Contrast + Blur | `800x500` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |
 | Rotated 15° | `800x500` | 100.0% | 100.0% | 100.0% | 20.0% | **BREAKING POINT (<75%)** |
 
-## Sourced Physical Inputs & Stated Assumptions
+### Sourced Physical Inputs & Scope
 
 | Input | Source | Value |
 | --- | --- | --- |
-| Unit floor plan | VA Medical/Surgical Inpatient Units & Intensive Care Nursing Units Design Guide (Nov 2011) | Typical medical/surgical unit; scale from drawing (`0.05 m/px` default) |
-| Unit size check | VA Space Planning Criteria, Chapter 100 | 17 to 33 beds per inpatient unit |
-| Robot speed & length | Aethon TUG specifications | `76 cm/s` (`0.76 m/s`); `96.5 cm` long |
-| Robot + pod door clearance | TUG spec + VA room plates / facility spec | `0.90 m` minimum door width (narrower doors turn red & excluded from robot routes) |
-| Demand sanity check | Aethon, via RIA | ~10,000 medication orders/week at a 200-bed hospital (plausibility check only) |
-| Nurse walking speed | Stated assumption | `1.2 m/s` |
-| Courier pod & handoffs | Stated assumption | 3 compartments (`pharmacy`, `specimens`, `supplies`); `20s` badge-and-unlock handoff at load & delivery; `>10 min` uncollected delivery flagged |
+| Unit Floor Plan | VA Medical/Surgical Inpatient Units & ICU Design Guide (Nov 2011) | Standard med/surg unit (`0.05 m/px` default) |
+| Unit Size Check | VA Space Planning Criteria, Chapter 100 | 17–33 beds per inpatient unit |
+| Courier Robot | Aethon TUG specifications | `76 cm/s` (`0.76 m/s`), `96.5 cm` long |
+| Demand Sanity Check | Aethon, via RIA | ~10,000 med orders/week at a 200-bed hospital |
 
-## Demo Plans, Scenarios & Scope
-- **Demo Plans (`data/demo/`):** `sample_unit.png` (standard hospital unit) and `icu_wing.png` (L-shaped ICU wing with narrow isolation airlocks), plus custom floor plan image upload and optional facility spec document upload (`.pdf`, `.txt`, `.csv`).
-- **Scenario Modes:** `routine`, `chaotic` (STAT surges), and `surge` (mass surge), comparing Nurse-Only vs. 1–3 courier robots with spoken (Web Speech API) or typed shift run descriptions and live **Custody Log** (`order_number`, `who`, `where`, `when`).
-- **Scope:** Logistics trips only (`pharmacy_pickup`, `lab_specimen_drop`, `supply_restock`); no clinical or patient-care tasks. Time-saved figures are scenario estimates from these stated assumptions.
+- **Scope:** Logistics trips only (`pharmacy_pickup`, `lab_specimen_drop`, `supply_restock`); no clinical or patient-care tasks. Time-saved figures are scenario estimates from stated assumptions.
 
 ## Quickstart
+
 ```bash
 cp .env.example .env   # add GEMINI_API_KEY
 uv sync
 PYTHONPATH=src .venv/bin/pytest tests -v
 PYTHONPATH=src .venv/bin/uvicorn hospital_twin.app:app --reload --port 8000
 ```
+
 Open `http://127.0.0.1:8000`.
+
+*Originally created Nov 21, 2026.*
