@@ -1236,6 +1236,7 @@
     }
 
     .page-tab.hidden { display: none !important; }
+    #tabEngine #workspaceRoot { padding-top: 22px; }
     .engine-status-badge {
       display: inline-flex;
       align-items: center;
@@ -1801,6 +1802,7 @@
             <button type="button" class="showcase-pill" data-showcase-robot="pneumatic_tube">Pneumatic Tube</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_prestage_pod">Amed Pre-Stage</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_narrow_rover">Amed Slim Rover</button>
+            <button type="button" class="showcase-pill" data-showcase-robot="amed_compounding_arm">6-DOF Arm</button>
           </div>
         </div>
 
@@ -2024,6 +2026,7 @@
             <option value="pneumatic_tube">Pneumatic Tube Hybrid</option>
             <option value="amed_prestage_pod">Amed Pre-Stage Cart</option>
             <option value="amed_narrow_rover">Amed Slim Rover 0.72m</option>
+            <option value="amed_compounding_arm">Amed 6-DOF Compounding Arm</option>
           </select>
 
           <label class="inline-label">Robots</label>
@@ -4366,7 +4369,7 @@
         this.controls.autoRotate = true;
         this.controls.autoRotateSpeed = 2.2;
 
-        const hemi = new THREE.HemisphereLight(0xffffff, 0xcbd5e1, 1.2);
+        const hemi = new THREE.HemisphereLight(0xffffff, 0xcbd5e1, 1.15);
         this.scene.add(hemi);
 
         const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
@@ -4374,28 +4377,64 @@
         keyLight.castShadow = true;
         keyLight.shadow.mapSize.width = 1024;
         keyLight.shadow.mapSize.height = 1024;
+        keyLight.shadow.camera.near = 1;
+        keyLight.shadow.camera.far = 20;
+        const shadowExtent = 3.2;
+        keyLight.shadow.camera.left = -shadowExtent;
+        keyLight.shadow.camera.right = shadowExtent;
+        keyLight.shadow.camera.top = shadowExtent;
+        keyLight.shadow.camera.bottom = -shadowExtent;
+        keyLight.shadow.bias = -0.0005;
+        keyLight.shadow.normalBias = 0.02;
         this.scene.add(keyLight);
 
-        const rimLight = new THREE.DirectionalLight(0xe0f2fe, 0.55);
+        const rimLight = new THREE.DirectionalLight(0xe0f2fe, 0.6);
         rimLight.position.set(-4, 4, -4);
         this.scene.add(rimLight);
 
-        // Turntable pedestal & subtle architectural grid
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+        fillLight.position.set(-3, 2.5, 4);
+        this.scene.add(fillLight);
+
+        // Subtle circular studio plinth & architectural grid for clear shadows and scale
         const pedestal = new THREE.Mesh(
-          new THREE.CylinderGeometry(1.75, 1.9, 0.14, 40),
-          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.5, metalness: 0.1 })
+          new THREE.CylinderGeometry(1.75, 1.85, 0.10, 48),
+          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.55, metalness: 0.08 })
         );
-        pedestal.position.y = -0.07;
+        pedestal.position.y = -0.05;
         pedestal.receiveShadow = true;
         this.scene.add(pedestal);
 
+        const plinthBase = new THREE.Mesh(
+          new THREE.CylinderGeometry(2.05, 2.15, 0.06, 48),
+          new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.65, metalness: 0.06 })
+        );
+        plinthBase.position.y = -0.13;
+        plinthBase.receiveShadow = true;
+        this.scene.add(plinthBase);
+
+        const scaleRing = new THREE.Mesh(
+          new THREE.RingGeometry(1.62, 1.66, 48),
+          new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+        );
+        scaleRing.rotation.x = -Math.PI / 2;
+        scaleRing.position.y = 0.002;
+        this.scene.add(scaleRing);
+
         const grid = new THREE.GridHelper(12, 16, 0xcbd5e1, 0xe2e8f0);
-        grid.position.y = -0.14;
+        grid.position.y = -0.16;
         this.scene.add(grid);
 
         this.modelGroup = new THREE.Group();
         this.scene.add(this.modelGroup);
         this.currentProfileId = null;
+        this._lastW = w;
+        this._lastH = h;
+
+        if (typeof ResizeObserver !== "undefined") {
+          this._resizeObserver = new ResizeObserver(() => this.resize());
+          this._resizeObserver.observe(this.mountEl);
+        }
       }
 
       setRobot(profileId = "aethon_tug") {
@@ -4421,9 +4460,15 @@
       }
 
       resize() {
-        const w = this.mountEl.clientWidth;
-        const h = this.mountEl.clientHeight;
+        if (!this.mountEl) return;
+        const rect = this.mountEl.getBoundingClientRect();
+        const w = Math.round(this.mountEl.clientWidth || rect.width);
+        const h = Math.round(this.mountEl.clientHeight || rect.height);
         if (w <= 80 || h <= 80) return;
+        if (w === this._lastW && h === this._lastH) return;
+        this._lastW = w;
+        this._lastH = h;
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(w, h, false);
@@ -5045,9 +5090,9 @@
       const badge = document.getElementById("engineStatusBadge");
       if (badge) {
         const labels = {
-          1: "1. Map Ready",
-          2: "2. Fleet & Runs Configured",
-          3: "3. Simulation Active",
+          1: "Unit Map Ready",
+          2: "Fleet & Runs Configured",
+          3: "Simulation Active",
         };
         badge.innerHTML = `<span class="engine-status-dot"></span>${labels[activeStep] || "3D Engine Ready"}`;
       }

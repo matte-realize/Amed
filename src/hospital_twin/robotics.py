@@ -146,6 +146,34 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
             "0.90m-clearance couriers are blocked."
         ),
     ),
+    "amed_compounding_arm": RobotProfile(
+        id="amed_compounding_arm",
+        name="Amed 6-DOF Med-Prep Arm",
+        vendor="Amed (Custom)",
+        is_custom=True,
+        speed_mps=1.20,
+        clearance_m=0.85,
+        length_m=0.80,
+        compartments=2,
+        handoff_seconds=8.0,
+        supported_runs=["pharmacy_pickup", "lab_specimen_drop"],
+        dimensions="80 cm reach · 6-DOF articulated arm on compact mobile pedestal",
+        cost_estimate_usd="~$42k BOM target (6-DOF cobot arm + sterile gripper)",
+        design_notes=(
+            "6-axis articulated robotic arm with rotary base, dual harmonic-drive "
+            "shoulder/elbow joints, sterile vial gripper, and optical barcode scanner "
+            "mounted on a compact pedestal."
+        ),
+        why_helpful=(
+            "Automates high-risk IV compounding, medication picking, and specimen "
+            "rack transfers inside the Medication Room and Lab Drop."
+        ),
+        solves_problem="Medication & chemical handling delays",
+        description=(
+            "6-DOF articulated robotic arm for automated medication picking, "
+            "IV prep, and specimen rack handoffs."
+        ),
+    ),
 }
 
 HOSPITAL_STRUGGLES: list[dict[str, str]] = [

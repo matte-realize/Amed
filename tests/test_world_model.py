@@ -101,7 +101,7 @@ def test_robotics_catalog_struggles_and_endpoints():
     from hospital_twin.simulator import simulate_shift
     from hospital_twin.schemas import ScheduledRun
 
-    assert len(ROBOT_CATALOG) == 5
+    assert len(ROBOT_CATALOG) == 6
     assert len(HOSPITAL_STRUGGLES) >= 4
     assert get_robot_profile("amed_narrow_rover").clearance_m == 0.72
     assert get_robot_profile("nonexistent").id == "aethon_tug"
@@ -122,8 +122,55 @@ def test_robotics_catalog_struggles_and_endpoints():
     client = TestClient(app)
     robots_res = client.get("/api/robots")
     assert robots_res.status_code == 200
-    assert len(robots_res.json()["robots"]) == 5
+    assert len(robots_res.json()["robots"]) == 6
+    robots = robots_res.json()["robots"]
+    assert len(robots) == 6
+    for r in robots:
+        for field in ("design_notes", "cost_estimate_usd", "why_helpful", "dimensions"):
+            assert isinstance(r.get(field), str) and r[field].strip(), f"{r.get('id')} missing {field}"
 
     struggles_res = client.get("/api/struggles")
     assert struggles_res.status_code == 200
     assert len(struggles_res.json()["struggles"]) >= 4
+
+
+def test_narrow_door_unlocked_by_slim_rover():
+    from hospital_twin.schemas import ScheduledRun
+    from hospital_twin.simulator import simulate_shift
+
+    unit = _make_sample_unit()
+    narrow_unit = apply_staff_edits(
+        unit,
+        room_overrides=[],
+        door_overrides=[DoorOverride(id="d4", width_m=0.80, robot_passable=False)],
+    )
+    schedule = [
+        ScheduledRun(
+            run_type="supply_restock",
+            origin="supply_room",
+            destination="nurse_station",
+            frequency_minutes=240.0,
+        ),
+    ]
+
+    tug_comp = simulate_shift(
+        narrow_unit,
+        schedule,
+        shift_hours=8.0,
+        num_robots=1,
+        robot_profile_id="aethon_tug",
+    )
+    tug_events = [e for e in tug_comp.robot_assisted.events if e.run_type == "supply_restock"]
+    assert tug_events
+    assert all(e.agent_role == "nurse" for e in tug_events)
+
+    rover_comp = simulate_shift(
+        narrow_unit,
+        schedule,
+        shift_hours=8.0,
+        num_robots=1,
+        robot_profile_id="amed_narrow_rover",
+    )
+    rover_events = [e for e in rover_comp.robot_assisted.events if e.run_type == "supply_restock"]
+    assert rover_events
+    assert all(e.agent_role == "robot" for e in rover_events)

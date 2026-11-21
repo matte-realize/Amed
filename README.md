@@ -64,10 +64,24 @@ Evaluated against 10 unseen architectural floor plans from `CubiCasa5K` (`Trista
 ```bash
 cp .env.example .env   # add GEMINI_API_KEY
 uv sync
-PYTHONPATH=src .venv/bin/pytest tests -v
+.venv/bin/pytest -v
 PYTHONPATH=src .venv/bin/uvicorn hospital_twin.app:app --reload --port 8000
 ```
 
 Open `http://127.0.0.1:8000`.
+
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/extract` | Extract and verify a `UnitMap` from a floor plan image and optional facility spec |
+| `POST` | `/api/simulate` | Parse a run schedule and compare nurse-only vs. courier-robot shift metrics |
+| `POST` | `/api/stress-test` | Run multi-seed fleet stress sweeps to locate tipping points and build an autonomy plan |
+| `POST` | `/api/calibrate` | Calibrate simulation assumptions against observed mock-drill timings |
+| `POST` | `/api/review-unit` | Apply staff room and doorway overrides to an extracted `UnitMap` |
+| `POST` | `/api/ems-feed` | Generate an EMS arrival pre-staging dispatch plan from an incoming signal |
+| `POST` | `/api/coalition-surge` | Evaluate regional coalition surge balancing across units |
+| `GET` | `/api/robots` | List supported existing and custom courier robot profiles |
+| `GET` | `/api/struggles` | List modeled hospital logistics pain points and operational blockers |
 
 *Originally created Nov 21, 2026.*
