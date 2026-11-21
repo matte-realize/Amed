@@ -31,8 +31,10 @@ class Room(BaseModel):
     polygon: list[Point]
     centroid: Optional[Point] = None
     confidence: Optional[float] = None
-    autonomy_tier: Literal["autonomous", "assisted", "human_only"] = "autonomous"
+    autonomy_tier: Literal["autonomous", "assisted", "human_only"] = "assisted"
     autonomy_reason: str = ""
+    proposed_solution: str = ""
+    prerequisites: list[str] = Field(default_factory=list)
     obstacles: list[str] = Field(default_factory=list)
 
 

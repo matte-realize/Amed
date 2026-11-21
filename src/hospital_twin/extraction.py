@@ -34,8 +34,10 @@ class _ExtractedRoom(BaseModel):
     type: RoomType
     polygon: list[Point]
     centroid: Optional[Point] = None
-    autonomy_tier: Literal["autonomous", "assisted", "human_only"] = "autonomous"
+    autonomy_tier: Literal["autonomous", "assisted", "human_only"] = "assisted"
     autonomy_reason: str = ""
+    proposed_solution: str = ""
+    prerequisites: list[str] = Field(default_factory=list)
     obstacles: list[str] = Field(default_factory=list)
 
 
@@ -171,8 +173,10 @@ def extract_unit_map(
         "- type: one of patient_room, nurse_station, medication_room, supply_room, lab_drop, corridor, other\n"
         "- polygon: list of {x, y} pixel coordinates tracing the room boundary\n"
         "- centroid: {x, y} pixel center of the room\n"
-        "- autonomy_tier: 'autonomous' (corridors, supply, pharmacy, lab_drop, open logistics), 'assisted' (tight clearance or shared station), or 'human_only' (sterile/bedside patient care or narrow doorway)\n"
-        "- autonomy_reason: brief 1-sentence reason why this zone can or cannot be autonomized\n"
+        "- autonomy_tier: be conservative—only mark open corridors/lobbies as 'autonomous'; mark medication/supply/lab/nurse_station as 'assisted' (requires door actuation or staff handoff); mark patient/isolation rooms as 'human_only'\n"
+        "- autonomy_reason: brief 1-sentence reason why this zone is currently autonomous, assisted, or human-only\n"
+        "- proposed_solution: concrete autonomous workflow/hardware solution for this zone (e.g. 'Badge-actuated door + exterior courier drop bin' or 'AMR corridor transit lane')\n"
+        "- prerequisites: 2-3 specific physical/workflow prerequisites required before full autonomy (e.g. ['Auto-door opener', '1.2m clear turning radius'])\n"
         "- obstacles: visible interior fixtures (e.g. ['bed', 'desk', 'med_cart', 'shelf'])\n"
         "For each door provide:\n"
         "- id: short snake_case identifier (e.g. 'door_101')\n"
@@ -217,8 +221,10 @@ def extract_unit_map(
                 type=item["type"],
                 polygon=poly,
                 centroid=centroid,
-                autonomy_tier=item.get("autonomy_tier", "autonomous"),
+                autonomy_tier=item.get("autonomy_tier", "assisted"),
                 autonomy_reason=item.get("autonomy_reason", ""),
+                proposed_solution=item.get("proposed_solution", ""),
+                prerequisites=list(item.get("prerequisites", [])),
                 obstacles=list(item.get("obstacles", [])),
             )
         )

@@ -88,9 +88,12 @@ class TestFallbackAndCropping(unittest.TestCase):
         self.assertIn("corridor_main", rooms_by_id)
         self.assertIn("corridor_east", rooms_by_id)
         self.assertEqual(rooms_by_id["central_nurse_station"].autonomy_tier, "assisted")
-        self.assertEqual(rooms_by_id["pharmacy_satellite"].autonomy_tier, "autonomous")
-        self.assertEqual(rooms_by_id["clean_supply"].autonomy_tier, "autonomous")
-        self.assertEqual(rooms_by_id["lab_pneumatic_drop"].autonomy_tier, "autonomous")
+        self.assertEqual(rooms_by_id["pharmacy_satellite"].autonomy_tier, "assisted")
+        self.assertTrue(bool(rooms_by_id["pharmacy_satellite"].proposed_solution))
+        self.assertTrue(len(rooms_by_id["pharmacy_satellite"].prerequisites) > 0)
+        self.assertEqual(rooms_by_id["corridor_main"].autonomy_tier, "autonomous")
+        self.assertEqual(rooms_by_id["clean_supply"].autonomy_tier, "assisted")
+        self.assertEqual(rooms_by_id["lab_pneumatic_drop"].autonomy_tier, "assisted")
 
         icu_rooms = [r for r in icu.rooms if r.type == "patient_room"]
         self.assertEqual(len(icu_rooms), 4)

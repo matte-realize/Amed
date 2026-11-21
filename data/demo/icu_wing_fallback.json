@@ -33,10 +33,15 @@
       },
       "confidence": 1.0,
       "autonomy_tier": "human_only",
-      "autonomy_reason": "Negative-pressure ICU isolation room with narrow 0.82m airlock door; nurse-only bedside entry.",
+      "autonomy_reason": "Clinical bedside care zone; unassisted robot entry is unsafe and restricted.",
       "obstacles": [
         "bed",
         "monitor"
+      ],
+      "proposed_solution": "Corridor-threshold delivery only: robot alerts nurse to retrieve supplies at doorway.",
+      "prerequisites": [
+        "Corridor-only routing",
+        "Doorway arrival notification"
       ]
     },
     {
@@ -67,10 +72,15 @@
       },
       "confidence": 1.0,
       "autonomy_tier": "human_only",
-      "autonomy_reason": "Negative-pressure ICU isolation room with narrow 0.82m airlock door; nurse-only bedside entry.",
+      "autonomy_reason": "Clinical bedside care zone; unassisted robot entry is unsafe and restricted.",
       "obstacles": [
         "bed",
         "monitor"
+      ],
+      "proposed_solution": "Corridor-threshold delivery only: robot alerts nurse to retrieve supplies at doorway.",
+      "prerequisites": [
+        "Corridor-only routing",
+        "Doorway arrival notification"
       ]
     },
     {
@@ -101,10 +111,15 @@
       },
       "confidence": 1.0,
       "autonomy_tier": "assisted",
-      "autonomy_reason": "Central telemetry and triage desk; courier robots dock at outer corridor counter for nurse handoff.",
+      "autonomy_reason": "Shared clinical hub; robots cannot enter behind-desk workspaces.",
       "obstacles": [
         "desk",
         "terminal"
+      ],
+      "proposed_solution": "Designate an outer-counter robot arrival zone with nurse-call arrival chime.",
+      "prerequisites": [
+        "Outer-counter docking pad",
+        "Nurse-call alert webhook"
       ]
     },
     {
@@ -135,8 +150,13 @@
       },
       "confidence": 1.0,
       "autonomy_tier": "autonomous",
-      "autonomy_reason": "3.0m wide primary west-east transit spine with unobstructed two-way courier navigation.",
-      "obstacles": []
+      "autonomy_reason": "Open 3.0m corridor spine with clear line-of-sight and no doorway barriers.",
+      "obstacles": [],
+      "proposed_solution": "Deploy AMR navigation lane with floor fiducials and right-of-way yield sensors.",
+      "prerequisites": [
+        "LiDAR/vision obstacle avoidance",
+        "Clear 1.5m passing width"
+      ]
     },
     {
       "id": "corridor_east",
@@ -166,8 +186,13 @@
       },
       "confidence": 1.0,
       "autonomy_tier": "autonomous",
-      "autonomy_reason": "3.0m wide L-wing north-south corridor linking main spine to east ICU isolation bays.",
-      "obstacles": []
+      "autonomy_reason": "Open 3.0m corridor spine with clear line-of-sight and no doorway barriers.",
+      "obstacles": [],
+      "proposed_solution": "Deploy AMR navigation lane with floor fiducials and right-of-way yield sensors.",
+      "prerequisites": [
+        "LiDAR/vision obstacle avoidance",
+        "Clear 1.5m passing width"
+      ]
     },
     {
       "id": "pharmacy_satellite",
@@ -196,11 +221,17 @@
         "y": 480.0
       },
       "confidence": 1.0,
-      "autonomy_tier": "autonomous",
-      "autonomy_reason": "Automated dispensing satellite with 1.25m wide badge-activated doorway for autonomous medication pickup.",
+      "autonomy_tier": "assisted",
+      "autonomy_reason": "Not autonomous yet: badge-locked door and manual Pyxis/cabinet handoff block unassisted entry.",
       "obstacles": [
         "med_cart",
         "shelf"
+      ],
+      "proposed_solution": "Install automatic door opener + exterior badge-verified courier pass-through locker.",
+      "prerequisites": [
+        "Auto-door actuator",
+        "Badge API integration",
+        "Tamper-evident courier bin"
       ]
     },
     {
@@ -230,11 +261,16 @@
         "y": 480.0
       },
       "confidence": 1.0,
-      "autonomy_tier": "autonomous",
-      "autonomy_reason": "Central clean linen and IV supply bay with 1.25m clearance for autonomous restock carts.",
+      "autonomy_tier": "assisted",
+      "autonomy_reason": "Not autonomous yet: manual swing door and tight shelving aisles require human staging.",
       "obstacles": [
         "shelf",
         "supply_bin"
+      ],
+      "proposed_solution": "Stage pre-packed restock totes at an exterior corridor docking bay.",
+      "prerequisites": [
+        "Door >= 0.90m or staging bay",
+        "Barcode tote handoff"
       ]
     },
     {
@@ -264,10 +300,15 @@
         "y": 480.0
       },
       "confidence": 1.0,
-      "autonomy_tier": "autonomous",
-      "autonomy_reason": "Dedicated pneumatic tube specimen drop station directly accessible to courier robots.",
+      "autonomy_tier": "assisted",
+      "autonomy_reason": "Not autonomous yet: specimen drop requires manual pneumatic-tube loading.",
       "obstacles": [
         "lab_bench"
+      ],
+      "proposed_solution": "Add automated benchtop courier dock next to the pneumatic tube station.",
+      "prerequisites": [
+        "1.1m approach clearance",
+        "Benchtop dock alignment"
       ]
     },
     {
@@ -298,10 +339,15 @@
       },
       "confidence": 1.0,
       "autonomy_tier": "human_only",
-      "autonomy_reason": "Acute ICU bedside zone; courier robots deliver to East Wing Corridor threshold for clinical handoff.",
+      "autonomy_reason": "Clinical bedside care zone; unassisted robot entry is unsafe and restricted.",
       "obstacles": [
         "bed",
         "monitor"
+      ],
+      "proposed_solution": "Corridor-threshold delivery only: robot alerts nurse to retrieve supplies at doorway.",
+      "prerequisites": [
+        "Corridor-only routing",
+        "Doorway arrival notification"
       ]
     },
     {
@@ -332,10 +378,15 @@
       },
       "confidence": 1.0,
       "autonomy_tier": "human_only",
-      "autonomy_reason": "Acute ICU bedside zone; courier robots deliver to East Wing Corridor threshold for clinical handoff.",
+      "autonomy_reason": "Clinical bedside care zone; unassisted robot entry is unsafe and restricted.",
       "obstacles": [
         "bed",
         "monitor"
+      ],
+      "proposed_solution": "Corridor-threshold delivery only: robot alerts nurse to retrieve supplies at doorway.",
+      "prerequisites": [
+        "Corridor-only routing",
+        "Doorway arrival notification"
       ]
     }
   ],
