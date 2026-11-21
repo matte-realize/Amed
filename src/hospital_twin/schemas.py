@@ -218,3 +218,7 @@ class RobotProfile(BaseModel):
     supported_runs: list[RunType]
     solves_problem: str
     description: str
+    design_notes: str = ""
+    cost_estimate_usd: str = ""
+    why_helpful: str = ""
+    dimensions: str = ""

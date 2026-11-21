@@ -27,6 +27,16 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
             "Autonomous mobile courier with 3-compartment locked custodial pod "
             "and 20s badge-and-unlock handoffs."
         ),
+        dimensions="96.5 cm L × 56 cm W × 112 cm H",
+        cost_estimate_usd="~$4,500/mo lease or $120k–$160k unit",
+        design_notes=(
+            "Low-profile differential-drive AMR base with 270° LiDAR, "
+            "top-mounted 3-compartment custodial pod, and badge-actuated locker doors."
+        ),
+        why_helpful=(
+            "Eliminates 20–35 min of routine nurse walking per shift while "
+            "maintaining chain-of-custody logs."
+        ),
     ),
     "diligent_moxi": RobotProfile(
         id="diligent_moxi",
@@ -43,6 +53,16 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
         description=(
             "Socially intelligent hospital cobot capable of elevator/door interaction "
             "and rapid 12s handoffs."
+        ),
+        dimensions="75 cm L × 52 cm W × 148 cm H",
+        cost_estimate_usd="~$3,500–$4,500/mo RaaS",
+        design_notes=(
+            "Slim omnidirectional mobile base with vertical torso column, "
+            "7-DOF cobot arm for badge/elevator/door interaction, and social LED head."
+        ),
+        why_helpful=(
+            "Interacts with existing badge doors and supply bins without "
+            "costly facility retrofits."
         ),
     ),
     "pneumatic_tube": RobotProfile(
@@ -61,6 +81,16 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
             "High-speed pneumatic tube carrier for specimens and medications; "
             "bulky supply restocks fall back to nurses."
         ),
+        dimensions="110 mm / 160 mm carrier tube",
+        cost_estimate_usd="~$15k–$35k per station drop",
+        design_notes=(
+            "Pressurized air-tube network between Nurse Station, Lab Drop, "
+            "and Pharmacy with soft-landing diverters."
+        ),
+        why_helpful=(
+            "Cuts urgent specimen and stat medication transit from minutes to "
+            "seconds; bulky supplies remain manual."
+        ),
     ),
     "amed_prestage_pod": RobotProfile(
         id="amed_prestage_pod",
@@ -78,6 +108,16 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
             "Custom high-speed 4-compartment rapid-response cart with RFID-verified "
             "pre-staging and 10s quick-release handoff."
         ),
+        dimensions="105 cm L × 62 cm W × 118 cm H",
+        cost_estimate_usd="~$28k BOM target (custom modular cart)",
+        design_notes=(
+            "Custom 4-bay crash-cart and blood-cooler staging chassis built on "
+            "commercial AMR drive with amber priority beacon and auto-latching dock."
+        ),
+        why_helpful=(
+            "Pre-positions emergency equipment near high-acuity bays ahead of "
+            "EMS arrival, cutting defibrillation/epinephrine delays."
+        ),
     ),
     "amed_narrow_rover": RobotProfile(
         id="amed_narrow_rover",
@@ -94,6 +134,16 @@ ROBOT_CATALOG: dict[str, RobotProfile] = {
         description=(
             "Custom narrow-chassis autonomous courier engineered for 0.72m doorway "
             "clearance and sealed dual-compartment transport."
+        ),
+        dimensions="70 cm L × 46 cm W × 98 cm H",
+        cost_estimate_usd="~$18k BOM target (slim chassis)",
+        design_notes=(
+            "Custom 46cm-wide narrow-track chassis with dual sealed specimen/med "
+            "canisters designed specifically to clear legacy 0.72m–0.85m hospital doors."
+        ),
+        why_helpful=(
+            "Unlocks autonomous delivery in older hospital wings where standard "
+            "0.90m-clearance couriers are blocked."
         ),
     ),
 }
