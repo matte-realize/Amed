@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amed — Hospital Unit Twin</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #0f766e;
+      --primary-hover: #0d9488;
+      --primary-soft: #ccfbf1;
+      --nurse: #e11d48;
+      --nurse-soft: #ffe4e6;
+      --robot: #0d9488;
+      --robot-soft: #ccfbf1;
+      --accent: #2563eb;
+      --amber: #d97706;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.04);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-shell {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 12px 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 100vh;
+    }
+
+    /* Top Bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #0f766e, #2563eb);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+    .brand-title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-left: 6px;
+      font-weight: 400;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 4px;
+      border-radius: 999px;
+    }
+    .step-pill {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .step-pill.active {
+      background: var(--text);
+      color: #fff;
+    }
+    .step-pill.done {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    /* Control Ribbon */
+    .control-ribbon {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+    }
+
+    label.inline-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    select, input[type="text"], textarea {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface-alt);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, input[type="text"]:focus, textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--surface-alt);
+      border-color: #cbd5e1;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+    .btn-accent {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn-accent:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+    .btn-mic.listening {
+      background: var(--nurse);
+      border-color: var(--nurse);
+      color: #fff;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.45); }
+      50% { box-shadow: 0 0 0 6px rgba(225, 29, 72, 0); }
+    }
+
+    .segmented {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface-alt);
+    }
+    .segmented button {
+      border: none;
+      background: transparent;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+    }
+    .segmented button:last-child { border-right: none; }
+    .segmented button.active {
+      background: var(--text);
+      color: #fff;
+    }
+
+    .run-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1 1 340px;
+      min-width: 260px;
+    }
+    .run-input-wrap input {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .status-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .status-banner.show { display: flex; }
+    .status-banner.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .status-banner.info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+
+    /* Centerpiece Canvas Stage */
+    .stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 480px;
+    }
+
+    .single-canvas-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .canvas-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .canvas-title {
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .badge.ok {
+      background: var(--primary-soft);
+      border-color: #99f6e4;
+      color: var(--primary);
+    }
+    .badge.nurse {
+      background: var(--nurse-soft);
+      border-color: #fecdd3;
+      color: var(--nurse);
+    }
+    .badge.saved {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
+      font-size: 12px;
+      padding: 4px 10px;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 420px;
+      background: #0f172a;
+      border-radius: 8px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+    canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .dual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      flex: 1;
+    }
+    @media (max-width: 960px) {
+      .dual-grid { grid-template-columns: 1fr; }
+      .divider { display: none; }
+    }
+
+    .sim-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sim-metrics {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .metric-pill {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric-pill strong {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Playback Bar */
+    .playback-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .scrubber {
+      flex: 1;
+      min-width: 180px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .clock-readout {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      font-size: 13px;
+      min-width: 112px;
+      text-align: center;
+    }
+
+    /* Assumptions Strip */
+    .assumptions-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .assumptions-bar strong {
+      color: var(--text);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .assumption-chip {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      color: var(--text);
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dot-swatch {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+    .hidden { display: none !important; }
+
+    .hover-tip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.92);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      white-space: nowrap;
+      z-index: 10;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <span class="brand-title">Amed</span>
+          <span class="brand-sub">Hospital Unit Twin</span>
+        </div>
+      </div>
+
+      <div class="stepper" id="stepper">
+        <span class="step-pill active" data-step="1">1. Map Unit</span>
+        <span class="step-pill" data-step="2">2. Describe Runs</span>
+        <span class="step-pill" data-step="3">3. Animate Shift</span>
+      </div>
+
+      <div class="legend">
+        <span><span class="dot-swatch" style="background: var(--nurse);"></span>Nurse</span>
+        <span><span class="dot-swatch" style="background: var(--robot);"></span>Courier Robot</span>
+        <button class="btn" id="resetBtn" title="Reset view">Reset</button>
+      </div>
+    </header>
+
+    <!-- Compact Control Ribbon -->
+    <section class="control-ribbon">
+      <!-- Step 1 -->
+      <div class="control-group">
+        <label class="inline-label" for="planSelect">Plan</label>
+        <select id="planSelect"></select>
+        <label class="btn" for="fileUpload" title="Upload PNG or JPG floor plan">
+          Upload
+          <input type="file" id="fileUpload" accept="image/png,image/jpeg,image/webp" class="hidden" />
+        </label>
+        <button class="btn btn-primary" id="mapBtn">Map Unit</button>
+        <button class="btn" id="fallbackBtn" title="Load pre-traced demo unit">Demo Map</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Step 2 -->
+      <div class="run-input-wrap">
+        <label class="inline-label" for="runDesc">Runs</label>
+        <input
+          type="text"
+          id="runDesc"
+          value="pharmacy pickup every 30 minutes, lab specimen drop hourly, supply restock twice a shift"
+          placeholder="e.g. pharmacy pickup every 30 min, specimens hourly..."
+        />
+        <button class="btn btn-mic" id="micBtn" title="Speak run schedule (Web Speech API)">Mic</button>
+      </div>
+
+      <div class="control-group">
+        <label class="inline-label">Robots</label>
+        <div class="segmented" id="robotCountGroup">
+          <button type="button" class="active" data-robots="1">1</button>
+          <button type="button" data-robots="2">2</button>
+          <button type="button" data-robots="3">3</button>
+        </div>
+
+        <label class="inline-label" for="shiftHours">Shift</label>
+        <select id="shiftHours">
+          <option value="4">4h</option>
+          <option value="8" selected>8h</option>
+          <option value="12">12h</option>
+        </select>
+
+        <button class="btn btn-accent" id="runSimBtn" disabled>Run Shift</button>
+      </div>
+    </section>
+
+    <div class="status-banner" id="statusBanner">
+      <span id="statusText"></span>
+      <button class="btn hidden" id="bannerFallbackBtn">Load Demo Map</button>
+    </div>
+
+    <!-- Centerpiece Stage -->
+    <main class="stage">
+      <!-- Single Map View (Steps 1 & 2) -->
+      <section class="single-canvas-card" id="singleView">
+        <div class="canvas-header">
+          <div class="canvas-title">
+            <span id="mapTitle">Unit Floor Plan</span>
+            <span class="badge" id="extractBadge">Select or upload a floor plan, then click Map Unit</span>
+          </div>
+          <div class="badge hidden" id="verifyBadge"></div>
+        </div>
+        <div class="canvas-wrap" id="singleWrap">
+          <canvas id="mapCanvas"></canvas>
+          <div class="hover-tip" id="hoverTip"></div>
+        </div>
+      </section>
+
+      <!-- Side-by-Side Animated Twin (Step 3) -->
+      <section class="dual-grid hidden" id="dualView">
+        <div class="sim-card">
+          <div class="canvas-header">
+            <div class="canvas-title">
+              <span>Nurse-Only</span>
+              <span class="badge nurse">0 Robots</span>
+            </div>
+            <div class="sim-metrics">
+              <span class="metric-pill">Walked: <strong id="nurseWalkedLeft">0.0</strong> min</span>
+              <span class="metric-pill">Avg Wait: <strong id="waitLeft">0</strong>s</span>
+              <span class="metric-pill">Trips: <strong id="tripsLeft">0</strong></span>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="canvasLeft"></canvas>
+          </div>
+        </div>
+
+        <div class="sim-card">
+          <div class="canvas-header">
+            <div class="canvas-title">
+              <span>Robot-Assisted</span>
+              <span class="badge ok" id="robotCountBadge">1 Robot</span>
+              <span class="badge saved" id="savedBadge">Saved: 0.0 nurse min</span>
+            </div>
+            <div class="sim-metrics">
+              <span class="metric-pill">Nurse Walked: <strong id="nurseWalkedRight">0.0</strong> min</span>
+              <span class="metric-pill">Robot Travel: <strong id="robotTravelRight">0.0</strong> min</span>
+              <span class="metric-pill">Avg Wait: <strong id="waitRight">0</strong>s</span>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="canvasRight"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Playback Controls (Step 3) -->
+      <section class="playback-bar hidden" id="playbackBar">
+        <button class="btn btn-primary" id="playPauseBtn">Pause</button>
+        <button class="btn" id="restartBtn">Restart</button>
+        <input type="range" class="scrubber" id="scrubber" min="0" max="28800" value="0" step="10" />
+        <span class="clock-readout" id="clockReadout">00:00 / 08:00</span>
+        <div class="segmented" id="speedGroup">
+          <button type="button" data-speed="60">60x</button>
+          <button type="button" data-speed="150">150x</button>
+          <button type="button" class="active" data-speed="300">300x</button>
+          <button type="button" data-speed="600">600x</button>
+        </div>
+      </section>
+
+      <!-- Stated Assumptions (Step 3) -->
+      <section class="assumptions-bar hidden" id="assumptionsBar">
+        <strong>Stated Assumptions:</strong>
+        <div id="assumptionsList" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const ROOM_COLORS = {
+      patient_room:    { fill: "rgba(59, 130, 246, 0.22)", stroke: "#3b82f6" },
+      nurse_station:   { fill: "rgba(225, 29, 72, 0.24)",  stroke: "#e11d48" },
+      medication_room: { fill: "rgba(168, 85, 247, 0.24)", stroke: "#a855f7" },
+      supply_room:     { fill: "rgba(245, 158, 11, 0.24)", stroke: "#f59e0b" },
+      lab_drop:        { fill: "rgba(16, 185, 129, 0.24)", stroke: "#10b981" },
+      corridor:        { fill: "rgba(148, 163, 184, 0.16)",stroke: "#94a3b8" },
+      other:           { fill: "rgba(100, 116, 139, 0.18)",stroke: "#64748b" },
+    };
+
+    const state = {
+      plans: [],
+      selectedPlanId: null,
+      uploadedFile: null,
+      bgImage: null,
+      unitMap: null,
+      verification: null,
+      revealedRooms: 0,
+      revealedDoors: 0,
+      revealTimer: null,
+      numRobots: 1,
+      comparison: null,
+      simTime: 0,
+      playing: false,
+      speed: 300,
+      lastFrameTs: null,
+      rafId: null,
+    };
+
+    const els = {
+      planSelect: document.getElementById("planSelect"),
+      fileUpload: document.getElementById("fileUpload"),
+      mapBtn: document.getElementById("mapBtn"),
+      fallbackBtn: document.getElementById("fallbackBtn"),
+      runDesc: document.getElementById("runDesc"),
+      micBtn: document.getElementById("micBtn"),
+      robotCountGroup: document.getElementById("robotCountGroup"),
+      shiftHours: document.getElementById("shiftHours"),
+      runSimBtn: document.getElementById("runSimBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      statusBanner: document.getElementById("statusBanner"),
+      statusText: document.getElementById("statusText"),
+      bannerFallbackBtn: document.getElementById("bannerFallbackBtn"),
+      singleView: document.getElementById("singleView"),
+      dualView: document.getElementById("dualView"),
+      playbackBar: document.getElementById("playbackBar"),
+      assumptionsBar: document.getElementById("assumptionsBar"),
+      assumptionsList: document.getElementById("assumptionsList"),
+      mapCanvas: document.getElementById("mapCanvas"),
+      canvasLeft: document.getElementById("canvasLeft"),
+      canvasRight: document.getElementById("canvasRight"),
+      hoverTip: document.getElementById("hoverTip"),
+      mapTitle: document.getElementById("mapTitle"),
+      extractBadge: document.getElementById("extractBadge"),
+      verifyBadge: document.getElementById("verifyBadge"),
+      playPauseBtn: document.getElementById("playPauseBtn"),
+      restartBtn: document.getElementById("restartBtn"),
+      scrubber: document.getElementById("scrubber"),
+      clockReadout: document.getElementById("clockReadout"),
+      speedGroup: document.getElementById("speedGroup"),
+      nurseWalkedLeft: document.getElementById("nurseWalkedLeft"),
+      waitLeft: document.getElementById("waitLeft"),
+      tripsLeft: document.getElementById("tripsLeft"),
+      nurseWalkedRight: document.getElementById("nurseWalkedRight"),
+      robotTravelRight: document.getElementById("robotTravelRight"),
+      waitRight: document.getElementById("waitRight"),
+      robotCountBadge: document.getElementById("robotCountBadge"),
+      savedBadge: document.getElementById("savedBadge"),
+    };
+
+    function setStep(activeStep) {
+      document.querySelectorAll("#stepper .step-pill").forEach((pill) => {
+        const s = Number(pill.dataset.step);
+        pill.classList.remove("active", "done");
+        if (s < activeStep) pill.classList.add("done");
+        else if (s === activeStep) pill.classList.add("active");
+      });
+    }
+
+    function showBanner(msg, type = "info", showFallback = false) {
+      els.statusText.textContent = msg;
+      els.statusBanner.className = `status-banner show ${type}`;
+      els.bannerFallbackBtn.classList.toggle("hidden", !showFallback);
+    }
+
+    function hideBanner() {
+      els.statusBanner.className = "status-banner";
+    }
+
+    function loadImageFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Could not load floor plan image."));
+        img.src = url;
+      });
+    }
+
+    async function fetchPlans() {
+      try {
+        const res = await fetch("/api/plans");
+        const data = await res.json();
+        state.plans = data.plans || [];
+        els.planSelect.innerHTML = "";
+        if (state.plans.length === 0) {
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "No demo plans (use Demo Map or Upload)";
+          els.planSelect.appendChild(opt);
+        } else {
+          state.plans.forEach((p) => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.name;
+            els.planSelect.appendChild(opt);
+          });
+          state.selectedPlanId = state.plans[0].id;
+          await previewSelectedPlan();
+        }
+      } catch (err) {
+        showBanner("Failed to fetch demo plans: " + err.message, "error");
+      }
+    }
+
+    async function previewSelectedPlan() {
+      const id = els.planSelect.value;
+      state.selectedPlanId = id || null;
+      state.uploadedFile = null;
+      if (!id) {
+        state.bgImage = null;
+        drawSingleMap();
+        return;
+      }
+      try {
+        state.bgImage = await loadImageFromUrl(`/api/plans/${encodeURIComponent(id)}/image`);
+        els.mapTitle.textContent = els.planSelect.options[els.planSelect.selectedIndex].textContent;
+        drawSingleMap();
+      } catch {
+        state.bgImage = null;
+        drawSingleMap();
+      }
+    }
+
+    function getCanvasDims(canvas, targetW, targetH) {
+      const parent = canvas.parentElement;
+      const maxW = Math.max(320, parent.clientWidth - 4);
+      const maxH = Math.max(320, parent.clientHeight - 4);
+      const scale = Math.min(maxW / targetW, maxH / targetH);
+      const cssW = Math.floor(targetW * scale);
+      const cssH = Math.floor(targetH * scale);
+      const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== Math.floor(cssW * dpr) || canvas.height !== Math.floor(cssH * dpr)) {
+        canvas.width = Math.floor(cssW * dpr);
+        canvas.height = Math.floor(cssH * dpr);
+        canvas.style.width = cssW + "px";
+        canvas.style.height = cssH + "px";
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+      return { ctx, scale };
+    }
+
+    function drawBackdrop(ctx, w, h) {
+      if (state.bgImage) {
+        ctx.drawImage(state.bgImage, 0, 0, w, h);
+      } else {
+        ctx.fillStyle = "#f8fafc";
+        ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < w; x += 40) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        }
+        for (let y = 0; y < h; y += 40) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        }
+      }
+    }
+
+    function drawUnitOverlay(ctx, unit, maxRooms, maxDoors, subtle = false) {
+      const rooms = unit.rooms.slice(0, maxRooms);
+      rooms.forEach((room) => {
+        if (!room.polygon || room.polygon.length < 3) return;
+        const style = ROOM_COLORS[room.type] || ROOM_COLORS.other;
+        ctx.save();
+        ctx.beginPath();
+        room.polygon.forEach((pt, idx) => {
+          if (idx === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.closePath();
+        ctx.fillStyle = subtle ? "rgba(255,255,255,0.06)" : style.fill;
+        ctx.fill();
+        ctx.lineWidth = subtle ? 1.2 : 2.2;
+        ctx.strokeStyle = subtle ? "rgba(15, 23, 42, 0.35)" : style.stroke;
+        ctx.stroke();
+
+        const cx = room.centroid ? room.centroid.x : room.polygon.reduce((s, p) => s + p.x, 0) / room.polygon.length;
+        const cy = room.centroid ? room.centroid.y : room.polygon.reduce((s, p) => s + p.y, 0) / room.polygon.length;
+
+        ctx.font = subtle ? "600 11px Inter, sans-serif" : "700 12px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const label = room.label || room.id;
+        const textW = ctx.measureText(label).width;
+        ctx.fillStyle = subtle ? "rgba(255,255,255,0.75)" : "rgba(15, 23, 42, 0.82)";
+        ctx.fillRect(cx - textW / 2 - 5, cy - 9, textW + 10, 18);
+        ctx.fillStyle = subtle ? "#0f172a" : "#ffffff";
+        ctx.fillText(label, cx, cy);
+        ctx.restore();
+      });
+
+      const doors = unit.doors.slice(0, maxDoors);
+      doors.forEach((door) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(door.position.x, door.position.y, subtle ? 3.5 : 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = subtle ? "rgba(16, 185, 129, 0.55)" : "#10b981";
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    function drawSingleMap() {
+      const w = state.unitMap ? state.unitMap.image_width : (state.bgImage ? state.bgImage.naturalWidth : 900);
+      const h = state.unitMap ? state.unitMap.image_height : (state.bgImage ? state.bgImage.naturalHeight : 540);
+      const { ctx } = getCanvasDims(els.mapCanvas, w, h);
+      drawBackdrop(ctx, w, h);
+      if (state.unitMap) {
+        drawUnitOverlay(ctx, state.unitMap, state.revealedRooms, state.revealedDoors, false);
+      } else if (!state.bgImage) {
+        ctx.fillStyle = "#64748b";
+        ctx.font = "600 15px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Upload a floor plan or click Demo Map to begin", w / 2, h / 2);
+      }
+    }
+
+    function startRevealAnimation() {
+      if (state.revealTimer) clearInterval(state.revealTimer);
+      state.revealedRooms = 0;
+      state.revealedDoors = 0;
+      const totalRooms = state.unitMap.rooms.length;
+      const totalDoors = state.unitMap.doors.length;
+
+      state.revealTimer = setInterval(() => {
+        if (state.revealedRooms < totalRooms) {
+          state.revealedRooms++;
+        } else if (state.revealedDoors < totalDoors) {
+          state.revealedDoors++;
+        } else {
+          clearInterval(state.revealTimer);
+          state.revealTimer = null;
+        }
+        drawSingleMap();
+      }, 85);
+    }
+
+    async function extractUnit(useFallback = false) {
+      hideBanner();
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.playing = false;
+      els.singleView.classList.remove("hidden");
+      els.dualView.classList.add("hidden");
+      els.playbackBar.classList.add("hidden");
+      els.assumptionsBar.classList.add("hidden");
+
+      els.mapBtn.disabled = true;
+      els.fallbackBtn.disabled = true;
+      els.extractBadge.textContent = useFallback ? "Loading pre-traced demo unit..." : "Extracting rooms & doors with Neon + Decisions API...";
+
+      try {
+        let res;
+        if (useFallback) {
+          res = await fetch("/api/extract", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ use_fallback: true }),
+          });
+        } else {
+          const form = new FormData();
+          if (state.uploadedFile) {
+            form.append("file", state.uploadedFile);
+          } else if (state.selectedPlanId) {
+            form.append("plan_id", state.selectedPlanId);
+          } else {
+            throw new Error("Please select a floor plan, upload an image, or click Demo Map.");
+          }
+          res = await fetch("/api/extract", { method: "POST", body: form });
+        }
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || "Extraction failed.");
+        }
+
+        state.unitMap = data.unit_map;
+        state.verification = data.verification || {};
+
+        if (useFallback && !state.bgImage) {
+          // Try loading sample_unit image if available
+          try {
+            state.bgImage = await loadImageFromUrl("/api/plans/sample_unit/image");
+          } catch {
+            state.bgImage = null;
+          }
+        }
+
+        els.extractBadge.textContent = `${state.unitMap.rooms.length} rooms · ${state.unitMap.doors.length} doors`;
+        els.extractBadge.className = "badge ok";
+
+        const conf = state.verification.mean_confidence != null
+          ? Math.round(state.verification.mean_confidence * 100) + "% conf"
+          : "verified";
+        els.verifyBadge.textContent = `Kept ${state.verification.kept ?? state.unitMap.rooms.length} · Dropped ${state.verification.dropped ?? 0} · ${conf}`;
+        els.verifyBadge.classList.remove("hidden");
+
+        els.runSimBtn.disabled = false;
+        setStep(2);
+        startRevealAnimation();
+      } catch (err) {
+        els.extractBadge.textContent = "Extraction failed";
+        els.extractBadge.className = "badge";
+        showBanner(err.message + " — You can load the pre-traced Demo Map instead.", "error", true);
+      } finally {
+        els.mapBtn.disabled = false;
+        els.fallbackBtn.disabled = false;
+      }
+    }
+
+    function interpolatePolyline(points, progress) {
+      if (!points || points.length === 0) return { x: 0, y: 0 };
+      if (points.length === 1 || progress <= 0) return points[0];
+      if (progress >= 1) return points[points.length - 1];
+
+      const segLens = [];
+      let total = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        const dx = points[i + 1].x - points[i].x;
+        const dy = points[i + 1].y - points[i].y;
+        const len = Math.hypot(dx, dy);
+        segLens.push(len);
+        total += len;
+      }
+      if (total <= 1e-6) return points[0];
+
+      let target = progress * total;
+      for (let i = 0; i < segLens.length; i++) {
+        if (target <= segLens[i] || i === segLens.length - 1) {
+          const frac = segLens[i] > 1e-6 ? target / segLens[i] : 0;
+          return {
+            x: points[i].x + (points[i + 1].x - points[i].x) * frac,
+            y: points[i].y + (points[i + 1].y - points[i].y) * frac,
+          };
+        }
+        target -= segLens[i];
+      }
+      return points[points.length - 1];
+    }
+
+    function renderShiftCanvas(canvas, summary, t) {
+      const unit = state.unitMap;
+      const w = unit.image_width;
+      const h = unit.image_height;
+      const { ctx } = getCanvasDims(canvas, w, h);
+
+      drawBackdrop(ctx, w, h);
+      drawUnitOverlay(ctx, unit, unit.rooms.length, unit.doors.length, true);
+
+      let nurseSec = 0;
+      let robotSec = 0;
+      let waitSum = 0;
+      let startedCount = 0;
+      let completedCount = 0;
+
+      // Draw faint paths for started trips, then active dots
+      const activeEvents = [];
+      for (const ev of summary.events) {
+        if (t < ev.start_time_s) continue;
+        startedCount++;
+        waitSum += ev.wait_time_s || 0;
+
+        const dur = Math.max(0.1, ev.end_time_s - ev.start_time_s);
+        const frac = Math.min(1, Math.max(0, (t - ev.start_time_s) / dur));
+        if (ev.agent_role === "nurse") nurseSec += dur * frac;
+        else robotSec += dur * frac;
+
+        if (t >= ev.end_time_s) completedCount++;
+
+        const isActive = t >= ev.start_time_s && t <= ev.end_time_s;
+        if (ev.pixel_path && ev.pixel_path.length >= 2) {
+          ctx.save();
+          ctx.beginPath();
+          ev.pixel_path.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          });
+          ctx.strokeStyle = ev.agent_role === "nurse"
+            ? (isActive ? "rgba(225, 29, 72, 0.72)" : "rgba(225, 29, 72, 0.14)")
+            : (isActive ? "rgba(13, 148, 136, 0.78)" : "rgba(13, 148, 136, 0.16)");
+          ctx.lineWidth = isActive ? 3 : 1.5;
+          ctx.setLineDash(isActive ? [6, 4] : []);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        if (isActive) {
+          activeEvents.push({ ev, frac });
+        } else if (t - ev.end_time_s >= 0 && t - ev.end_time_s <= 25 && ev.pixel_path && ev.pixel_path.length > 0) {
+          // Completion ripple
+          const endPt = ev.pixel_path[ev.pixel_path.length - 1];
+          const age = (t - ev.end_time_s) / 25;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(endPt.x, endPt.y, 6 + age * 14, 0, Math.PI * 2);
+          ctx.strokeStyle = ev.agent_role === "nurse"
+            ? `rgba(225, 29, 72, ${1 - age})`
+            : `rgba(13, 148, 136, ${1 - age})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // Draw active agents on top
+      for (const { ev, frac } of activeEvents) {
+        const pos = interpolatePolyline(ev.pixel_path, frac);
+        const isNurse = ev.agent_role === "nurse";
+        const color = isNurse ? "#e11d48" : "#0d9488";
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+        ctx.fillStyle = isNurse ? "rgba(225, 29, 72, 0.22)" : "rgba(13, 148, 136, 0.25)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 7.5, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+
+        ctx.font = "700 9px Inter, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const tag = isNurse ? "N" : (ev.agent_id.replace(/\D/g, "") || "R");
+        ctx.fillText(tag, pos.x, pos.y + 0.5);
+        ctx.restore();
+      }
+
+      return {
+        nurseMin: nurseSec / 60,
+        robotMin: robotSec / 60,
+        avgWait: startedCount > 0 ? waitSum / startedCount : 0,
+        completedCount,
+      };
+    }
+
+    function formatClock(seconds) {
+      const totalMin = Math.floor(seconds / 60);
+      const hh = String(Math.floor(totalMin / 60)).padStart(2, "0");
+      const mm = String(totalMin % 60).padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
+
+    function renderSimulationFrame() {
+      if (!state.comparison) return;
+      const comp = state.comparison;
+      const t = state.simTime;
+      const dur = comp.nurse_only.shift_duration_s;
+
+      const leftStats = renderShiftCanvas(els.canvasLeft, comp.nurse_only, t);
+      const rightStats = renderShiftCanvas(els.canvasRight, comp.robot_assisted, t);
+
+      els.nurseWalkedLeft.textContent = leftStats.nurseMin.toFixed(1);
+      els.waitLeft.textContent = Math.round(leftStats.avgWait);
+      els.tripsLeft.textContent = `${leftStats.completedCount}/${comp.nurse_only.total_trips}`;
+
+      els.nurseWalkedRight.textContent = rightStats.nurseMin.toFixed(1);
+      els.robotTravelRight.textContent = rightStats.robotMin.toFixed(1);
+      els.waitRight.textContent = Math.round(rightStats.avgWait);
+
+      const savedNow = Math.max(0, leftStats.nurseMin - rightStats.nurseMin);
+      els.savedBadge.textContent = `Saved: ${savedNow.toFixed(1)} nurse min (Shift total: ${comp.nurse_minutes_saved.toFixed(1)} min)`;
+
+      els.scrubber.value = Math.floor(t);
+      els.clockReadout.textContent = `${formatClock(t)} / ${formatClock(dur)}`;
+    }
+
+    function tickAnimation(ts) {
+      if (!state.playing) return;
+      if (state.lastFrameTs == null) state.lastFrameTs = ts;
+      const dtReal = Math.min(0.1, (ts - state.lastFrameTs) / 1000);
+      state.lastFrameTs = ts;
+
+      const dur = state.comparison.nurse_only.shift_duration_s;
+      state.simTime += dtReal * state.speed;
+      if (state.simTime >= dur) {
+        state.simTime = dur;
+        state.playing = false;
+        els.playPauseBtn.textContent = "Play";
+      }
+      renderSimulationFrame();
+      if (state.playing) {
+        state.rafId = requestAnimationFrame(tickAnimation);
+      }
+    }
+
+    function startPlayback(fromStart = false) {
+      if (!state.comparison) return;
+      if (fromStart) state.simTime = 0;
+      state.playing = true;
+      state.lastFrameTs = null;
+      els.playPauseBtn.textContent = "Pause";
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.rafId = requestAnimationFrame(tickAnimation);
+    }
+
+    async function runSimulation() {
+      if (!state.unitMap) return;
+      hideBanner();
+      const desc = els.runDesc.value.trim();
+      if (!desc) {
+        showBanner("Please enter or speak a shift run description.", "error");
+        return;
+      }
+
+      els.runSimBtn.disabled = true;
+      els.runSimBtn.textContent = "Simulating...";
+      try {
+        const res = await fetch("/api/simulate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            unit_map: state.unitMap,
+            run_description: desc,
+            num_robots: state.numRobots,
+            shift_hours: Number(els.shiftHours.value),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Simulation failed.");
+
+        state.comparison = data;
+        els.singleView.classList.add("hidden");
+        els.dualView.classList.remove("hidden");
+        els.playbackBar.classList.remove("hidden");
+        els.assumptionsBar.classList.remove("hidden");
+
+        els.robotCountBadge.textContent = `${state.numRobots} Robot${state.numRobots > 1 ? "s" : ""}`;
+        els.scrubber.max = Math.floor(data.nurse_only.shift_duration_s);
+
+        // Render stated assumptions
+        els.assumptionsList.innerHTML = "";
+        Object.entries(data.assumptions || {}).forEach(([k, v]) => {
+          const chip = document.createElement("span");
+          chip.className = "assumption-chip";
+          chip.textContent = `${k.replace(/_/g, " ")}: ${v}`;
+          els.assumptionsList.appendChild(chip);
+        });
+
+        setStep(3);
+        startPlayback(true);
+      } catch (err) {
+        showBanner(err.message, "error");
+      } finally {
+        els.runSimBtn.disabled = false;
+        els.runSimBtn.textContent = "Run Shift";
+      }
+    }
+
+    // Web Speech API
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+      recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        els.runDesc.value = transcript.trim();
+      };
+      recognition.onend = () => {
+        els.micBtn.classList.remove("listening");
+        els.micBtn.textContent = "Mic";
+      };
+      recognition.onerror = () => {
+        els.micBtn.classList.remove("listening");
+        els.micBtn.textContent = "Mic";
+      };
+    } else {
+      els.micBtn.title = "Speech recognition not supported in this browser; type runs instead.";
+    }
+
+    // Event Listeners
+    els.planSelect.addEventListener("change", previewSelectedPlan);
+    els.fileUpload.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      state.uploadedFile = file;
+      state.selectedPlanId = null;
+      const url = URL.createObjectURL(file);
+      state.bgImage = await loadImageFromUrl(url);
+      els.mapTitle.textContent = file.name;
+      state.unitMap = null;
+      els.runSimBtn.disabled = true;
+      drawSingleMap();
+    });
+
+    els.mapBtn.addEventListener("click", () => extractUnit(false));
+    els.fallbackBtn.addEventListener("click", () => extractUnit(true));
+    els.bannerFallbackBtn.addEventListener("click", () => extractUnit(true));
+    els.runSimBtn.addEventListener("click", runSimulation);
+
+    els.micBtn.addEventListener("click", () => {
+      if (!recognition) {
+        showBanner("Web Speech API is not supported in this browser. Please type your run schedule.", "info");
+        return;
+      }
+      if (els.micBtn.classList.contains("listening")) {
+        recognition.stop();
+      } else {
+        els.micBtn.classList.add("listening");
+        els.micBtn.textContent = "Listening...";
+        recognition.start();
+      }
+    });
+
+    els.robotCountGroup.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-robots]");
+      if (!btn) return;
+      state.numRobots = Number(btn.dataset.robots);
+      els.robotCountGroup.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+
+    els.speedGroup.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-speed]");
+      if (!btn) return;
+      state.speed = Number(btn.dataset.speed);
+      els.speedGroup.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+
+    els.playPauseBtn.addEventListener("click", () => {
+      if (state.playing) {
+        state.playing = false;
+        els.playPauseBtn.textContent = "Play";
+      } else {
+        if (state.comparison && state.simTime >= state.comparison.nurse_only.shift_duration_s) {
+          state.simTime = 0;
+        }
+        startPlayback(false);
+      }
+    });
+
+    els.restartBtn.addEventListener("click", () => startPlayback(true));
+    els.scrubber.addEventListener("input", (e) => {
+      state.simTime = Number(e.target.value);
+      renderSimulationFrame();
+    });
+
+    els.resetBtn.addEventListener("click", () => {
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.playing = false;
+      state.comparison = null;
+      els.dualView.classList.add("hidden");
+      els.playbackBar.classList.add("hidden");
+      els.assumptionsBar.classList.add("hidden");
+      els.singleView.classList.remove("hidden");
+      setStep(state.unitMap ? 2 : 1);
+      drawSingleMap();
+    });
+
+    // Room hover tooltip on single canvas
+    els.mapCanvas.addEventListener("mousemove", (e) => {
+      if (!state.unitMap) return;
+      const rect = els.mapCanvas.getBoundingClientRect();
+      const sx = state.unitMap.image_width / rect.width;
+      const sy = state.unitMap.image_height / rect.height;
+      const x = (e.clientX - rect.left) * sx;
+      const y = (e.clientY - rect.top) * sy;
+
+      let hit = null;
+      for (const r of state.unitMap.rooms.slice(0, state.revealedRooms)) {
+        const xs = r.polygon.map((p) => p.x);
+        const ys = r.polygon.map((p) => p.y);
+        if (x >= Math.min(...xs) && x <= Math.max(...xs) && y >= Math.min(...ys) && y <= Math.max(...ys)) {
+          hit = r;
+          break;
+        }
+      }
+      if (hit) {
+        const conf = hit.confidence != null ? ` (${Math.round(hit.confidence * 100)}%)` : "";
+        els.hoverTip.textContent = `${hit.label} · ${hit.type.replace(/_/g, " ")}${conf}`;
+        els.hoverTip.style.left = (e.clientX - rect.left + 12) + "px";
+        els.hoverTip.style.top = (e.clientY - rect.top - 12) + "px";
+        els.hoverTip.style.display = "block";
+      } else {
+        els.hoverTip.style.display = "none";
+      }
+    });
+    els.mapCanvas.addEventListener("mouseleave", () => {
+      els.hoverTip.style.display = "none";
+    });
+
+    window.addEventListener("resize", () => {
+      if (!els.singleView.classList.contains("hidden")) drawSingleMap();
+      else renderSimulationFrame();
+    });
+
+    fetchPlans();
+  </script>
+</body>
+</html>
