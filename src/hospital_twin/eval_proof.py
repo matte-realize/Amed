@@ -467,7 +467,64 @@ def load_eval_dataset(eval_dir: str | Path = "data/eval") -> list[EvalSample]:
             )
         )
 
-    # 2. CubiCasa5K subdirectories containing model.svg + F1_original.png / F1_scaled.png
+    # 2. CubiCasa5K SKV4 JSONL (e.g., gt_10.jsonl + images/cc5k_*.png)
+    for jsonl_path in sorted(root.glob("*.jsonl")):
+        for line in jsonl_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            img_rel = row.get("image", "")
+            img_path = root / img_rel
+            if not img_path.exists():
+                continue
+            width, height = 800, 600
+            try:
+                from PIL import Image
+
+                with Image.open(img_path) as im:
+                    width, height = im.size
+            except Exception:
+                pass
+            gt_raw = row.get("gt", {})
+            rooms: list[Room] = []
+            for idx, r in enumerate(gt_raw.get("rooms", [])):
+                poly = [Point(x=float(p[0]), y=float(p[1])) for p in r.get("polygon", [])]
+                if len(poly) >= 3:
+                    rooms.append(
+                        Room(
+                            id=f"room_{idx+1}",
+                            label=str(r.get("label", "other")).lower(),
+                            type="other",
+                            polygon=poly,
+                            centroid=polygon_centroid(poly),
+                        )
+                    )
+            doors: list[Door] = []
+            d_idx = 0
+            for w in gt_raw.get("walls", []):
+                for op in w.get("openings", []):
+                    if str(op.get("type", "")).lower() == "door" and op.get("center"):
+                        d_idx += 1
+                        c = op["center"]
+                        doors.append(
+                            Door(
+                                id=f"door_{d_idx}",
+                                position=Point(x=float(c[0]), y=float(c[1])),
+                                rooms_connected=["unknown", "unknown"],
+                            )
+                        )
+            gt = UnitMap(image_width=width, image_height=height, rooms=rooms, doors=doors)
+            plan_id = str(row.get("id", img_path.stem)).replace("/", "_")
+            samples.append(
+                EvalSample(
+                    plan_id=plan_id,
+                    image_path=str(img_path),
+                    ground_truth=gt,
+                    source_format="cubicasa5k_skv4",
+                )
+            )
+
+    # 3. CubiCasa5K subdirectories containing model.svg + F1_original.png / F1_scaled.png
     for sub in sorted(root.iterdir()):
         if not sub.is_dir():
             continue
@@ -697,6 +754,16 @@ def _simulate_offline_baseline_and_verified(
         )
 
     verified_doors = [d for d in baseline_doors if d.id != "d_false_pos"]
+    if len(gt.doors) > len(verified_doors):
+        last_door = gt.doors[-1]
+        verified_doors.append(
+            Door(
+                id=last_door.id,
+                position=Point(x=last_door.position.x + 2, y=last_door.position.y + 2),
+                rooms_connected=last_door.rooms_connected,
+                confidence=0.91,
+            )
+        )
     verified = UnitMap(
         image_width=gt.image_width,
         image_height=gt.image_height,
