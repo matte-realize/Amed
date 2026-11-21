@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -132,6 +133,20 @@ async def serve_index() -> FileResponse:
 @app.get("/api/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/eval")
+async def eval_summary() -> dict[str, Any]:
+    """Aggregate extraction metrics from the last offline eval run (baseline vs. verified)."""
+    path = REPO_ROOT / "data" / "eval" / "eval_results.json"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="No eval results found; run the eval first.")
+    data = json.loads(path.read_text())
+    return {
+        "mode": data.get("mode"),
+        "num_plans": data.get("num_plans"),
+        "aggregate": data.get("aggregate", {}),
+    }
 
 
 @app.get("/api/plans")
