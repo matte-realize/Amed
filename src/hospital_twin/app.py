@@ -6,7 +6,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
@@ -39,6 +39,8 @@ class SimulateRequest(BaseModel):
     run_description: str = Field(min_length=1)
     num_robots: int = Field(default=1, ge=1, le=3)
     shift_hours: float = Field(default=8.0, gt=0.0, le=24.0)
+    scenario_mode: Literal["routine", "chaotic", "surge"] = "chaotic"
+    seed: int = 42
 
 
 def _list_demo_plans() -> list[dict[str, str]]:
@@ -237,12 +239,22 @@ async def simulate(req: SimulateRequest) -> SimulationComparison:
                 status_code=400,
                 detail="Could not parse any scheduled runs from the description.",
             )
-        comparison = simulate_shift(
-            req.unit_map,
-            schedule,
-            shift_hours=req.shift_hours,
-            num_robots=req.num_robots,
-        )
+        try:
+            comparison = simulate_shift(
+                req.unit_map,
+                schedule,
+                shift_hours=req.shift_hours,
+                num_robots=req.num_robots,
+                scenario_mode=req.scenario_mode,
+                seed=req.seed,
+            )
+        except TypeError:
+            comparison = simulate_shift(
+                req.unit_map,
+                schedule,
+                shift_hours=req.shift_hours,
+                num_robots=req.num_robots,
+            )
         return comparison
     except HTTPException:
         raise

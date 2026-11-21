@@ -769,6 +769,14 @@
       </div>
 
       <div class="control-group">
+        <label class="inline-label" for="scenarioSelect">Scenario</label>
+        <select id="scenarioSelect" title="Hospital shift turbulence & STAT burst intensity">
+          <option value="routine">Routine</option>
+          <option value="chaotic" selected>Chaotic (STAT Surges)</option>
+          <option value="surge">Mass Surge</option>
+        </select>
+        <button type="button" class="btn" id="rerollSeedBtn" title="Re-roll random seed for chaotic/surge shifts">🎲 #42</button>
+
         <label class="inline-label">Robots</label>
         <div class="segmented" id="robotCountGroup">
           <button type="button" class="active" data-robots="1">1</button>
@@ -837,6 +845,7 @@
             <div class="sim-metrics">
               <span class="metric-pill">Walked: <strong id="nurseWalkedLeft">0.0</strong> min</span>
               <span class="metric-pill">Avg Wait: <strong id="waitLeft">0</strong>s</span>
+              <span class="metric-pill">Peak Wait: <strong id="maxWaitLeft">0</strong>s</span>
               <span class="metric-pill">Trips: <strong id="tripsLeft">0</strong></span>
             </div>
           </div>
@@ -853,12 +862,14 @@
             <div class="canvas-title">
               <span>Robot-Assisted</span>
               <span class="badge ok" id="robotCountBadge">1 Robot</span>
+              <span class="badge nurse hidden" id="statSurgeBadge">0 STAT</span>
               <span class="badge saved" id="savedBadge">Saved: 0.0 nurse min</span>
             </div>
             <div class="sim-metrics">
               <span class="metric-pill">Nurse Walked: <strong id="nurseWalkedRight">0.0</strong> min</span>
               <span class="metric-pill">Robot Travel: <strong id="robotTravelRight">0.0</strong> min</span>
               <span class="metric-pill">Avg Wait: <strong id="waitRight">0</strong>s</span>
+              <span class="metric-pill">Peak Wait: <strong id="maxWaitRight">0</strong>s</span>
             </div>
           </div>
           <div class="canvas-wrap" id="wrapRight">
@@ -929,6 +940,8 @@
       revealTimer: null,
       selectedSelection: null, // { kind: "room" | "door", id: string }
       numRobots: 1,
+      scenarioMode: "chaotic",
+      seed: 42,
       comparison: null,
       simVersion: 0,
       simTime: 0,
@@ -948,6 +961,8 @@
       runDesc: document.getElementById("runDesc"),
       micBtn: document.getElementById("micBtn"),
       robotCountGroup: document.getElementById("robotCountGroup"),
+      scenarioSelect: document.getElementById("scenarioSelect"),
+      rerollSeedBtn: document.getElementById("rerollSeedBtn"),
       shiftHours: document.getElementById("shiftHours"),
       runSimBtn: document.getElementById("runSimBtn"),
       resetBtn: document.getElementById("resetBtn"),
@@ -983,11 +998,14 @@
       speedGroup: document.getElementById("speedGroup"),
       nurseWalkedLeft: document.getElementById("nurseWalkedLeft"),
       waitLeft: document.getElementById("waitLeft"),
+      maxWaitLeft: document.getElementById("maxWaitLeft"),
       tripsLeft: document.getElementById("tripsLeft"),
       nurseWalkedRight: document.getElementById("nurseWalkedRight"),
       robotTravelRight: document.getElementById("robotTravelRight"),
       waitRight: document.getElementById("waitRight"),
+      maxWaitRight: document.getElementById("maxWaitRight"),
       robotCountBadge: document.getElementById("robotCountBadge"),
+      statSurgeBadge: document.getElementById("statSurgeBadge"),
       savedBadge: document.getElementById("savedBadge"),
     };
 
@@ -1097,16 +1115,44 @@
 
       // Live "Autonomized vs. Human-Only Trips" summary card after Run Shift completes
       if (state.comparison && state.comparison.robot_assisted) {
+        const no = state.comparison.nurse_only || {};
         const ra = state.comparison.robot_assisted;
         const assump = state.comparison.assumptions || {};
         const events = ra.events || [];
+        const noEvents = no.events || [];
         const robotEventTrips = events.filter((e) => e.agent_role === "robot").length;
         const nurseEventTrips = events.filter((e) => e.agent_role === "nurse").length;
         const autoTrips = Number(assump.autonomized_trips ?? ra.autonomized_trips ?? robotEventTrips);
         const humanTrips = Number(assump.human_only_trips ?? ra.human_only_trips ?? nurseEventTrips);
+        const statTrips = Number(assump.stat_trips ?? 0);
         const totalTrips = Math.max(1, autoTrips + humanTrips);
         const offloadPct = Math.round((autoTrips / totalTrips) * 100);
         const savedMin = Number(state.comparison.nurse_minutes_saved || 0).toFixed(1);
+
+        const nursePeakWait = Math.round(
+          Number(
+            assump.nurse_only_max_wait_s ??
+            (noEvents.length ? Math.max(0, ...noEvents.map((e) => e.wait_time_s || 0)) : 0)
+          )
+        );
+        const robotPeakWait = Math.round(
+          Number(
+            assump.robot_assisted_max_wait_s ??
+            assump.max_wait_s ??
+            (events.length ? Math.max(0, ...events.map((e) => e.wait_time_s || 0)) : 0)
+          )
+        );
+        const activeRobotIds = Array.from(
+          new Set(events.filter((e) => e.agent_role === "robot").map((e) => e.agent_id))
+        ).sort();
+        const fleetLabel = activeRobotIds.length > 1
+          ? `${activeRobotIds[0]}..${activeRobotIds[activeRobotIds.length - 1]}`
+          : (activeRobotIds[0] || `robot_1..robot_${state.numRobots}`);
+
+        const statNote = statTrips > 0
+          ? ` ${statTrips} STAT urgent surges absorbed by ${fleetLabel} (peak wait ${nursePeakWait}s → ${robotPeakWait}s).`
+          : ` Peak wait ${nursePeakWait}s → ${robotPeakWait}s across ${fleetLabel}.`;
+
         const focusTarget = (assistRooms[0] || autoRooms[0] || state.unitMap.rooms[0])?.id || "";
 
         cards.push({
@@ -1115,7 +1161,7 @@
           tier: "shift-summary",
           pill: `${offloadPct}% Offloaded · +${savedMin}m Saved`,
           title: "Autonomized vs. Human-Only Trips",
-          reason: `${autoTrips} trips offloaded to courier robots vs. ${humanTrips} nurse-handled trips — saving ${savedMin} nurse walk min this shift.`,
+          reason: `${autoTrips} courier-robot trips vs. ${humanTrips} nurse trips (+${savedMin}m saved).${statNote}`,
         });
       }
 
@@ -2397,13 +2443,16 @@
       let nurseSec = 0;
       let robotSec = 0;
       let waitSum = 0;
+      let maxWait = 0;
       let startedCount = 0;
       let completedCount = 0;
 
       for (const ev of summary.events) {
         if (t < ev.start_time_s) continue;
         startedCount++;
-        waitSum += ev.wait_time_s || 0;
+        const w = ev.wait_time_s || 0;
+        waitSum += w;
+        if (w > maxWait) maxWait = w;
         const dur = Math.max(0.1, ev.end_time_s - ev.start_time_s);
         const frac = Math.min(1, Math.max(0, (t - ev.start_time_s) / dur));
         if (ev.agent_role === "nurse") nurseSec += dur * frac;
@@ -2415,6 +2464,7 @@
         nurseMin: nurseSec / 60,
         robotMin: robotSec / 60,
         avgWait: startedCount > 0 ? waitSum / startedCount : 0,
+        maxWait,
         completedCount,
       };
     }
@@ -2707,11 +2757,13 @@
 
       els.nurseWalkedLeft.textContent = leftStats.nurseMin.toFixed(1);
       els.waitLeft.textContent = Math.round(leftStats.avgWait);
+      if (els.maxWaitLeft) els.maxWaitLeft.textContent = Math.round(leftStats.maxWait);
       els.tripsLeft.textContent = `${leftStats.completedCount}/${comp.nurse_only.total_trips}`;
 
       els.nurseWalkedRight.textContent = rightStats.nurseMin.toFixed(1);
       els.robotTravelRight.textContent = rightStats.robotMin.toFixed(1);
       els.waitRight.textContent = Math.round(rightStats.avgWait);
+      if (els.maxWaitRight) els.maxWaitRight.textContent = Math.round(rightStats.maxWait);
 
       const savedNow = Math.max(0, leftStats.nurseMin - rightStats.nurseMin);
       els.savedBadge.textContent = `Saved: ${savedNow.toFixed(1)} nurse min (Shift total: ${comp.nurse_minutes_saved.toFixed(1)} min)`;
@@ -2953,6 +3005,8 @@
             run_description: desc,
             num_robots: state.numRobots,
             shift_hours: Number(els.shiftHours.value),
+            scenario_mode: els.scenarioSelect ? els.scenarioSelect.value : state.scenarioMode,
+            seed: state.seed,
           }),
         });
         const data = await res.json();
@@ -2973,6 +3027,11 @@
         }
 
         els.robotCountBadge.textContent = `${state.numRobots} Robot${state.numRobots > 1 ? "s" : ""}`;
+        const statCount = Number((data.assumptions || {}).stat_trips ?? 0);
+        if (els.statSurgeBadge) {
+          els.statSurgeBadge.textContent = `${statCount} STAT Surges`;
+          els.statSurgeBadge.classList.toggle("hidden", statCount <= 0);
+        }
         els.scrubber.max = Math.floor(data.nurse_only.shift_duration_s);
 
         els.assumptionsList.innerHTML = "";
@@ -3126,7 +3185,29 @@
       state.numRobots = Number(btn.dataset.robots);
       els.robotCountGroup.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
+      if (state.comparison && state.unitMap) {
+        runSimulation();
+      }
     });
+
+    if (els.scenarioSelect) {
+      els.scenarioSelect.addEventListener("change", () => {
+        state.scenarioMode = els.scenarioSelect.value;
+        if (state.comparison && state.unitMap) {
+          runSimulation();
+        }
+      });
+    }
+
+    if (els.rerollSeedBtn) {
+      els.rerollSeedBtn.addEventListener("click", () => {
+        state.seed = Math.floor(Math.random() * 9000) + 1000;
+        els.rerollSeedBtn.textContent = `🎲 #${state.seed}`;
+        if (state.unitMap) {
+          runSimulation();
+        }
+      });
+    }
 
     els.speedGroup.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-speed]");
