@@ -506,9 +506,9 @@
       flex: 1;
       height: clamp(460px, 56vh, 660px);
       min-height: 460px;
-      background: radial-gradient(circle at 50% 35%, #17253b 0%, #0b1120 74%);
-      border: 1px solid #1e293b;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 24px rgba(15, 23, 42, 0.12);
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
       border-radius: 10px;
       overflow: hidden;
       display: grid;
@@ -681,10 +681,11 @@
       position: absolute;
       bottom: 10px;
       left: 12px;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(6px);
-      color: #cbd5e1;
-      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
       border-radius: 6px;
       padding: 4px 9px;
       font-size: 11px;
@@ -700,18 +701,20 @@
       z-index: 6;
     }
     .cam-btn {
-      background: rgba(15, 23, 42, 0.78);
-      backdrop-filter: blur(6px);
-      color: #f8fafc;
-      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
       border-radius: 6px;
-      padding: 4px 8px;
+      padding: 4px 9px;
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
     }
     .cam-btn:hover {
-      background: rgba(30, 41, 59, 0.95);
+      background: #ffffff;
+      border-color: #cbd5e1;
     }
 
     .dual-grid {
@@ -787,7 +790,8 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 8px 14px;
+      box-shadow: var(--shadow);
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -1780,7 +1784,7 @@
       <section class="assumptions-bar hidden" id="assumptionsBar">
         <strong>Stated Assumptions (Scenario Estimate · Logistics Only):</strong>
         <div id="assumptionsList" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
-        <span class="assumption-chip" style="border-color: rgba(245, 158, 11, 0.35); color: #fcd34d;">No clinical or patient-care tasks; time saved is a scenario estimate from stated assumptions</span>
+        <span class="assumption-chip" style="border-color: rgba(245, 158, 11, 0.45); background: #fffbeb; color: #b45309;">No clinical or patient-care tasks; time saved is a scenario estimate from stated assumptions</span>
       </section>
     </main>
   </div>
@@ -2998,14 +3002,17 @@
       constructor(mountEl) {
         this.mountEl = mountEl;
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x0b1220);
+        this.scene.background = new THREE.Color(0xf1f5f9);
+        this.scene.fog = new THREE.Fog(0xf1f5f9, 145, 340);
 
         this.camera = new THREE.PerspectiveCamera(44, 16 / 10, 0.5, 600);
-        this.camera.position.set(0, 68, 66);
+        this.camera.position.set(34, 72, 70);
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         mountEl.innerHTML = "";
         mountEl.appendChild(this.renderer.domElement);
 
@@ -3017,21 +3024,34 @@
         this.controls.maxDistance = 220;
         this.controls.target.set(0, 0, 0);
 
-        // Studio lighting
-        const hemi = new THREE.HemisphereLight(0xe2e8f0, 0x1e293b, 1.3);
+        // Architectural studio lighting
+        const hemi = new THREE.HemisphereLight(0xffffff, 0xcbd5e1, 1.15);
         this.scene.add(hemi);
 
-        const dir1 = new THREE.DirectionalLight(0xffffff, 1.4);
+        const dir1 = new THREE.DirectionalLight(0xffffff, 1.25);
         dir1.position.set(45, 85, 55);
+        dir1.castShadow = true;
+        dir1.shadow.mapSize.width = 2048;
+        dir1.shadow.mapSize.height = 2048;
+        dir1.shadow.camera.near = 10;
+        dir1.shadow.camera.far = 220;
+        const d = 72;
+        dir1.shadow.camera.left = -d;
+        dir1.shadow.camera.right = d;
+        dir1.shadow.camera.top = d;
+        dir1.shadow.camera.bottom = -d;
+        dir1.shadow.bias = -0.0005;
         this.scene.add(dir1);
 
-        const dir2 = new THREE.DirectionalLight(0x93c5fd, 0.55);
+        const dir2 = new THREE.DirectionalLight(0xe0f2fe, 0.45);
         dir2.position.set(-55, 60, -45);
         this.scene.add(dir2);
 
-        const grid = new THREE.GridHelper(180, 36, 0x334155, 0x1e293b);
-        grid.position.y = -0.95;
-        this.scene.add(grid);
+        this.gridStep = 2.0;
+        this.studioGrid = new THREE.GridHelper(240, 120, 0xcbd5e1, 0xe2e8f0);
+        this.studioGrid.position.y = -0.52;
+        this.scene.add(this.studioGrid);
+        this.hasFramedUnit = false;
 
         this.staticGroup = new THREE.Group();
         this.pathsGroup = new THREE.Group();
@@ -3128,12 +3148,34 @@
         this.animateCameraTo(endTarget, endCamPos, 520);
       }
 
-      setPresetCamera(preset) {
+      fitCameraToUnit(preset = "iso", animate = true) {
         const endTarget = new THREE.Vector3(0, 0, 0);
-        const endCamPos = preset === "top"
-          ? new THREE.Vector3(0, 92, 16)
-          : new THREE.Vector3(0, 66, 66);
-        this.animateCameraTo(endTarget, endCamPos, 480);
+        const fovRad = (this.camera.fov || 44) * (Math.PI / 180);
+        const aspect = Math.max(0.75, this.camera.aspect || 1.6);
+        const margin = 1.32;
+        const halfSpan = Math.max(this.worldH * margin, (this.worldW * margin) / aspect) * 0.5;
+        const dist = Math.max(58, halfSpan / Math.tan(fovRad / 2));
+        const dir = preset === "top"
+          ? new THREE.Vector3(0, 0.98, 0.20).normalize()
+          : new THREE.Vector3(0.32, 0.68, 0.66).normalize();
+        const endCamPos = dir.multiplyScalar(preset === "top" ? dist * 1.02 : dist);
+
+        if (animate) {
+          this.animateCameraTo(endTarget, endCamPos, 480);
+        } else {
+          this.focusAnim = null;
+          this.controls.target.copy(endTarget);
+          this.camera.position.copy(endCamPos);
+          this.controls.update();
+        }
+      }
+
+      setCameraPreset(preset) {
+        this.fitCameraToUnit(preset, true);
+      }
+
+      setPresetCamera(preset) {
+        this.setCameraPreset(preset);
       }
 
       resize() {
@@ -3172,10 +3214,11 @@
         this.pickTargets = [];
 
         // Architectural base slab
-        const slabGeo = new THREE.BoxGeometry(this.worldW + 3.2, 0.9, this.worldH + 3.2);
-        const slabMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75, metalness: 0.2 });
+        const slabGeo = new THREE.BoxGeometry(this.worldW + 2.4, 0.5, this.worldH + 2.4);
+        const slabMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.8, metalness: 0.05 });
         const slab = new THREE.Mesh(slabGeo, slabMat);
-        slab.position.y = -0.48;
+        slab.position.y = -0.26;
+        slab.receiveShadow = true;
         this.staticGroup.add(slab);
 
         // Textured floor plan ground plane
@@ -3189,17 +3232,33 @@
         planeGeo.rotateX(-Math.PI / 2);
         const planeMat = new THREE.MeshStandardMaterial({
           map: floorTex,
-          roughness: 0.85,
+          roughness: 0.88,
           metalness: 0.02,
         });
         const plane = new THREE.Mesh(planeGeo, planeMat);
-        plane.position.y = 0.02;
+        plane.position.y = 0.01;
+        plane.receiveShadow = true;
         this.staticGroup.add(plane);
 
         if (!unit) return;
 
         const mpp = unit.meters_per_pixel || 0.05;
         const worldUnitsPerMeter = (1 / mpp) * this.worldScale;
+
+        // Keep studio grid scaled to 1-meter architectural divisions beneath the floor plan
+        if (Math.abs(worldUnitsPerMeter - this.gridStep) > 0.05 && worldUnitsPerMeter > 0.2) {
+          this.gridStep = worldUnitsPerMeter;
+          if (this.studioGrid) this.scene.remove(this.studioGrid);
+          const divisions = Math.max(24, Math.min(300, Math.round(240 / worldUnitsPerMeter)));
+          this.studioGrid = new THREE.GridHelper(240, divisions, 0xcbd5e1, 0xe2e8f0);
+          this.studioGrid.position.y = -0.52;
+          this.scene.add(this.studioGrid);
+        }
+
+        if (!this.hasFramedUnit) {
+          this.hasFramedUnit = true;
+          this.fitCameraToUnit("iso", false);
+        }
 
         // Build room centroid lookup for doorway orientation
         const roomCentroids = new Map();
@@ -3209,19 +3268,21 @@
           roomCentroids.set(r.id, { x: cx, y: cy });
         });
 
-        // 1. Extruded 3D translucent rooms + 3D interior fixtures + floating badges
+        // 1. Crisp architectural white/light-slate walls + subtle colored floor zone tint + 3D interior fixtures
         const rooms = unit.rooms.slice(0, maxRooms);
         rooms.forEach((room) => {
           if (!room.polygon || room.polygon.length < 3) return;
           const style = getRoomStyle(room);
           const isCorridor = room.type === "corridor";
           const isSelected = state.selectedSelection?.kind === "room" && state.selectedSelection?.id === room.id;
-          const wallHeight = isCorridor ? 0.85 : (subtle ? 3.2 : 4.2);
+          const wallHeight = isCorridor ? 0.55 : (subtle ? 2.8 : 3.6);
 
           let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+          const worldPoly = [];
           const shape = new THREE.Shape();
           room.polygon.forEach((pt, idx) => {
             const wPt = this.pxToWorld(pt.x, pt.y);
+            worldPoly.push(wPt);
             minX = Math.min(minX, wPt.x);
             maxX = Math.max(maxX, wPt.x);
             minZ = Math.min(minZ, wPt.z);
@@ -3231,40 +3292,71 @@
           });
           shape.closePath();
 
-          const extrudeGeo = new THREE.ExtrudeGeometry(shape, {
-            depth: wallHeight,
-            bevelEnabled: false,
-          });
-          extrudeGeo.rotateX(-Math.PI / 2);
-
-          const baseOpacity = isCorridor ? 0.12 : (subtle ? 0.17 : 0.28);
-          const volMat = new THREE.MeshPhongMaterial({
+          // Subtle colored floor zone tint
+          const zoneGeo = new THREE.ShapeGeometry(shape);
+          zoneGeo.rotateX(-Math.PI / 2);
+          const zoneMat = new THREE.MeshStandardMaterial({
             color: style.hex,
             emissive: isSelected ? style.hex : 0x000000,
-            emissiveIntensity: isSelected ? 0.35 : 0,
+            emissiveIntensity: isSelected ? 0.22 : 0,
             transparent: true,
-            opacity: isSelected ? Math.min(0.52, baseOpacity + 0.18) : baseOpacity,
+            opacity: isSelected ? 0.30 : (isCorridor ? 0.07 : 0.14),
+            roughness: 0.9,
+            metalness: 0.0,
             depthWrite: false,
-            side: THREE.DoubleSide,
           });
-          const volMesh = new THREE.Mesh(extrudeGeo, volMat);
-          volMesh.position.y = 0.05;
-          volMesh.userData.pickInfo = { kind: "room", id: room.id };
-          this.staticGroup.add(volMesh);
-          this.pickTargets.push(volMesh);
+          const zoneMesh = new THREE.Mesh(zoneGeo, zoneMat);
+          zoneMesh.position.y = 0.03;
+          zoneMesh.receiveShadow = true;
+          zoneMesh.userData.pickInfo = { kind: "room", id: room.id };
+          this.staticGroup.add(zoneMesh);
+          this.pickTargets.push(zoneMesh);
 
-          const edgesGeo = new THREE.EdgesGeometry(extrudeGeo);
-          const edgesMat = new THREE.LineBasicMaterial({
-            color: isSelected ? 0xffffff : style.hex,
-            transparent: true,
-            opacity: isSelected ? 1.0 : (isCorridor ? 0.35 : (subtle ? 0.55 : 0.9)),
+          // Crisp architectural white / light-slate perimeter walls
+          const wallMat = new THREE.MeshStandardMaterial({
+            color: isSelected ? 0xffffff : (isCorridor ? 0xe2e8f0 : 0xf8fafc),
+            emissive: isSelected ? style.hex : 0x000000,
+            emissiveIntensity: isSelected ? 0.16 : 0,
+            roughness: 0.65,
+            metalness: 0.04,
           });
-          const wire = new THREE.LineSegments(edgesGeo, edgesMat);
-          wire.position.y = 0.05;
-          this.staticGroup.add(wire);
+          const topOutlinePts = [];
+          for (let i = 0; i < worldPoly.length; i++) {
+            const a = worldPoly[i];
+            const b = worldPoly[(i + 1) % worldPoly.length];
+            topOutlinePts.push(new THREE.Vector3(a.x, 0.03 + wallHeight + 0.01, a.z));
+            const dx = b.x - a.x;
+            const dz = b.z - a.z;
+            const segLen = Math.hypot(dx, dz);
+            if (segLen < 0.05) continue;
+            const wallSeg = new THREE.Mesh(new THREE.BoxGeometry(segLen, wallHeight, 0.22), wallMat);
+            wallSeg.position.set((a.x + b.x) / 2, 0.03 + wallHeight / 2, (a.z + b.z) / 2);
+            wallSeg.rotation.y = -Math.atan2(dz, dx);
+            wallSeg.castShadow = !isCorridor;
+            wallSeg.receiveShadow = true;
+            wallSeg.userData.pickInfo = { kind: "room", id: room.id };
+            this.staticGroup.add(wallSeg);
+            this.pickTargets.push(wallSeg);
+          }
+
+          if (topOutlinePts.length >= 3) {
+            const outlineGeo = new THREE.BufferGeometry().setFromPoints(topOutlinePts);
+            const outlineMat = new THREE.LineBasicMaterial({
+              color: isSelected ? style.hex : 0xcbd5e1,
+              transparent: true,
+              opacity: isSelected ? 1.0 : (isCorridor ? 0.45 : 0.85),
+            });
+            this.staticGroup.add(new THREE.LineLoop(outlineGeo, outlineMat));
+          }
 
           // 3D Interior Fixtures (beds, monitors, U-desk, shelving, med cart, lab bench)
           const fixtures = createRoomInterior3D(room, { minX, maxX, minZ, maxZ });
+          fixtures.traverse((obj) => {
+            if (obj.isMesh) {
+              obj.castShadow = true;
+              obj.receiveShadow = true;
+            }
+          });
           this.staticGroup.add(fixtures);
 
           // Floating 3D room badge
@@ -3394,7 +3486,7 @@
           const worldPts = [];
           ev.pixel_path.forEach((pt) => {
             const w = this.pxToWorld(pt.x, pt.y);
-            const v = new THREE.Vector3(w.x, 0.38, w.z);
+            const v = new THREE.Vector3(w.x, 0.25, w.z);
             if (worldPts.length === 0 || worldPts[worldPts.length - 1].distanceToSquared(v) > 0.01) {
               worldPts.push(v);
             }
@@ -3405,7 +3497,7 @@
           }
 
           const isNurse = ev.agent_role === "nurse";
-          const colorHex = isNurse ? 0xf43f5e : 0x14b8a6;
+          const colorHex = isNurse ? 0xe11d48 : 0x0d9488;
 
           const curve = new THREE.CatmullRomCurve3(worldPts, false, "catmullrom", 0.06);
           const segs = Math.min(64, Math.max(12, worldPts.length * 8));
@@ -3413,21 +3505,21 @@
           const tubeMat = new THREE.MeshStandardMaterial({
             color: colorHex,
             emissive: colorHex,
-            emissiveIntensity: 0.75,
+            emissiveIntensity: 0.35,
             transparent: true,
-            opacity: 0.88,
-            roughness: 0.25,
+            opacity: 0.92,
+            roughness: 0.3,
           });
           const activeTube = new THREE.Mesh(tubeGeo, tubeMat);
           activeTube.visible = false;
           this.pathsGroup.add(activeTube);
 
-          const trailPts = worldPts.map((p) => new THREE.Vector3(p.x, 0.14, p.z));
+          const trailPts = worldPts.map((p) => new THREE.Vector3(p.x, 0.25, p.z));
           const lineGeo = new THREE.BufferGeometry().setFromPoints(trailPts);
           const lineMat = new THREE.LineBasicMaterial({
             color: colorHex,
             transparent: true,
-            opacity: 0.24,
+            opacity: 0.42,
           });
           const faintLine = new THREE.Line(lineGeo, lineMat);
           faintLine.visible = false;
@@ -3442,6 +3534,12 @@
         if (this.agentPool.has(poolKey)) return this.agentPool.get(poolKey);
         const tag = role === "nurse" ? "Nurse" : ("R" + (agentId.replace(/\D/g, "") || "1"));
         const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, state.robotProfileId);
+        mesh.traverse((obj) => {
+          if (obj.isMesh) {
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+          }
+        });
         mesh.visible = false;
         this.agentsGroup.add(mesh);
         this.agentPool.set(poolKey, mesh);
@@ -3515,10 +3613,10 @@
             const age = (t - ev.end_time_s) / 25;
             const ripple = this.getOrCreateRipple(rippleIdx++);
             ripple.visible = true;
-            ripple.position.set(vis.endWorld.x, 0.16, vis.endWorld.z);
+            ripple.position.set(vis.endWorld.x, 0.25, vis.endWorld.z);
             const s = 1 + age * 2.6;
             ripple.scale.set(s, s, s);
-            ripple.material.color.setHex(ev.agent_role === "nurse" ? 0xf43f5e : 0x14b8a6);
+            ripple.material.color.setHex(ev.agent_role === "nurse" ? 0xe11d48 : 0x0d9488);
             ripple.material.opacity = (1 - age) * 0.85;
           }
         });
