@@ -1,0 +1,398 @@
+"""Floor plan extraction (Gemini 4 Neon) and verification (Decisions API)."""
+
+from __future__ import annotations
+
+import base64
+import io
+import json
+import os
+from pathlib import Path
+from typing import Optional
+
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+from PIL import Image
+from pydantic import BaseModel, Field
+
+from hospital_twin.schemas import Door, Point, Room, RoomType, UnitMap
+
+NEON_MODEL = "gemini-4-neon"
+DECISION_MODEL = "gemini-decision-1"
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+FALLBACK_UNIT_PATH = _REPO_ROOT / "data" / "demo" / "fallback_unit.json"
+
+
+class _ExtractedRoom(BaseModel):
+    id: str
+    label: str
+    type: RoomType
+    polygon: list[Point]
+    centroid: Optional[Point] = None
+
+
+class _ExtractedDoor(BaseModel):
+    id: str
+    position: Point
+    rooms_connected: list[str] = Field(min_length=2, max_length=2)
+
+
+class _ExtractedUnitSchema(BaseModel):
+    rooms: list[_ExtractedRoom]
+    doors: list[_ExtractedDoor]
+
+
+def _get_client(api_version: Optional[str] = None) -> genai.Client:
+    """Create a Google GenAI client, loading .env if GEMINI_API_KEY is not set."""
+    if not os.environ.get("GEMINI_API_KEY"):
+        load_dotenv(_REPO_ROOT / ".env")
+    if api_version:
+        return genai.Client(http_options={"api_version": api_version})
+    return genai.Client()
+
+
+def compute_centroid(polygon: list[Point]) -> Point:
+    """Compute the 2D centroid of a polygon, falling back to vertex mean."""
+    if not polygon:
+        return Point(x=0.0, y=0.0)
+    if len(polygon) < 3:
+        return Point(
+            x=sum(p.x for p in polygon) / len(polygon),
+            y=sum(p.y for p in polygon) / len(polygon),
+        )
+
+    area_acc = 0.0
+    cx_acc = 0.0
+    cy_acc = 0.0
+    n = len(polygon)
+    for i in range(n):
+        p0 = polygon[i]
+        p1 = polygon[(i + 1) % n]
+        cross = p0.x * p1.y - p1.x * p0.y
+        area_acc += cross
+        cx_acc += (p0.x + p1.x) * cross
+        cy_acc += (p0.y + p1.y) * cross
+
+    if abs(area_acc) < 1e-6:
+        return Point(
+            x=sum(p.x for p in polygon) / n,
+            y=sum(p.y for p in polygon) / n,
+        )
+
+    factor = 1.0 / (3.0 * area_acc)
+    return Point(x=cx_acc * factor, y=cy_acc * factor)
+
+
+def _image_to_base64_png(image: Image.Image) -> str:
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode("ascii")
+
+
+def _image_to_bytes_png(image: Image.Image) -> bytes:
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def crop_room_region(
+    image: Image.Image,
+    room: Room,
+    padding: int = 16,
+) -> Image.Image:
+    """Crop the bounding box of a room polygon (with padding) from the floor plan."""
+    width, height = image.size
+    if room.polygon:
+        xs = [p.x for p in room.polygon]
+        ys = [p.y for p in room.polygon]
+        x0 = max(0, int(min(xs)) - padding)
+        y0 = max(0, int(min(ys)) - padding)
+        x1 = min(width, int(max(xs)) + padding)
+        y1 = min(height, int(max(ys)) + padding)
+    elif room.centroid is not None:
+        cx, cy = int(room.centroid.x), int(room.centroid.y)
+        box_r = max(32, padding * 2)
+        x0 = max(0, cx - box_r)
+        y0 = max(0, cy - box_r)
+        x1 = min(width, cx + box_r)
+        y1 = min(height, cy + box_r)
+    else:
+        return image.copy()
+
+    if x1 <= x0 or y1 <= y0:
+        return image.copy()
+    return image.crop((x0, y0, x1, y1))
+
+
+def crop_door_region(
+    image: Image.Image,
+    door: Door,
+    radius: int = 40,
+) -> Image.Image:
+    """Crop a square region centered on a door's pixel position."""
+    width, height = image.size
+    cx = int(round(door.position.x))
+    cy = int(round(door.position.y))
+    x0 = max(0, cx - radius)
+    y0 = max(0, cy - radius)
+    x1 = min(width, cx + radius)
+    y1 = min(height, cy + radius)
+    if x1 <= x0 or y1 <= y0:
+        return image.copy()
+    return image.crop((x0, y0, x1, y1))
+
+
+def extract_unit_map(
+    image_path: str,
+    meters_per_pixel: float = 0.05,
+) -> UnitMap:
+    """Extract rooms and doors from a floor plan image using Gemini 4 Neon."""
+    with Image.open(image_path) as img:
+        rgb_img = img.convert("RGB")
+        width, height = rgb_img.size
+        img_bytes = _image_to_bytes_png(rgb_img)
+
+    prompt = (
+        f"Analyze this hospital unit floor plan image ({width}x{height} pixels).\n"
+        "Extract every distinct room/corridor and every door connecting two rooms/corridors.\n"
+        "For each room provide:\n"
+        "- id: short snake_case identifier (e.g. 'room_101', 'nurse_station', 'corridor_main')\n"
+        "- label: human-readable name shown on the plan\n"
+        "- type: one of patient_room, nurse_station, medication_room, supply_room, lab_drop, corridor, other\n"
+        "- polygon: list of {x, y} pixel coordinates tracing the room boundary\n"
+        "- centroid: {x, y} pixel center of the room\n"
+        "For each door provide:\n"
+        "- id: short snake_case identifier (e.g. 'door_101')\n"
+        "- position: {x, y} pixel coordinate of the doorway\n"
+        "- rooms_connected: exactly 2 room ids that this door connects.\n"
+    )
+
+    client = _get_client()
+    response = client.models.generate_content(
+        model=NEON_MODEL,
+        contents=[
+            types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
+            prompt,
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=_ExtractedUnitSchema,
+            thinking_config=types.ThinkingConfig(thinking_level="MEDIUM"),
+        ),
+    )
+
+    if getattr(response, "parsed", None) is not None:
+        raw = response.parsed
+        if isinstance(raw, BaseModel):
+            data = raw.model_dump()
+        else:
+            data = dict(raw)
+    else:
+        data = json.loads(response.text)
+
+    rooms: list[Room] = []
+    for item in data.get("rooms", []):
+        poly = [Point.model_validate(pt) for pt in item.get("polygon", [])]
+        centroid_raw = item.get("centroid")
+        centroid = Point.model_validate(centroid_raw) if centroid_raw else compute_centroid(poly)
+        rooms.append(
+            Room(
+                id=item["id"],
+                label=item["label"],
+                type=item["type"],
+                polygon=poly,
+                centroid=centroid,
+            )
+        )
+
+    doors = [
+        Door(
+            id=d["id"],
+            position=Point.model_validate(d["position"]),
+            rooms_connected=list(d["rooms_connected"]),
+        )
+        for d in data.get("doors", [])
+    ]
+
+    return UnitMap(
+        image_width=width,
+        image_height=height,
+        meters_per_pixel=meters_per_pixel,
+        rooms=rooms,
+        doors=doors,
+    )
+
+
+def _re_extract_room_label(
+    crop: Image.Image,
+    room: Room,
+    neon_client: genai.Client,
+) -> Optional[Room]:
+    """Attempt targeted re-extraction of a low-confidence room crop using Gemini 4 Neon."""
+    class _RoomPatch(BaseModel):
+        label: str
+        type: RoomType
+
+    try:
+        response = neon_client.models.generate_content(
+            model=NEON_MODEL,
+            contents=[
+                types.Part.from_bytes(data=_image_to_bytes_png(crop), mime_type="image/png"),
+                (
+                    f"This cropped hospital floor plan region was tentatively labeled '{room.label}' "
+                    f"(type '{room.type}'). Confirm or correct the exact room label and type."
+                ),
+            ],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=_RoomPatch,
+                thinking_config=types.ThinkingConfig(thinking_level="LOW"),
+            ),
+        )
+        parsed = getattr(response, "parsed", None)
+        if parsed is not None:
+            patch = parsed.model_dump() if isinstance(parsed, BaseModel) else dict(parsed)
+        else:
+            patch = json.loads(response.text)
+        return room.model_copy(update={"label": patch["label"], "type": patch["type"]})
+    except Exception:
+        return None
+
+
+def verify_unit_map(
+    image_path: str,
+    unit_map: UnitMap,
+    confidence_threshold: float = 0.6,
+    re_extract_threshold: float = 0.35,
+) -> tuple[UnitMap, dict]:
+    """Verify each extracted room and door crop using the Decisions API.
+
+    Low-confidence items in [re_extract_threshold, confidence_threshold) are
+    re-extracted against their cropped region; items below re_extract_threshold
+    (or failing re-verification) are dropped.
+    """
+    with Image.open(image_path) as img:
+        rgb_img = img.convert("RGB")
+
+    decision_client = _get_client(api_version="v1beta")
+    neon_client: Optional[genai.Client] = None
+
+    kept_rooms: list[Room] = []
+    kept_doors: list[Door] = []
+    dropped = 0
+    re_extracted = 0
+    confidences: list[float] = []
+
+    for room in unit_map.rooms:
+        crop = crop_room_region(rgb_img, room)
+        b64_crop = _image_to_base64_png(crop)
+        res = decision_client.decisions.create(
+            model=DECISION_MODEL,
+            input=[
+                {"type": "image", "data": b64_crop, "mime_type": "image/png"},
+                {
+                    "type": "text",
+                    "text": f"Cropped hospital floor plan room region. Candidate label: '{room.label}', type: '{room.type}'.",
+                },
+            ],
+            questions={
+                "is_room_label": {
+                    "type": "noul",
+                    "instructions": f"Is this room labeled '{room.label}' (or a {room.type.replace('_', ' ')})?",
+                }
+            },
+        )
+        answer = res.answers["is_room_label"]
+        p_valid = float(answer.noul)
+
+        if p_valid >= confidence_threshold:
+            kept_rooms.append(room.model_copy(update={"confidence": round(p_valid, 4)}))
+            confidences.append(p_valid)
+        elif p_valid >= re_extract_threshold:
+            if neon_client is None:
+                neon_client = _get_client()
+            patched = _re_extract_room_label(crop, room, neon_client)
+            if patched is not None:
+                re_res = decision_client.decisions.create(
+                    model=DECISION_MODEL,
+                    input=[
+                        {"type": "image", "data": b64_crop, "mime_type": "image/png"},
+                        {
+                            "type": "text",
+                            "text": f"Re-extracted room candidate: '{patched.label}' ({patched.type}).",
+                        },
+                    ],
+                    questions={
+                        "is_room_label": {
+                            "type": "noul",
+                            "instructions": f"Is this room labeled '{patched.label}'?",
+                        }
+                    },
+                )
+                re_p = float(re_res.answers["is_room_label"].noul)
+                if re_p >= confidence_threshold:
+                    kept_rooms.append(patched.model_copy(update={"confidence": round(re_p, 4)}))
+                    confidences.append(re_p)
+                    re_extracted += 1
+                    continue
+            dropped += 1
+        else:
+            dropped += 1
+
+    surviving_room_ids = {r.id for r in kept_rooms}
+
+    for door in unit_map.doors:
+        if not all(rid in surviving_room_ids for rid in door.rooms_connected):
+            dropped += 1
+            continue
+
+        crop = crop_door_region(rgb_img, door)
+        b64_crop = _image_to_base64_png(crop)
+        res = decision_client.decisions.create(
+            model=DECISION_MODEL,
+            input=[
+                {"type": "image", "data": b64_crop, "mime_type": "image/png"},
+                {
+                    "type": "text",
+                    "text": f"Cropped hospital floor plan doorway candidate '{door.id}' connecting {door.rooms_connected}.",
+                },
+            ],
+            questions={
+                "is_door": {
+                    "type": "noul",
+                    "instructions": "Is this a door or doorway connecting two spaces on the floor plan?",
+                }
+            },
+        )
+        answer = res.answers["is_door"]
+        p_door = float(answer.noul)
+
+        if p_door >= confidence_threshold:
+            kept_doors.append(door.model_copy(update={"confidence": round(p_door, 4)}))
+            confidences.append(p_door)
+        else:
+            dropped += 1
+
+    mean_conf = sum(confidences) / len(confidences) if confidences else 0.0
+    verified_unit = UnitMap(
+        image_width=unit_map.image_width,
+        image_height=unit_map.image_height,
+        meters_per_pixel=unit_map.meters_per_pixel,
+        rooms=kept_rooms,
+        doors=kept_doors,
+    )
+    stats = {
+        "kept": len(kept_rooms) + len(kept_doors),
+        "dropped": dropped,
+        "re_extracted": re_extracted,
+        "mean_confidence": round(mean_conf, 4),
+    }
+    return verified_unit, stats
+
+
+def load_fallback_unit() -> UnitMap:
+    """Load the explicitly labeled pre-traced fallback unit map from data/demo/fallback_unit.json."""
+    with open(FALLBACK_UNIT_PATH, "r", encoding="utf-8") as f:
+        payload = json.load(f)
+    return UnitMap.model_validate(payload)
