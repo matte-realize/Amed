@@ -989,8 +989,8 @@
 
     function getRoomStyle(room) {
       if (state.colorMode === "autonomy") {
-        const tier = room.autonomy_tier || "autonomous";
-        return AUTONOMY_COLORS[tier] || AUTONOMY_COLORS.autonomous;
+        const tier = room.autonomy_tier || "assisted";
+        return AUTONOMY_COLORS[tier] || AUTONOMY_COLORS.assisted;
       }
       return ROOM_COLORS[room.type] || ROOM_COLORS.other;
     }
@@ -1014,7 +1014,7 @@
       let assistCount = 0;
       let humanCount = 0;
       for (const r of state.unitMap.rooms) {
-        const t = r.autonomy_tier || "autonomous";
+        const t = r.autonomy_tier || "assisted";
         if (t === "autonomous") autoCount++;
         else if (t === "assisted") assistCount++;
         else humanCount++;
@@ -1040,8 +1040,8 @@
         return;
       }
 
-      const autoRooms = state.unitMap.rooms.filter((r) => (r.autonomy_tier || "autonomous") === "autonomous");
-      const assistRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "assisted");
+      const autoRooms = state.unitMap.rooms.filter((r) => (r.autonomy_tier || "assisted") === "autonomous");
+      const assistRooms = state.unitMap.rooms.filter((r) => (r.autonomy_tier || "assisted") === "assisted");
       const humanRooms = state.unitMap.rooms.filter((r) => r.autonomy_tier === "human_only");
       const narrowDoors = (state.unitMap.doors || []).filter((d) => d.robot_passable === false);
 
@@ -1052,9 +1052,9 @@
           kind: "room",
           id: sample.id,
           tier: "autonomous",
-          pill: `${autoRooms.length} Autonomous Zones`,
+          pill: `${autoRooms.length} Transit Ready`,
           title: autoRooms.map((r) => r.label).slice(0, 3).join(", ") + (autoRooms.length > 3 ? "…" : ""),
-          reason: sample.autonomy_reason || "Full courier-robot transit & docking supported.",
+          reason: `${sample.autonomy_reason || "Clear transit lane."} Solution: ${sample.proposed_solution || "AMR corridor lane."}`,
         });
       }
       if (assistRooms.length > 0) {
@@ -1063,9 +1063,9 @@
           kind: "room",
           id: sample.id,
           tier: "assisted",
-          pill: `${assistRooms.length} Assisted Hub`,
-          title: assistRooms.map((r) => r.label).join(", "),
-          reason: sample.autonomy_reason || "Shared human-robot handoff zone.",
+          pill: `${assistRooms.length} Needs Upgrade`,
+          title: assistRooms.map((r) => r.label).slice(0, 3).join(", ") + (assistRooms.length > 3 ? "…" : ""),
+          reason: `${sample.autonomy_reason || "Not autonomous yet."} Solution: ${sample.proposed_solution || "Auto-door + courier handoff dock."}`,
         });
       }
       if (humanRooms.length > 0) {
@@ -1155,10 +1155,12 @@
           els.inspectorDual.classList.add("hidden");
           return;
         }
-        const tier = room.autonomy_tier || "autonomous";
-        const tierLabel = (AUTONOMY_COLORS[tier] || AUTONOMY_COLORS.autonomous).label;
+        const tier = room.autonomy_tier || "assisted";
+        const tierLabel = (AUTONOMY_COLORS[tier] || AUTONOMY_COLORS.assisted).label;
         const conf = room.confidence != null ? ` · ${Math.round(room.confidence * 100)}% conf` : "";
-        const reason = room.autonomy_reason || "Standard hospital zone.";
+        const reason = room.autonomy_reason || "Requires hardware/workflow verification before full autonomy.";
+        const solution = room.proposed_solution ? `Solution: ${room.proposed_solution}` : "";
+        const prereqs = Array.isArray(room.prerequisites) ? room.prerequisites : [];
         const obstacles = room.obstacles && room.obstacles.length > 0 ? room.obstacles : ["clear floor"];
         const connectedDoors = (state.unitMap.doors || []).filter(
           (d) => d.rooms_connected && d.rooms_connected.includes(room.id)
@@ -1174,7 +1176,9 @@
           </div>
           <span class="tier-pill ${escapeHtml(tier)}">${escapeHtml(tierLabel)}</span>
           <div class="inspector-reason">${escapeHtml(reason)}</div>
+          ${solution ? `<div class="inspector-reason" style="color:#0f766e;font-weight:600;margin-top:4px;">${escapeHtml(solution)}</div>` : ""}
           <div class="inspector-chips">
+            ${prereqs.map((p) => `<span class="inspector-chip" style="border-color:#0d9488;color:#0f766e;">Req: ${escapeHtml(p)}</span>`).join("")}
             ${obstacles.map((o) => `<span class="inspector-chip">Fixture: ${escapeHtml(o.replace(/_/g, " "))}</span>`).join("")}
             ${connectedDoors.map((d) => {
               const w = (d.width_m ?? 1.0).toFixed(2);
