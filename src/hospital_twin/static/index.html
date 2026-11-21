@@ -147,6 +147,22 @@
       </ol>
     </section>
 
+    <!-- In-room automation -->
+    <section id="rooms" class="lp-section">
+      <div class="lp-head">
+        <span class="eyebrow">Inside the rooms</span>
+        <h2>Not just deliveries. Every room has work a robot can take.</h2>
+        <p class="lp-lede">Tasks that are the same every time go to a robot. Tasks that change each time get a robot to assist while staff decide. Anything that needs judgment stays with people. Where no product exists yet, Amed marks it as a gap worth funding.</p>
+      </div>
+      <div class="ra-legend">
+        <span class="who-robot"><i></i>Robot</span>
+        <span class="who-process"><i></i>Change the process</span>
+        <span class="who-staff"><i></i>Staff</span>
+        <span class="who-gap"><i></i>R&amp;D gap</span>
+      </div>
+      <div class="ra-grid" id="roomAutomationGrid"></div>
+    </section>
+
     <!-- Robot hardware inspector -->
     <section id="robotShowcaseSection" class="lp-section">
       <div class="lp-head">
@@ -358,10 +374,11 @@
         <li><span class="n">02</span><b>Find rooms &amp; doors</b><span class="m">gemini-4-neon</span></li>
         <li><span class="n">03</span><b>Double-check them</b><span class="m">gemini-decision-1</span></li>
         <li><span class="n">04</span><b>Will the robot fit?</b><span>Door by door</span></li>
-        <li><span class="n">05</span><b>Describe the shift</b><span class="m">gemini-4-hydrogen</span></li>
-        <li><span class="n">06</span><b>Run it twice</b><span>Nurses only vs with robots</span></li>
-        <li><span class="n">07</span><b>Try a bad day</b><span>Surges, breakdowns</span></li>
-        <li><span class="n">08</span><b>How accurate is it?</b><span>Tested on 10 new plans</span></li>
+        <li><span class="n">05</span><b>Inside the rooms</b><span>Tasks robots can take</span></li>
+        <li><span class="n">06</span><b>Describe the shift</b><span class="m">gemini-4-hydrogen</span></li>
+        <li><span class="n">07</span><b>Run it twice</b><span>Nurses only vs with robots</span></li>
+        <li><span class="n">08</span><b>Try a bad day</b><span>Surges, breakdowns</span></li>
+        <li><span class="n">09</span><b>How accurate is it?</b><span>Tested on 10 new plans</span></li>
       </ol>
     </section>
 
@@ -1047,6 +1064,7 @@
               return `<span class="inspector-chip">${escapeHtml(d.id)}: ${w}m (${pass})</span>`;
             }).join("")}
           </div>
+          ${roomAutomationHtml(room)}
           <div class="inspector-edit">
             <label>
               <span>Autonomy Tier</span>
@@ -2661,6 +2679,11 @@
             }
           });
           this.staticGroup.add(fixtures);
+          const station = createRoomStation3D(room, { minX, maxX, minZ, maxZ });
+          if (station) {
+            station.traverse((obj) => { if (obj.isMesh) obj.castShadow = true; });
+            this.staticGroup.add(station);
+          }
 
           // Floating 3D room badge
           const cPx = roomCentroids.get(room.id);
@@ -4896,6 +4919,23 @@
         },
       },
       {
+        title: "Inside the rooms",
+        async run(token) {
+          const rooms = state.unitMap.rooms || [];
+          const pick = rooms.find((r) => r.type === "medication_room") || rooms.find((r) => r.type === "supply_room") || rooms.find((r) => roomAutomationFor(r.type));
+          if (pick) {
+            try { setSelection({ kind: "room", id: pick.id }); } catch { /* inspector optional */ }
+            wtFocus(document.getElementById("inspectorSingle"));
+          }
+          const counts = { robot: 0, process: 0, staff: 0, gap: 0 };
+          rooms.forEach((r) => (roomAutomationFor(r.type)?.tasks || []).forEach((t) => counts[t.who]++));
+          wtSay(`Deliveries are only part of it. Each room has its own work: in <b>${escapeHtml(pick?.label || "the medication room")}</b>, a compounding arm draws up IV doses and RFID counts the kits, while staff still check unusual orders.
+            <span class="r">Across this unit: ${counts.robot} tasks to robots · ${counts.process} process changes · ${counts.staff} stay with staff · ${counts.gap} R&amp;D gaps</span>`);
+          await wtWait(7500, token);
+          try { setSelection(null); } catch { /* ignore */ }
+        },
+      },
+      {
         title: "Describe the shift",
         async run(token) {
           wtFocus(els.runDesc);
@@ -5181,6 +5221,139 @@
       const again = document.querySelector(`#cmpEngine [data-cmp="${key}"]`);
       if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch { /* number inputs */ } }
     });
+
+    // =========================================================================
+    // IN-ROOM AUTOMATION: which tasks in each room go to a robot, which robots
+    // assist with, which stay with staff, and where nothing exists yet.
+    // Source: Autonomous Hospital Platform product spec, "What gets automated".
+    // kind: "repeat" (same steps every time), "varies" (changes each time, robot
+    // assists and staff decide), "judgment" (staff only).
+    // who:  "robot" | "process" (change the process) | "staff" | "gap" (R&D gap)
+    // =========================================================================
+    const ROOM_AUTOMATION = {
+      medication_room: {
+        name: "Medication room",
+        station: { profile: "amed_compounding_arm", tag: "ARM", label: "IV compounding arm" },
+        tasks: [
+          { task: "Draw up and compound IV doses", kind: "repeat", who: "robot", how: "Amed 6-DOF compounding arm in a hood; today: IV compounding robots" },
+          { task: "Count med kits and catch expired lots", kind: "repeat", who: "robot", how: "RFID kit tracking on every drawer" },
+          { task: "Stage code meds before a patient arrives", kind: "varies", who: "process", how: "Amed emergency cart loads on an EMS or monitor alert; staff confirm" },
+          { task: "Check an unusual order or dose change", kind: "judgment", who: "staff", how: "Pharmacist and nurse" },
+        ],
+      },
+      supply_room: {
+        name: "Supply room",
+        station: { profile: "diligent_moxi", tag: "MOXI", label: "Restocking cobot" },
+        tasks: [
+          { task: "Pick and deliver supplies, linens, equipment", kind: "repeat", who: "robot", how: "Aethon TUG or Moxi on a set route" },
+          { task: "Count stock and flag expired items", kind: "repeat", who: "robot", how: "RFID shelving with nightly scans" },
+          { task: "Check crash cart, defibrillator battery, suction, oxygen", kind: "repeat", who: "gap", how: "No product does this today; RFID covers med kits only" },
+          { task: "Find a substitute when an item runs out", kind: "judgment", who: "staff", how: "Charge nurse or supply tech" },
+        ],
+      },
+      lab_drop: {
+        name: "Lab drop",
+        station: { profile: "pneumatic_tube", tag: "TUBE", label: "Specimen tube station" },
+        tasks: [
+          { task: "Send specimens to the lab", kind: "repeat", who: "robot", how: "Pneumatic tube or courier robot" },
+          { task: "Label, sort and load sample racks", kind: "repeat", who: "robot", how: "Lab liquid handlers" },
+          { task: "Re-route a STAT sample when the tube is down", kind: "varies", who: "process", how: "Courier robot takes over; runner as last resort" },
+          { task: "Handle a leaking, hazardous or forgotten sample", kind: "judgment", who: "staff", how: "Lab staff; containment is an R&D path" },
+        ],
+      },
+      patient_room: {
+        name: "Patient room",
+        station: null,
+        tasks: [
+          { task: "Drop meds and supplies at the door", kind: "repeat", who: "robot", how: "Courier stops at the threshold; 20 s badge handoff" },
+          { task: "Lift and transfer a patient", kind: "varies", who: "process", how: "Patient-transfer robot with staff (e.g. ALTA at Lahey); safety-test per room first" },
+          { task: "Watch for deterioration and alert early", kind: "repeat", who: "process", how: "Continuous monitoring, linked to pre-staging supplies and staff" },
+          { task: "Monitor sink drains for contamination", kind: "repeat", who: "gap", how: "R&D gap; drains were implicated in all 23 outbreaks in one review" },
+          { task: "Bedside care and clinical decisions", kind: "judgment", who: "staff", how: "Nurses and physicians" },
+        ],
+      },
+      nurse_station: {
+        name: "Nurse station",
+        station: null,
+        tasks: [
+          { task: "Receive robot deliveries", kind: "repeat", who: "process", how: "Docking pad outside the counter so robots never enter the workspace" },
+          { task: "Route alerts to the right person", kind: "varies", who: "process", how: "Monitoring alerts paired with who is closest and free" },
+          { task: "Run a code or a surge", kind: "judgment", who: "staff", how: "Charge nurse; the plan supports, people decide" },
+        ],
+      },
+      corridor: {
+        name: "Hallways",
+        station: null,
+        tasks: [
+          { task: "Drive delivery routes around beds and people", kind: "varies", who: "robot", how: "LiDAR-guided robots re-plan around obstacles in real time" },
+          { task: "Bring the crash cart to a remote room", kind: "varies", who: "gap", how: "The core gap: still pushed by hand; pre-staging cart is the Amed design" },
+          { task: "Keep egress clear during a surge", kind: "judgment", who: "staff", how: "Staff, with robots told to pull aside" },
+        ],
+      },
+    };
+
+    const WHO_LABEL = { robot: "Robot", process: "Change process", staff: "Staff", gap: "R&D gap" };
+    const KIND_LABEL = { repeat: "Same every time", varies: "Changes each time", judgment: "Needs judgment" };
+
+    function roomAutomationFor(type) {
+      return ROOM_AUTOMATION[type] || null;
+    }
+
+    function roomAutomationHtml(room) {
+      const spec = roomAutomationFor(room.type);
+      if (!spec) return "";
+      return `<div class="ra-block"><div class="ra-h">Automation in this room</div>${spec.tasks.map((t) => `
+        <div class="ra-row who-${t.who}">
+          <span class="ra-who">${WHO_LABEL[t.who]}</span>
+          <span class="ra-task">${escapeHtml(t.task)}<small>${escapeHtml(t.how)}</small></span>
+        </div>`).join("")}</div>`;
+    }
+
+    // Stationed (non-moving) robots inside rooms in the 3D twin.
+    function createRoomStation3D(room, bounds) {
+      const spec = roomAutomationFor(room.type);
+      if (!spec || !spec.station) return null;
+      const spanX = bounds.maxX - bounds.minX;
+      const spanZ = bounds.maxZ - bounds.minZ;
+      if (spanX < 5 || spanZ < 5) return null;
+      const group = new THREE.Group();
+      const bot = createRobot3D(spec.station.tag, spec.station.profile);
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cz = (bounds.minZ + bounds.maxZ) / 2;
+      const towardCorridor = cz <= 0 ? 1 : -1;
+      bot.position.set(cx + spanX * 0.22, 0, cz + towardCorridor * spanZ * 0.12);
+      bot.rotation.y = towardCorridor > 0 ? 0 : Math.PI;
+      group.add(bot);
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(1.5, 1.75, 40),
+        new THREE.MeshBasicMaterial({ color: 0x0b6e66, transparent: true, opacity: 0.55, side: THREE.DoubleSide })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(bot.position.x, 0.06, bot.position.z);
+      group.add(ring);
+      try {
+        const tag = makeLabelSprite(spec.station.label, "rgba(11, 110, 102, 0.92)", "#0b6e66", 0.6);
+        tag.position.set(bot.position.x, 4.2, bot.position.z);
+        group.add(tag);
+      } catch { /* label sprites are optional */ }
+      return group;
+    }
+
+    function renderRoomAutomationLanding() {
+      const mount = document.getElementById("roomAutomationGrid");
+      if (!mount) return;
+      mount.innerHTML = Object.values(ROOM_AUTOMATION).map((r) => `
+        <article class="ra-card">
+          <h3>${escapeHtml(r.name)}</h3>
+          ${r.station ? `<span class="ra-station">Stationed: ${escapeHtml(r.station.label)}</span>` : ""}
+          <ul>${r.tasks.map((t) => `
+            <li class="who-${t.who}">
+              <span class="ra-who">${WHO_LABEL[t.who]}</span>
+              <span class="ra-task">${escapeHtml(t.task)}<small>${KIND_LABEL[t.kind]} · ${escapeHtml(t.how)}</small></span>
+            </li>`).join("")}</ul>
+        </article>`).join("");
+    }
+    renderRoomAutomationLanding();
   </script>
 </body>
 </html>
