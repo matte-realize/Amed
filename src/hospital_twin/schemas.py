@@ -73,6 +73,18 @@ class TripEvent(BaseModel):
     distance_m: float
     node_path: list[str]
     pixel_path: list[Point]
+    batch_id: Optional[str] = None
+
+
+class CustodyLogEntry(BaseModel):
+    order_number: str
+    who: str
+    where: str
+    when_s: float
+    when_formatted: str
+    action: Literal["LOAD", "DELIVER", "FLAG_UNCOLLECTED"]
+    run_type: RunType
+    flagged_uncollected: bool = False
 
 
 class ShiftSummary(BaseModel):
@@ -84,6 +96,8 @@ class ShiftSummary(BaseModel):
     avg_delivery_wait_s: float
     total_trips: int
     events: list[TripEvent]
+    custody_log: list[CustodyLogEntry] = Field(default_factory=list)
+    flagged_exceptions: int = 0
 
 
 class SimulationComparison(BaseModel):

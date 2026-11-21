@@ -981,6 +981,15 @@
         </div>
       </section>
 
+      <!-- Live Custody Log (TUG + 3-Compartment Courier Pod) -->
+      <section class="assumptions-bar hidden" id="custodyLogSection" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>Custody Log (TUG + 3-Compartment Pod · 20s Badge Handoff)</strong>
+          <span class="badge ok" id="custodyCountBadge">0 handoffs · 0 exceptions</span>
+        </div>
+        <div id="custodyLogBody" style="max-height:130px; overflow-y:auto; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; display:flex; flex-direction:column; gap:4px;"></div>
+      </section>
+
       <!-- Stated Assumptions (Step 3) -->
       <section class="assumptions-bar hidden" id="assumptionsBar">
         <strong>Stated Assumptions (Scenario Estimate · Logistics Only):</strong>
@@ -1059,6 +1068,9 @@
       singleView: document.getElementById("singleView"),
       dualView: document.getElementById("dualView"),
       playbackBar: document.getElementById("playbackBar"),
+      custodyLogSection: document.getElementById("custodyLogSection"),
+      custodyCountBadge: document.getElementById("custodyCountBadge"),
+      custodyLogBody: document.getElementById("custodyLogBody"),
       assumptionsBar: document.getElementById("assumptionsBar"),
       assumptionsList: document.getElementById("assumptionsList"),
       threeSingle: document.getElementById("threeSingle"),
@@ -2171,11 +2183,11 @@
         const doors = unit.doors.slice(0, maxDoors);
         doors.forEach((door) => {
           const dWorld = this.pxToWorld(door.position.x, door.position.y);
-          const passable = door.robot_passable !== false;
-          const isSelected = state.selectedSelection?.kind === "door" && state.selectedSelection?.id === door.id;
-          const doorColor = passable ? 0x10b981 : 0xe11d48;
-
           const widthMeters = door.width_m ?? 1.0;
+          const passable = door.robot_passable !== false && widthMeters >= 0.90;
+          const isSelected = state.selectedSelection?.kind === "door" && state.selectedSelection?.id === door.id;
+          const doorColor = passable ? 0x10b981 : 0xef4444;
+
           const archSpan = Math.min(4.2, Math.max(1.5, widthMeters * worldUnitsPerMeter));
           const archH = subtle ? 2.5 : 3.3;
 
@@ -2631,13 +2643,13 @@
 
       const doors = unit.doors.slice(0, maxDoors);
       doors.forEach((door) => {
-        const passable = door.robot_passable !== false;
+        const passable = door.robot_passable !== false && (door.width_m ?? 1.0) >= 0.90;
         const radius = Math.max(4, (door.width_m ?? 1.0) * 5.2);
         ctx.save();
         if (!passable) {
           ctx.beginPath();
           ctx.arc(door.position.x, door.position.y, radius + 4, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(225, 29, 72, 0.85)";
+          ctx.strokeStyle = "rgba(239, 68, 68, 0.9)";
           ctx.lineWidth = 2;
           ctx.stroke();
         }
@@ -2857,6 +2869,27 @@
 
       els.scrubber.value = Math.floor(t);
       els.clockReadout.textContent = `${formatClock(t)} / ${formatClock(dur)}`;
+
+      if (els.custodyLogBody && comp.robot_assisted && Array.isArray(comp.robot_assisted.custody_log)) {
+        const visible = comp.robot_assisted.custody_log.filter((c) => c.when_s <= t);
+        const flagged = visible.filter((c) => c.flagged_uncollected).length;
+        els.custodyCountBadge.textContent = `${visible.length} handoffs · ${flagged} exceptions (>10m)`;
+        els.custodyCountBadge.className = flagged > 0 ? "badge nurse" : "badge ok";
+        const recent = visible.slice(-24).reverse();
+        els.custodyLogBody.innerHTML = recent.length
+          ? recent.map((c) => {
+              const color = c.flagged_uncollected ? "#f87171" : c.action === "DELIVER" ? "#34d399" : "#93c5fd";
+              const tag = c.flagged_uncollected ? "FLAG >10m" : c.action;
+              return `<div style="display:flex; gap:10px; padding:2px 6px; border-radius:4px; background:rgba(15,23,42,0.55); border-left:3px solid ${color};">
+                <span style="color:#94a3b8; min-width:56px;">${c.when_formatted}</span>
+                <span style="color:#e2e8f0; font-weight:600; min-width:66px;">${c.order_number}</span>
+                <span style="color:${color}; font-weight:600; min-width:86px;">${tag}</span>
+                <span style="color:#cbd5e1; min-width:120px;">${c.who}</span>
+                <span style="color:#94a3b8;">@ ${c.where} (${c.run_type.replace(/_/g, " ")})</span>
+              </div>`;
+            }).join("")
+          : `<div style="color:#64748b;">Waiting for first robot handoff...</div>`;
+      }
     }
 
     // =========================================================================
@@ -2985,6 +3018,7 @@
         els.singleView.classList.add("hidden");
         els.dualView.classList.remove("hidden");
         els.playbackBar.classList.remove("hidden");
+        if (els.custodyLogSection) els.custodyLogSection.classList.remove("hidden");
         els.assumptionsBar.classList.remove("hidden");
       }
       syncStageButtons();
@@ -3141,6 +3175,7 @@
         els.singleView.classList.add("hidden");
         els.dualView.classList.remove("hidden");
         els.playbackBar.classList.remove("hidden");
+        if (els.custodyLogSection) els.custodyLogSection.classList.remove("hidden");
         els.assumptionsBar.classList.remove("hidden");
         renderInspectorCards();
         renderAutonomyHighlights();

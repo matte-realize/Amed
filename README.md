@@ -38,10 +38,21 @@ Evaluated live (`gemini-4-neon` + `gemini-decision-1`) across progressive degrad
 | Low Contrast + Blur | `800x500` | 100.0% | 100.0% | 100.0% | 100.0% | **PASS (>=75%)** |
 | Rotated 15° | `800x500` | 100.0% | 100.0% | 100.0% | 20.0% | **BREAKING POINT (<75%)** |
 
-## Demo Plans, Scenarios & Stated Assumptions
+## Sourced Physical Inputs & Stated Assumptions
+
+| Input | Source | Value |
+| --- | --- | --- |
+| Unit floor plan | VA Medical/Surgical Inpatient Units & Intensive Care Nursing Units Design Guide (Nov 2011) | Typical medical/surgical unit; scale from drawing (`0.05 m/px` default) |
+| Unit size check | VA Space Planning Criteria, Chapter 100 | 17 to 33 beds per inpatient unit |
+| Robot speed & length | Aethon TUG specifications | `76 cm/s` (`0.76 m/s`); `96.5 cm` long |
+| Robot + pod door clearance | TUG spec + VA room plates / facility spec | `0.90 m` minimum door width (narrower doors turn red & excluded from robot routes) |
+| Demand sanity check | Aethon, via RIA | ~10,000 medication orders/week at a 200-bed hospital (plausibility check only) |
+| Nurse walking speed | Stated assumption | `1.2 m/s` |
+| Courier pod & handoffs | Stated assumption | 3 compartments (`pharmacy`, `specimens`, `supplies`); `20s` badge-and-unlock handoff at load & delivery; `>10 min` uncollected delivery flagged |
+
+## Demo Plans, Scenarios & Scope
 - **Demo Plans (`data/demo/`):** `sample_unit.png` (standard hospital unit) and `icu_wing.png` (L-shaped ICU wing with narrow isolation airlocks), plus custom floor plan image upload and optional facility spec document upload (`.pdf`, `.txt`, `.csv`).
-- **Scenario Modes:** `routine`, `chaotic` (STAT surges), and `surge` (mass surge), comparing Nurse-Only vs. 1–3 courier robots with spoken (Web Speech API) or typed shift run descriptions.
-- **Nurse walking speed:** `1.2 m/s` | **Courier robot speed:** `0.8 m/s` | **Default scale:** `0.05 m/pixel` (configurable per plan).
+- **Scenario Modes:** `routine`, `chaotic` (STAT surges), and `surge` (mass surge), comparing Nurse-Only vs. 1–3 courier robots with spoken (Web Speech API) or typed shift run descriptions and live **Custody Log** (`order_number`, `who`, `where`, `when`).
 - **Scope:** Logistics trips only (`pharmacy_pickup`, `lab_specimen_drop`, `supply_restock`); no clinical or patient-care tasks. Time-saved figures are scenario estimates from these stated assumptions.
 
 ## Quickstart

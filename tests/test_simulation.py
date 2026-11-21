@@ -365,3 +365,55 @@ def test_chaotic_and_surge_scenarios_deterministic_and_multi_robot():
     assert len(active_robots) >= 2
 
 
+def test_tug_pod_batching_door_clearance_and_custody_log():
+    unit = _make_sample_unit(meters_per_pixel=0.05)
+    # Set d2 width below 0.90m robot+pod clearance threshold even though robot_passable=True
+    for door in unit.doors:
+        if door.id == "d2":
+            door.width_m = 0.85
+            door.robot_passable = True
+
+    robot_graph = build_route_graph(unit, robot_only=True, robot_clearance_m=0.90)
+    assert not robot_graph.has_edge("med_room", "corridor")
+
+    # Restore d2 width and test 3-compartment pod batching + custody log + 10-min flagging
+    for door in unit.doors:
+        if door.id == "d2":
+            door.width_m = 1.10
+
+    schedule = [
+        ScheduledRun(
+            run_type="pharmacy_pickup",
+            origin="med_room",
+            destination="nurse_station",
+            frequency_minutes=480.0,
+        ),
+        ScheduledRun(
+            run_type="lab_specimen_drop",
+            origin="nurse_station",
+            destination="lab_drop",
+            frequency_minutes=480.0,
+        ),
+        ScheduledRun(
+            run_type="supply_restock",
+            origin="supply_room",
+            destination="nurse_station",
+            frequency_minutes=480.0,
+        ),
+    ]
+    comp = simulate_shift(unit, schedule, shift_hours=8.0, num_robots=1)
+    assert comp.assumptions["robot_speed_mps"] == 0.76
+    assert comp.assumptions["robot_length_m"] == 0.965
+    assert comp.assumptions["handoff_seconds"] == 20.0
+    assert comp.assumptions["pod_compartments"] == 3
+    assert comp.assumptions["batched_trips"] == 3
+
+    # 3 runs => 3 LOAD + 3 DELIVER custody log entries
+    assert len(comp.robot_assisted.custody_log) == 6
+    assert comp.robot_assisted.custody_log[0].order_number == "ORD-001"
+    assert comp.robot_assisted.custody_log[0].action == "LOAD"
+    assert any(c.action == "DELIVER" for c in comp.robot_assisted.custody_log)
+    assert all(ev.batch_id == "POD-001" for ev in comp.robot_assisted.events)
+
+
+

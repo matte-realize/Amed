@@ -48,14 +48,22 @@ def _pixel_distance(a: Point, b: Point) -> float:
     return math.hypot(b.x - a.x, b.y - a.y)
 
 
-def build_route_graph(unit: UnitMap, robot_only: bool = False) -> nx.Graph:
+DEFAULT_ROBOT_CLEARANCE_M = 0.90
+
+
+def build_route_graph(
+    unit: UnitMap,
+    robot_only: bool = False,
+    robot_clearance_m: float = DEFAULT_ROBOT_CLEARANCE_M,
+) -> nx.Graph:
     """Build a NetworkX graph where rooms are nodes and doors are weighted edges.
 
     Edge weights are Euclidean pixel distances (room centroid -> door -> room centroid)
     multiplied by ``unit.meters_per_pixel``.
 
     When ``robot_only=True``, rooms with ``autonomy_tier == "human_only"`` and
-    doors with ``robot_passable == False`` are excluded.
+    doors with ``robot_passable == False`` or ``width_m < robot_clearance_m``
+    are excluded.
     """
     graph = nx.Graph()
     centroids: dict[str, Point] = {}
@@ -74,7 +82,7 @@ def build_route_graph(unit: UnitMap, robot_only: bool = False) -> nx.Graph:
         )
 
     for door in unit.doors:
-        if robot_only and not door.robot_passable:
+        if robot_only and (not door.robot_passable or door.width_m < robot_clearance_m):
             continue
         u, v = door.rooms_connected
         if u == v or u not in centroids or v not in centroids:

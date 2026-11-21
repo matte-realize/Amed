@@ -11,11 +11,13 @@ import networkx as nx
 import simpy
 
 from hospital_twin.routing import (
+    DEFAULT_ROBOT_CLEARANCE_M,
     build_route_graph,
     find_robot_handoff_node,
     shortest_path_with_pixels,
 )
 from hospital_twin.schemas import (
+    CustodyLogEntry,
     Point,
     RunType,
     ScheduledRun,
@@ -26,7 +28,19 @@ from hospital_twin.schemas import (
 )
 
 DEFAULT_NUM_NURSES = 2
+DEFAULT_ROBOT_SPEED_MPS = 0.76  # Aethon TUG specification: 76 cm/s
+DEFAULT_ROBOT_LENGTH_M = 0.965  # Aethon TUG specification: 96.5 cm
+DEFAULT_HANDOFF_SECONDS = 20.0  # 20s badge-and-unlock handoff at every load and delivery
+UNCOLLECTED_FLAG_SECONDS = 600.0  # 10-minute uncollected delivery exception threshold
+POD_COMPARTMENTS = 3  # pharmacy, specimens, supplies
 ScenarioMode = Literal["routine", "chaotic", "surge"]
+
+
+def _format_shift_time(seconds: float) -> str:
+    total = max(0, int(round(seconds)))
+    hrs, rem = divmod(total, 3600)
+    mins, secs = divmod(rem, 60)
+    return f"{hrs:02d}:{mins:02d}:{secs:02d}"
 
 
 @dataclass(frozen=True)
@@ -274,17 +288,68 @@ def _shortest_deadhead_m(graph: nx.Graph, src: str | None, dst: str) -> float:
         return float("inf")
 
 
+def _batch_robot_requests(
+    requests: list[_TripRequest],
+    mode: Literal["nurse_only", "robot_assisted"],
+    num_robots: int,
+) -> list[list[_TripRequest]]:
+    """Group simultaneous/near-simultaneous distinct-compartment robot runs into 3-compartment pod batches."""
+    if mode != "robot_assisted" or num_robots <= 0:
+        return [[req] for req in requests]
+
+    batches: list[list[_TripRequest]] = []
+    i = 0
+    n = len(requests)
+    while i < n:
+        first = requests[i]
+        if first.robot_route.agent_role != "robot":
+            batches.append([first])
+            i += 1
+            continue
+
+        # Only batch when there are multiple distinct-compartment requests arriving together
+        # and fewer robots than concurrent requests (e.g., 1 robot with a 3-compartment pod).
+        batch = [first]
+        seen_types: set[RunType] = {first.robot_route.run.run_type}
+        j = i + 1
+        window_end = first.arrival_time_s + 60.0
+        while (
+            j < n
+            and len(batch) < POD_COMPARTMENTS
+            and requests[j].arrival_time_s <= window_end
+            and requests[j].robot_route.agent_role == "robot"
+            and requests[j].robot_route.run.run_type not in seen_types
+        ):
+            # If we have enough free robots to serve all concurrent runs immediately, keep unbatched
+            # so multi-robot parallelism is preserved; otherwise batch into the 3-compartment pod.
+            if num_robots >= POD_COMPARTMENTS:
+                break
+            batch.append(requests[j])
+            seen_types.add(requests[j].robot_route.run.run_type)
+            j += 1
+
+        batches.append(batch)
+        i = j
+    return batches
+
+
 def _run_single_mode(
     requests: list[_TripRequest],
     routing_graph: nx.Graph,
+    room_labels: dict[str, str],
     mode: Literal["nurse_only", "robot_assisted"],
     shift_duration_s: float,
     num_robots: int,
     nurse_speed_mps: float,
     robot_speed_mps: float,
+    handoff_seconds: float = DEFAULT_HANDOFF_SECONDS,
+    uncollected_flag_s: float = UNCOLLECTED_FLAG_SECONDS,
 ) -> ShiftSummary:
     env = simpy.Environment()
     events: list[TripEvent] = []
+    custody_log: list[CustodyLogEntry] = []
+    order_seq = 0
+    batch_seq = 0
 
     nurse_pool = simpy.FilterStore(env, capacity=DEFAULT_NUM_NURSES)
     nurse_loc: dict[str, str | None] = {}
@@ -306,19 +371,23 @@ def _run_single_mode(
             robot_loc[rid] = None
             robot_counts[rid] = 0
 
-    def execute_trip(req: _TripRequest):
-        route = req.robot_route if mode == "robot_assisted" else req.nurse_route
-        use_robot = route.agent_role == "robot" and robot_pool is not None
+    def _room_name(room_id: str) -> str:
+        return room_labels.get(room_id, room_id)
+
+    def execute_batch(batch: list[_TripRequest]):
+        nonlocal order_seq, batch_seq
+        lead = batch[0]
+        lead_route = lead.robot_route if mode == "robot_assisted" else lead.nurse_route
+        use_robot = lead_route.agent_role == "robot" and robot_pool is not None
         pool = robot_pool if use_robot else nurse_pool
         loc_map = robot_loc if use_robot else nurse_loc
         count_map = robot_counts if use_robot else nurse_counts
         role: Literal["nurse", "robot"] = "robot" if use_robot else "nurse"
         base_speed = robot_speed_mps if use_robot else nurse_speed_mps
-        effective_speed = max(0.2, base_speed * req.speed_factor)
 
         requested_at = env.now
         if pool.items:
-            origin_node = route.node_path[0]
+            origin_node = lead_route.node_path[0]
             best_id = min(
                 pool.items,
                 key=lambda aid: (
@@ -331,45 +400,96 @@ def _run_single_mode(
         else:
             agent_id = yield pool.get()
 
-        start_time_s = env.now
-        wait_time_s = start_time_s - requested_at
-        travel_time_s = (
-            (route.distance_m / effective_speed) + req.delay_s
-            if route.distance_m > 0
-            else req.delay_s
-        )
-        yield env.timeout(travel_time_s)
-        end_time_s = env.now
+        batch_id: str | None = None
+        if use_robot and len(batch) > 1:
+            batch_seq += 1
+            batch_id = f"POD-{batch_seq:03d}"
 
-        loc_map[agent_id] = route.node_path[-1]
-        count_map[agent_id] = count_map.get(agent_id, 0) + 1
+        who_label = f"{agent_id} (TUG+Pod)" if use_robot else agent_id
+
+        for idx, req in enumerate(batch):
+            order_seq += 1
+            order_no = f"ORD-{order_seq:03d}"
+            route = req.robot_route if mode == "robot_assisted" else req.nurse_route
+            effective_speed = max(0.2, base_speed * req.speed_factor)
+
+            start_time_s = env.now
+            wait_time_s = max(0.0, start_time_s - req.arrival_time_s)
+
+            # Badge-and-unlock handoff at load (once for batch lead, or per unbatched trip)
+            load_handoff = handoff_seconds if (use_robot and idx == 0) else 0.0
+            if use_robot:
+                custody_log.append(
+                    CustodyLogEntry(
+                        order_number=order_no,
+                        who=who_label,
+                        where=_room_name(route.node_path[0]),
+                        when_s=round(start_time_s, 3),
+                        when_formatted=_format_shift_time(start_time_s),
+                        action="LOAD",
+                        run_type=route.run.run_type,
+                    )
+                )
+
+            transit_s = (
+                (route.distance_m / effective_speed) + req.delay_s
+                if route.distance_m > 0
+                else req.delay_s
+            )
+            delivery_handoff = handoff_seconds if use_robot else 0.0
+            step_duration_s = load_handoff + transit_s + delivery_handoff
+            yield env.timeout(step_duration_s)
+            end_time_s = env.now
+
+            if use_robot:
+                uncollected = (end_time_s - req.arrival_time_s) > uncollected_flag_s
+                custody_log.append(
+                    CustodyLogEntry(
+                        order_number=order_no,
+                        who=who_label,
+                        where=_room_name(route.node_path[-1]),
+                        when_s=round(end_time_s, 3),
+                        when_formatted=_format_shift_time(end_time_s),
+                        action="FLAG_UNCOLLECTED" if uncollected else "DELIVER",
+                        run_type=route.run.run_type,
+                        flagged_uncollected=uncollected,
+                    )
+                )
+
+            loc_map[agent_id] = route.node_path[-1]
+            count_map[agent_id] = count_map.get(agent_id, 0) + 1
+
+            events.append(
+                TripEvent(
+                    agent_id=agent_id,
+                    agent_role=role,
+                    run_type=route.run.run_type,
+                    start_time_s=round(start_time_s, 3),
+                    end_time_s=round(end_time_s, 3),
+                    wait_time_s=round(wait_time_s, 3),
+                    distance_m=round(route.distance_m, 3),
+                    node_path=route.node_path,
+                    pixel_path=route.pixel_path,
+                    batch_id=batch_id,
+                )
+            )
+
         yield pool.put(agent_id)
 
-        events.append(
-            TripEvent(
-                agent_id=agent_id,
-                agent_role=role,
-                run_type=route.run.run_type,
-                start_time_s=round(start_time_s, 3),
-                end_time_s=round(end_time_s, 3),
-                wait_time_s=round(wait_time_s, 3),
-                distance_m=round(route.distance_m, 3),
-                node_path=route.node_path,
-                pixel_path=route.pixel_path,
-            )
-        )
+    batches = _batch_robot_requests(requests, mode, num_robots)
 
     def dispatcher():
-        for req in requests:
-            delay = req.arrival_time_s - env.now
+        for batch in batches:
+            delay = batch[0].arrival_time_s - env.now
             if delay > 0:
                 yield env.timeout(delay)
-            env.process(execute_trip(req))
+            env.process(execute_batch(batch))
 
     env.process(dispatcher())
     env.run()
 
     events.sort(key=lambda e: (e.start_time_s, e.end_time_s, e.agent_id))
+    custody_log.sort(key=lambda c: (c.when_s, c.order_number))
 
     nurse_minutes_walked = sum(
         (e.end_time_s - e.start_time_s) / 60.0 for e in events if e.agent_role == "nurse"
@@ -378,6 +498,7 @@ def _run_single_mode(
         (e.end_time_s - e.start_time_s) / 60.0 for e in events if e.agent_role == "robot"
     )
     avg_wait_s = sum(e.wait_time_s for e in events) / len(events) if events else 0.0
+    flagged_exceptions = sum(1 for c in custody_log if c.flagged_uncollected)
 
     return ShiftSummary(
         mode=mode,
@@ -388,6 +509,8 @@ def _run_single_mode(
         avg_delivery_wait_s=round(avg_wait_s, 3),
         total_trips=len(events),
         events=events,
+        custody_log=custody_log,
+        flagged_exceptions=flagged_exceptions,
     )
 
 
@@ -397,7 +520,9 @@ def simulate_shift(
     shift_hours: float = 8.0,
     num_robots: int = 1,
     nurse_speed_mps: float = 1.2,
-    robot_speed_mps: float = 0.8,
+    robot_speed_mps: float = DEFAULT_ROBOT_SPEED_MPS,
+    handoff_seconds: float = DEFAULT_HANDOFF_SECONDS,
+    robot_clearance_m: float = DEFAULT_ROBOT_CLEARANCE_M,
     scenario_mode: ScenarioMode = "routine",
     seed: int = 42,
 ) -> SimulationComparison:
@@ -410,7 +535,8 @@ def simulate_shift(
         raise ValueError("nurse_speed_mps and robot_speed_mps must be positive.")
 
     full_graph = build_route_graph(unit, robot_only=False)
-    robot_graph = build_route_graph(unit, robot_only=True)
+    robot_graph = build_route_graph(unit, robot_only=True, robot_clearance_m=robot_clearance_m)
+    room_labels = {room.id: room.label for room in unit.rooms}
     shift_duration_s = shift_hours * 3600.0
 
     requests = _generate_trip_requests(
@@ -427,20 +553,24 @@ def simulate_shift(
     nurse_only = _run_single_mode(
         requests=requests,
         routing_graph=full_graph,
+        room_labels=room_labels,
         mode="nurse_only",
         shift_duration_s=shift_duration_s,
         num_robots=0,
         nurse_speed_mps=nurse_speed_mps,
         robot_speed_mps=robot_speed_mps,
+        handoff_seconds=handoff_seconds,
     )
     robot_assisted = _run_single_mode(
         requests=requests,
         routing_graph=robot_graph,
+        room_labels=room_labels,
         mode="robot_assisted",
         shift_duration_s=shift_duration_s,
         num_robots=num_robots,
         nurse_speed_mps=nurse_speed_mps,
         robot_speed_mps=robot_speed_mps,
+        handoff_seconds=handoff_seconds,
     )
 
     nurse_minutes_saved = round(
@@ -448,6 +578,7 @@ def simulate_shift(
     )
     autonomized_trips = sum(1 for e in robot_assisted.events if e.agent_role == "robot")
     human_only_trips = sum(1 for e in robot_assisted.events if e.agent_role == "nurse")
+    batched_trips = sum(1 for e in robot_assisted.events if e.batch_id is not None)
     stat_trips = sum(1 for req in requests if req.is_stat)
 
     robot_waits = [e.wait_time_s for e in robot_assisted.events]
@@ -459,20 +590,29 @@ def simulate_shift(
         "num_robots": num_robots,
         "nurse_speed_mps": nurse_speed_mps,
         "robot_speed_mps": robot_speed_mps,
+        "robot_length_m": DEFAULT_ROBOT_LENGTH_M,
+        "robot_clearance_m": robot_clearance_m,
+        "handoff_seconds": handoff_seconds,
+        "pod_compartments": POD_COMPARTMENTS,
+        "uncollected_flag_seconds": UNCOLLECTED_FLAG_SECONDS,
         "meters_per_pixel": unit.meters_per_pixel,
         "scenario_mode": scenario_mode,
         "seed": seed,
         "stat_trips": stat_trips,
         "autonomized_trips": autonomized_trips,
         "human_only_trips": human_only_trips,
+        "batched_trips": batched_trips,
+        "flagged_exceptions": robot_assisted.flagged_exceptions,
         "max_wait_s": round(max(robot_waits, default=0.0), 3),
         "p95_wait_s": round(_percentile(robot_waits, 95.0), 3),
         "nurse_only_max_wait_s": round(max(nurse_waits, default=0.0), 3),
         "nurse_only_p95_wait_s": round(_percentile(nurse_waits, 95.0), 3),
+        "unit_source": "VA Medical/Surgical Inpatient Units & ICU Design Guide (Nov 2011); VA Space Planning Criteria Ch. 100 (17-33 beds)",
+        "robot_source": "Aethon TUG specifications (76 cm/s, 96.5 cm long)",
+        "demand_sanity_check": "Aethon via RIA: ~10,000 med orders/week at 200-bed hospital (plausibility check only)",
         "trip_model": (
-            "Autonomy-aware shortest path via room centroids and doors with nearest-free-robot "
-            "dispatch; human_only rooms use nearest autonomous/assisted handoff nodes, "
-            "and robot-unreachable runs fall back to nurses."
+            "Aethon TUG (0.76 m/s) + 3-compartment custodial courier pod (pharmacy, specimens, supplies) "
+            "with 20s badge-and-unlock handoffs, door clearance fit check (>=0.90 m), and 10-min uncollected flagging."
         ),
     }
 
