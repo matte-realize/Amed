@@ -1,0 +1,9 @@
+.venv
+.env
+.pytest_cache
+__pycache__
+node_modules
+tests
+data/raw
+data/eval/cubicasa_10
+data/eval/stress_variants

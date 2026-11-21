@@ -51,19 +51,19 @@
   <div id="tabOverview" class="page-tab" data-tab-panel="overview">
     <header class="lp-hero" id="amedLandingHero">
       <div class="lp-hero-copy">
-        <span class="eyebrow">For hospital operations &amp; facilities teams</span>
-        <h1>Know what your building needs <em>before</em> you buy a robot.</h1>
-        <p>Upload the floor plan of any unit. Amed shows which doors and hallways a delivery robot can use, what you would have to widen or move, and how much walking a fleet takes off your nurses every shift.</p>
+        <span class="eyebrow">For hospital operations, emergency &amp; facilities teams</span>
+        <h1>See the whole floor. Know the <em>next move.</em></h1>
+        <p>Amed turns your floor plan into a living model of the unit. It watches how work moves, finds where people lose minutes in a crisis, and works out who should do what, robot or person, so nurses spend critical moments on patients, not on searching, fetching or guessing.</p>
         <div class="lp-cta">
           <button type="button" class="lp-btn primary lg" id="heroWalkthroughBtn">See it run on a sample unit</button>
           <button type="button" class="lp-btn lg" id="heroLaunchEngineBtn">Try your own floor plan</button>
         </div>
         <ol class="lp-seq" id="heroSeq" aria-label="How Amed works">
-          <li><span class="n">01</span>Upload a plan</li>
-          <li><span class="n">02</span>Find problem doors</li>
-          <li><span class="n">03</span>Describe a shift</li>
-          <li><span class="n">04</span>Compare with robots</li>
-          <li><span class="n">05</span>Test a bad day</li>
+          <li><span class="n">01</span>Map the unit</li>
+          <li><span class="n">02</span>Watch the work</li>
+          <li><span class="n">03</span>Find the delays</li>
+          <li><span class="n">04</span>Decide who does what</li>
+          <li><span class="n">05</span>Rehearse the worst day</li>
         </ol>
         <p class="lp-proof">Tested on <b>10 real floor plans</b> it had never seen. Every doorway it reported was a real door.</p>
       </div>
@@ -198,7 +198,14 @@
               <div class="t">Look at it from every side</div>
               <div class="s">Drag to orbit · scroll to zoom</div>
             </div>
-            <button type="button" class="btn sm" id="showcaseAutoRotateBtn">Auto-rotate: on</button>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <label style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600;">
+                <span>Disassembly</span>
+                <input type="range" id="showcaseExplodeRange" min="0" max="100" value="0" style="width:88px; accent-color:var(--primary); cursor:pointer;" />
+              </label>
+              <button type="button" class="btn sm" id="showcaseExplodeBtn">Disassemble</button>
+              <button type="button" class="btn sm" id="showcaseAutoRotateBtn">Auto-rotate: on</button>
+            </div>
           </div>
           <div class="showcase-canvas-wrap" id="robotShowcaseMount">
             <span class="showcase-hint">Drag to orbit · scroll to zoom</span>
@@ -211,6 +218,7 @@
             <button type="button" class="showcase-pill" data-showcase-robot="amed_narrow_rover">Amed slim rover</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_compounding_arm">Med-prep arm</button>
             <button type="button" class="showcase-pill" data-showcase-robot="amed_surgical_prep_bot">Surgical prep</button>
+            <button type="button" class="showcase-pill" data-showcase-robot="amed_stationary_locker">Smart locker</button>
           </div>
         </div>
 
@@ -313,8 +321,8 @@
           </label>
           <label class="wt-field"><span>Read the plan</span>
             <div class="segmented" id="wtModeGroup">
-              <button type="button" class="active" data-wt-mode="live">Live (Gemini)</button>
-              <button type="button" data-wt-mode="offline">Pre-traced (offline)</button>
+              <button type="button" class="active" data-wt-mode="live">Live</button>
+              <button type="button" data-wt-mode="offline">Saved copy</button>
             </div>
           </label>
           <button type="button" class="lp-btn primary lg" id="wtStartBtn">Start →</button>
@@ -622,7 +630,7 @@
             <canvas class="canvas-2d hidden" id="mapCanvas"></canvas>
             <div class="inspector-card hidden" id="inspectorSingle"></div>
             <div class="vp-label">Viewport · unit audit</div>
-            <div class="cam-hint" id="camHintSingle">Click a room or door to inspect · drag to orbit · scroll to zoom</div>
+            <div class="cam-hint" id="camHintSingle">Drag to move · right-drag to rotate · scroll to zoom · click a room for details</div>
             <div class="cam-actions" id="camActionsSingle">
               <button type="button" class="cam-btn" data-cam="iso">Iso</button>
               <button type="button" class="cam-btn" data-cam="top">Top</button>
@@ -669,7 +677,7 @@
               <div class="three-mount" id="threeRight"></div>
               <canvas class="canvas-2d hidden" id="canvasRight"></canvas>
               <div class="inspector-card hidden" id="inspectorDual"></div>
-              <div class="cam-hint" id="camHintDual">Both runs on one plan · drag to orbit · click a room to inspect</div>
+              <div class="cam-hint" id="camHintDual">Both runs on one plan · drag to move · right-drag to rotate · scroll to zoom</div>
               <div class="cam-actions" id="camActionsDual">
                 <button type="button" class="cam-btn" data-cam="iso">Iso</button>
                 <button type="button" class="cam-btn" data-cam="top">Top</button>
@@ -1262,6 +1270,7 @@
     let THREE = null;
     let OrbitControls = null;
     let RoomEnvironment = null;
+    let MapControls = null;
     let twinSingle = null;
     let twinLeft = null;
     let twinRight = null;
@@ -1278,6 +1287,9 @@
         try {
           RoomEnvironment = (await import("three/addons/environments/RoomEnvironment.js")).RoomEnvironment;
         } catch { RoomEnvironment = null; }
+        try {
+          MapControls = (await import("three/addons/controls/MapControls.js")).MapControls;
+        } catch { MapControls = null; }
         return true;
       } catch (errPrimary) {
         try {
@@ -1809,6 +1821,90 @@
 
       group.userData = { leftLeg, rightLeg, leftArm, rightArm };
       return group;
+    }
+
+    function createInternalCircuitryGroup() {
+      const core = new THREE.Group();
+      core.userData.isCircuitCore = true;
+
+      const pcbMat = new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.35, metalness: 0.25 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.2, metalness: 0.85 });
+      const copperMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.25, metalness: 0.8 });
+      const chipMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.3 });
+      const aluMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.25, metalness: 0.85 });
+      const battMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.3, metalness: 0.2 });
+
+      // Main Compute & Power Distribution PCB
+      const pcb = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.04, 1.05), pcbMat);
+      pcb.position.set(0, 0.52, 0);
+      core.add(pcb);
+
+      // SoC Compute Module + Finned Aluminum Heatsink
+      const soc = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.04, 0.28), chipMat);
+      soc.position.set(0, 0.56, 0.08);
+      core.add(soc);
+      for (let f = -0.10; f <= 0.10; f += 0.05) {
+        const fin = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.10, 0.018), aluMat);
+        fin.position.set(0, 0.62, 0.08 + f);
+        core.add(fin);
+      }
+
+      // Gold GPIO & CAN-Bus Pin Headers + SMD Capacitors
+      [-0.36, 0.36].forEach((px) => {
+        const header = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.52), goldMat);
+        header.position.set(px, 0.57, 0);
+        core.add(header);
+      });
+      [[-0.22, -0.34], [-0.08, -0.34], [0.08, -0.34], [0.22, -0.34]].forEach(([cx, cz]) => {
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.09, 10), aluMat);
+        cap.position.set(cx, 0.585, cz);
+        core.add(cap);
+      });
+
+      // Status Telemetry LEDs on PCB
+      const ledGreen = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.04), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+      ledGreen.position.set(-0.28, 0.56, 0.42);
+      core.add(ledGreen);
+      const ledCyan = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.04), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+      ledCyan.position.set(-0.18, 0.56, 0.42);
+      core.add(ledCyan);
+
+      // 48V LiFePO4 Cylindrical Cell Pack + Copper Busbars + BMS Board
+      for (let bx = -0.24; bx <= 0.24; bx += 0.12) {
+        [-0.24, 0.24].forEach((bz) => {
+          const cell = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.048, 0.26, 12), battMat);
+          cell.position.set(bx, 0.30, bz);
+          core.add(cell);
+        });
+      }
+      const busbar = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.025, 0.54), copperMat);
+      busbar.position.set(0, 0.435, 0);
+      core.add(busbar);
+
+      // Dual Brushless Motor Drivers with Copper Stator Windings
+      [-0.44, 0.44].forEach((mx) => {
+        const stator = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.08, 16), copperMat);
+        stator.rotation.z = Math.PI / 2;
+        stator.position.set(mx, 0.22, 0);
+        core.add(stator);
+      });
+
+      // Color-Coded Wiring Harnesses (48V Red, CAN Yellow, LiDAR Teal)
+      const wireSpecs = [
+        { color: 0xef4444, pts: [[-0.24, 0.44, 0.24], [-0.36, 0.54, 0.36], [-0.36, 0.58, 0.0]] },
+        { color: 0xfacc15, pts: [[0.36, 0.58, -0.20], [0.42, 0.42, -0.10], [0.44, 0.24, 0.0]] },
+        { color: 0x14b8a6, pts: [[0.0, 0.58, 0.22], [0.0, 0.72, 0.48], [0.0, 0.92, 0.62]] },
+      ];
+      wireSpecs.forEach((ws) => {
+        const curve = new THREE.CatmullRomCurve3(ws.pts.map((p) => new THREE.Vector3(p[0], p[1], p[2])));
+        const tube = new THREE.Mesh(
+          new THREE.TubeGeometry(curve, 14, 0.018, 6, false),
+          new THREE.MeshStandardMaterial({ color: ws.color, roughness: 0.4 })
+        );
+        core.add(tube);
+      });
+
+      return core;
     }
 
     function createRobot3D(tagText = "R1", profileId = "aethon_tug") {
@@ -2351,6 +2447,37 @@
         ringEmitter.rotation.x = Math.PI / 2;
         ringEmitter.position.set(0, 2.42, 0.42);
         group.add(ringEmitter);
+      } else if (profileId === "amed_stationary_locker") {
+        // Stationary Pass-Through RFID Locker with UV-C sanitation bay
+        const plinth = new THREE.Mesh(new THREE.BoxGeometry(1.56, 0.22, 1.04), darkMat);
+        plinth.position.y = 0.11;
+        group.add(plinth);
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(1.48, 2.24, 0.94), whiteMat);
+        frame.position.y = 1.34;
+        group.add(frame);
+        [0.68, 1.34, 1.98].forEach((by, idx) => {
+          const bayDoor = new THREE.Mesh(
+            new THREE.BoxGeometry(1.28, 0.52, 0.08),
+            idx === 1 ? glassMat : steelMat
+          );
+          bayDoor.position.set(0, by, 0.48);
+          group.add(bayDoor);
+          const latch = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.06), tealMat);
+          latch.position.set(0.46, by, 0.53);
+          group.add(latch);
+        });
+        const uvcBar = new THREE.Mesh(
+          new THREE.BoxGeometry(1.16, 0.06, 0.10),
+          new THREE.MeshBasicMaterial({ color: 0xa855f7 })
+        );
+        uvcBar.position.set(0, 1.56, 0.42);
+        group.add(uvcBar);
+        const rfidPad = new THREE.Mesh(
+          new THREE.BoxGeometry(0.24, 0.34, 0.08),
+          new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+        );
+        rfidPad.position.set(-0.56, 1.52, 0.50);
+        group.add(rfidPad);
       } else {
         // Default: aethon_tug — Layered AMR base, 4 wheels, LiDAR turret, open-frame 3-module custodial tower
         const amrBase = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.38, 1.96), darkMat);
@@ -2675,15 +2802,23 @@
         this.camera.position.set(34, 72, 70);
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // The building doesn't move: render its shadows once per rebuild, not every frame.
+        this.renderer.shadowMap.autoUpdate = false;
         mountEl.innerHTML = "";
         mountEl.appendChild(this.renderer.domElement);
         applyRealisticRendering(this.renderer, this.scene, 0.92);
 
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        // Map-style navigation: left-drag moves around the floor, right-drag rotates,
+        // scroll zooms toward the cursor, arrow keys pan. No modifier keys needed.
+        this.controls = new (MapControls || OrbitControls)(this.camera, this.renderer.domElement);
+        this.controls.screenSpacePanning = false;
+        this.controls.zoomToCursor = true;
+        this.controls.keyPanSpeed = 24;
+        try { this.controls.listenToKeyEvents(window); } catch { /* older three */ }
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.08;
         this.controls.maxPolarAngle = Math.PI / 2 - 0.05;
@@ -2873,6 +3008,7 @@
       }
 
       syncStaticUnit(subtle = false) {
+        if (this.renderer?.shadowMap) this.renderer.shadowMap.needsUpdate = true;
         const unit = state.unitMap;
         const imgW = unit ? unit.image_width : (state.bgImage ? state.bgImage.naturalWidth : 1000);
         const imgH = unit ? unit.image_height : (state.bgImage ? state.bgImage.naturalHeight : 650);
@@ -3322,10 +3458,11 @@
         const ROBOT_SHORT = { aethon_tug: "TUG", diligent_moxi: "MOXI", pneumatic_tube: "TUBE", amed_prestage_pod: "CART", amed_narrow_rover: "SLIM", amed_compounding_arm: "ARM", amed_surgical_prep_bot: "PREP", alta_transfer_robot: "ALTA" };
         const tag = role === "nurse" ? "Nurse" : `${ROBOT_SHORT[activeProfile] || "BOT"} ${agentId.replace(/\D/g, "") || "1"}`;
         const mesh = role === "nurse" ? createNurse3D(tag) : createRobot3D(tag, activeProfile);
+        // Moving agents use a cheap contact shadow instead of the shadow map.
         mesh.traverse((obj) => {
           if (obj.isMesh) {
-            obj.castShadow = true;
-            obj.receiveShadow = true;
+            obj.castShadow = false;
+            obj.receiveShadow = false;
           }
         });
         // Models are authored at 2 world units per metre; rescale to this plan's real metres.
@@ -3573,12 +3710,50 @@
           amed_narrow_rover: "SLIM",
           amed_compounding_arm: "ARM",
           amed_surgical_prep_bot: "SURG",
+          amed_stationary_locker: "LOCK",
         };
         const mesh = createRobot3D(tagMap[profileId] || "BOT", profileId);
         if (mesh.userData.halo) mesh.remove(mesh.userData.halo);
         if (mesh.userData.label) mesh.remove(mesh.userData.label);
+
+        const circuitCore = createInternalCircuitryGroup();
+        mesh.add(circuitCore);
+
+        // Compute exploded disassembly CAD vectors for every child part
+        mesh.children.forEach((child) => {
+          child.userData.basePos = child.position.clone();
+          if (child.userData.isCircuitCore) {
+            child.userData.explodeVec = new THREE.Vector3(0, 0.38, 0);
+          } else {
+            const radial = new THREE.Vector3(child.position.x, 0, child.position.z);
+            if (radial.lengthSq() > 0.04) {
+              radial.normalize().multiplyScalar(0.85);
+            } else {
+              radial.set(0, 0, 0);
+            }
+            const liftY = child.position.y > 1.3 ? 1.15 : (child.position.y > 0.55 ? 0.58 : -0.18);
+            child.userData.explodeVec = new THREE.Vector3(radial.x, liftY, radial.z);
+          }
+        });
+
         mesh.scale.setScalar(1.0);
         this.modelGroup.add(mesh);
+        this.explodeAmount = this.targetExplode || 0;
+        this.applyExplode(this.explodeAmount);
+      }
+
+      setExplode(factor) {
+        this.targetExplode = Math.max(0, Math.min(1, Number(factor) || 0));
+      }
+
+      applyExplode(factor) {
+        if (this.modelGroup.children.length === 0) return;
+        const robot = this.modelGroup.children[0];
+        robot.children.forEach((child) => {
+          if (child.userData.basePos && child.userData.explodeVec) {
+            child.position.copy(child.userData.basePos).addScaledVector(child.userData.explodeVec, factor);
+          }
+        });
       }
 
       setAutoRotate(enabled) {
@@ -3601,6 +3776,13 @@
       }
 
       tick(now = performance.now()) {
+        if (typeof this.targetExplode === "number") {
+          const cur = this.explodeAmount || 0;
+          if (Math.abs(this.targetExplode - cur) > 0.002) {
+            this.explodeAmount = cur + (this.targetExplode - cur) * 0.14;
+            this.applyExplode(this.explodeAmount);
+          }
+        }
         if (this.modelGroup.children.length > 0) {
           const robot = this.modelGroup.children[0];
           if (robot.userData.armTurret) {
@@ -3720,6 +3902,21 @@
         description: "6-DOF articulated sterile pharmacy compounding arm with dual parallel vial gripper and 3-axis wrist gimbal.",
         design_notes: "Heavy circular pedestal with leveling feet, rotating turret, exposed servo housings, internal cable conduit, and sterile vial gripper.",
         why_helpful: "Automates repetitive IV admixture and STAT vial preparation inside pharmacy cleanrooms.",
+      },
+      amed_stationary_locker: {
+        id: "amed_stationary_locker",
+        name: "Amed Stationary Pass-Through Locker",
+        vendor: "Custom Amed",
+        is_custom: true,
+        speed_mps: 0.80,
+        clearance_m: 0.0,
+        compartments: 4,
+        handoff_seconds: 6,
+        dimensions: "60 cm W × 45 cm D × 165 cm H",
+        cost_estimate_usd: "~$6.5k BOM target (RFID pass-through bay)",
+        description: "Stationary wall-mounted dual-sided badge locker with UV-C sanitation cycle and automated courier dock.",
+        design_notes: "3-bay pass-through enclosure with RFID badge reader, UV-C LED bar, and internal 48V power/CAN controller.",
+        why_helpful: "Eliminates door-opening bottlenecks at Medication and Supply rooms by letting mobile robots dock outside.",
       },
       amed_surgical_prep_bot: {
         id: "amed_surgical_prep_bot",
@@ -5134,6 +5331,7 @@
       });
 
       if (targetTab === "engine") {
+        if (typeof ensureEngineBooted === "function") ensureEngineBooted();
         const resizeEngineCanvases = () => {
           if (state.viewMode === "3d" && state.threeReady) {
             twinSingle?.resize();
@@ -5213,6 +5411,24 @@
       });
     }
 
+    const showcaseExplodeBtn = document.getElementById("showcaseExplodeBtn");
+    const showcaseExplodeRange = document.getElementById("showcaseExplodeRange");
+    const syncExplodeUi = (val) => {
+      const clamped = Math.max(0, Math.min(100, Number(val) || 0));
+      if (showcaseExplodeRange) showcaseExplodeRange.value = String(clamped);
+      if (showcaseExplodeBtn) showcaseExplodeBtn.textContent = clamped >= 50 ? "Assemble" : "Disassemble";
+      robotShowcase?.setExplode(clamped / 100);
+    };
+    if (showcaseExplodeRange) {
+      showcaseExplodeRange.addEventListener("input", () => syncExplodeUi(showcaseExplodeRange.value));
+    }
+    if (showcaseExplodeBtn) {
+      showcaseExplodeBtn.addEventListener("click", () => {
+        const cur = Number(showcaseExplodeRange?.value || 0);
+        syncExplodeUi(cur >= 50 ? 0 : 100);
+      });
+    }
+
     const showcaseAutoRotateBtn = document.getElementById("showcaseAutoRotateBtn");
     if (showcaseAutoRotateBtn) {
       let autoRotateOn = true;
@@ -5257,6 +5473,7 @@
 
     document.querySelectorAll(".btn-simulate-struggle").forEach((btn) => {
       btn.addEventListener("click", async () => {
+        engineBooted = true;
         const plan = btn.dataset.strugglePlan;
         const fallbackPlan = btn.dataset.struggleFallbackPlan || "icu_wing";
         const count = Number(btn.dataset.struggleCount || 2);
@@ -5437,16 +5654,38 @@
           state.viewMode = "2d";
         }
         applyViewVisibility();
-        // Auto-reconstruct the demo unit in 3D and run robotic shift simulation on boot
-        if (!state.unitMap && state.plans.length > 0) {
-          extractUnit(true).then(() => {
-            if (state.unitMap && !state.comparison) {
-              runSimulation();
-            }
-          });
-        }
       });
+      bootLandingComparison();
     });
+
+    // The landing page only needs numbers, so it asks the API directly and never builds 3D.
+    async function bootLandingComparison() {
+      const planId = state.selectedPlanId;
+      if (!planId) return;
+      try {
+        const ex = await fetch("/api/extract", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ use_fallback: true, plan_id: planId }),
+        }).then((r) => r.json());
+        if (!ex.unit_map) return;
+        const sim = await fetch("/api/simulate", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ unit_map: ex.unit_map, run_description: els.runDesc.value.trim(), num_robots: 2, robot_profile_id: "aethon_tug", shift_hours: 8, scenario_mode: "chaotic", seed: 42 }),
+        });
+        if (!sim.ok) return;
+        state.landingComparison = await sim.json();
+        state.landingPlanName = state.plans.find((p) => p.id === planId)?.name || "Sample unit";
+        renderLandingComparison();
+      } catch { /* landing numbers are optional */ }
+    }
+
+    // Build the engine's unit the first time someone opens it (or starts the walkthrough).
+    let engineBooted = false;
+    function ensureEngineBooted() {
+      if (engineBooted || state.unitMap) { engineBooted = true; return; }
+      engineBooted = true;
+      extractUnit(true).then(() => { if (state.unitMap && !state.comparison) runSimulation(); });
+    }
 
     // =========================================================================
     // LIVE WALKTHROUGH: drives the real engine end to end, one step at a time
@@ -5580,7 +5819,7 @@
           const v = state.verification || {};
           const kept = v.kept ?? state.unitMap.rooms.length;
           const dropped = v.dropped ?? 0;
-          const conf = v.mean_confidence != null ? `${Math.round(v.mean_confidence * 100)}% mean confidence` : "confidence recorded per element";
+          const conf = v.mean_confidence != null ? `${Math.round(v.mean_confidence * 100)}% sure on average` : "every item checked";
           wtSay(`A second pass looks at each room and door up close and throws out anything it isn't sure about. <span class="m">gemini-decision-1</span>
             <span class="r">Kept ${kept}, removed ${dropped} · ${conf}</span>`);
           await wtWait(4200, token);
@@ -5696,6 +5935,7 @@
     ];
 
     async function wtRun() {
+      engineBooted = true;
       const token = ++wt.token;
       wt.idx = -1;
       wt.paused = false;
@@ -5868,6 +6108,25 @@
       return { log, exceptions, stat, humanOnlyTrips, staffRooms };
     }
 
+    function renderLandingComparison() {
+      const land = document.getElementById("cmpLanding");
+      const lc = state.landingComparison;
+      if (!land || !lc) return;
+      const m = buildComparison(lc);
+      const logged = (lc.robot_assisted.custody_log || []).length;
+      const ctx = `${escapeHtml(state.landingPlanName || "Sample unit")} · ${m.hours}-hour shift · busy day · ${m.robots} × ${escapeHtml(m.robotName)}`;
+      land.innerHTML = `
+        <p class="cmp-ctx">${ctx}</p>
+        <p class="cmp-verdict">${cmpVerdict(m)}</p>
+        <div class="cmp-grid">${cmpTypeTable(lc)}
+          <div class="cmp-year">
+            <div><span class="v">${Math.round((m.tripsOff / Math.max(1, m.a.nurseTrips)) * 100)}%</span><span class="k">of deliveries handled by robots</span></div>
+            <div><span class="v">${logged}</span><span class="k">handoffs logged with who, when, where</span></div>
+            <div><span class="v">${Math.round(m.year.trips).toLocaleString("en-US")}</span><span class="k">trips a year handed to robots</span></div>
+          </div>
+        </div>`;
+    }
+
     function renderComparisons() {
       const c = state.comparison;
       const land = document.getElementById("cmpLanding");
@@ -5879,7 +6138,7 @@
       if (nameEl) nameEl.textContent = `Robot: ${m.robotName}`;
       const ctx = `${escapeHtml(els.mapTitle?.textContent || "Sample unit")} · ${m.hours}-hour shift · ${escapeHtml(m.scenario.replace(/_/g, " "))} · ${m.robots} × ${escapeHtml(m.robotName)}`;
       const yearTrips = Math.round(m.year.trips).toLocaleString("en-US");
-      if (land) {
+      if (land && !state.landingComparison) {
         land.innerHTML = `
           <p class="cmp-ctx">${ctx}</p>
           <p class="cmp-verdict">${cmpVerdict(m)}</p>
@@ -6260,6 +6519,7 @@
 
     async function labDesign() {
       if (lab.loading) return;
+      engineBooted = true;
       if (!state.unitMap) {
         await extractUnit(true);
         if (!state.unitMap) return;

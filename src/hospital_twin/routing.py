@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import math
 
 import networkx as nx
@@ -66,6 +67,9 @@ def build_route_graph(
     are excluded.
     """
     graph = nx.Graph()
+    # People can always get there somehow; robots cannot. Only the walking graph estimates
+    # a route across a missing doorway (see shortest_path_with_pixels).
+    graph.graph["estimate_missing_routes"] = not robot_only
     centroids: dict[str, Point] = {}
 
     for room in unit.rooms:
@@ -166,7 +170,15 @@ def shortest_path_with_pixels(
     try:
         node_path: list[str] = nx.shortest_path(G, source=src, target=dst, weight="weight")
     except nx.NetworkXNoPath as exc:
-        raise ValueError(f"No route between '{src}' and '{dst}'.") from exc
+        if not G.graph.get("estimate_missing_routes"):
+            raise ValueError(f"No route between '{src}' and '{dst}'.") from exc
+        # Disconnected rooms usually mean a doorway the extractor missed. Estimate the trip
+        # as a straight line with a detour factor instead of failing the whole shift.
+        a, b = centroids[src], centroids[dst]
+        mpp = getattr(unit, "meters_per_pixel", 0.05) or 0.05
+        dist_m = math.hypot(b.x - a.x, b.y - a.y) * mpp * 1.4
+        logging.getLogger(__name__).warning("No route between %s and %s; using estimated path.", src, dst)
+        return [src, dst], [a, b], dist_m
 
     pixel_path: list[Point] = [centroids[node_path[0]]]
     total_m = 0.0
