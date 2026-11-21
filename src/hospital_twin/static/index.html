@@ -607,6 +607,74 @@
       padding: 2px 7px;
       font-size: 11px;
     }
+    .inspector-edit {
+      margin-top: 9px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(148, 163, 184, 0.25);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+    .inspector-edit label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .inspector-edit select,
+    .inspector-edit input[type="number"] {
+      height: 26px;
+      padding: 0 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.85);
+      color: #f8fafc;
+      font-size: 11px;
+      font-family: inherit;
+    }
+    .inspector-edit input[type="number"] { width: 66px; }
+
+    /* Mock-Drill Calibration Panel */
+    .calibration-panel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .calibration-panel.hidden { display: none; }
+    .calibration-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .calibration-field input {
+      height: 30px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .calibration-field input[type="number"] { width: 72px; }
+    .calibration-field input[type="text"] { width: 170px; }
+    .calibration-summary {
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 600;
+    }
 
     .cam-hint {
       position: absolute;
@@ -883,7 +951,29 @@
 
           <button class="btn btn-accent" id="runSimBtn" disabled>Run Shift</button>
           <button class="btn" id="stressSweepBtn" disabled title="Run 15-run parallel stress sweep (1-3 robots x 5 seeds) for tipping points & autonomy plan">Stress Sweep</button>
+          <button type="button" class="btn" id="calibrateBtn" title="Calibrate nurse/robot speeds and handoff time from mock-drill observations">Calibrate</button>
         </div>
+      </div>
+
+      <div class="calibration-panel hidden" id="calibrationPanel">
+        <label class="calibration-field">
+          <span>Observed Nurse Speed (m/s)</span>
+          <input type="number" id="calNurseSpeed" value="1.2" step="0.05" min="0.2" max="5.0" />
+        </label>
+        <label class="calibration-field">
+          <span>Observed Robot Speed (m/s)</span>
+          <input type="number" id="calRobotSpeed" value="0.76" step="0.02" min="0.2" max="5.0" />
+        </label>
+        <label class="calibration-field">
+          <span>Observed Handoff (s)</span>
+          <input type="number" id="calHandoffSeconds" value="20" step="1" min="0" max="300" />
+        </label>
+        <label class="calibration-field">
+          <span>Drill Notes</span>
+          <input type="text" id="calDrillNotes" placeholder="e.g. Hallway B congestion" />
+        </label>
+        <button type="button" class="btn btn-primary" id="applyCalibrationBtn">Apply Calibration</button>
+        <span class="calibration-summary" id="calibrationSummary"></span>
       </div>
     </section>
 
@@ -1064,6 +1154,7 @@
       speed: 300,
       lastFrameTs: null,
       rafId: null,
+      calibration: null,
     };
 
     const els = {
@@ -1083,6 +1174,14 @@
       shiftHours: document.getElementById("shiftHours"),
       runSimBtn: document.getElementById("runSimBtn"),
       stressSweepBtn: document.getElementById("stressSweepBtn"),
+      calibrateBtn: document.getElementById("calibrateBtn"),
+      calibrationPanel: document.getElementById("calibrationPanel"),
+      calNurseSpeed: document.getElementById("calNurseSpeed"),
+      calRobotSpeed: document.getElementById("calRobotSpeed"),
+      calHandoffSeconds: document.getElementById("calHandoffSeconds"),
+      calDrillNotes: document.getElementById("calDrillNotes"),
+      applyCalibrationBtn: document.getElementById("applyCalibrationBtn"),
+      calibrationSummary: document.getElementById("calibrationSummary"),
       resetBtn: document.getElementById("resetBtn"),
       statusBanner: document.getElementById("statusBanner"),
       statusText: document.getElementById("statusText"),
@@ -1362,6 +1461,16 @@
               return `<span class="inspector-chip">${escapeHtml(d.id)}: ${w}m (${pass})</span>`;
             }).join("")}
           </div>
+          <div class="inspector-edit">
+            <label>
+              <span>Autonomy Tier</span>
+              <select data-edit-room-tier="${escapeHtml(room.id)}">
+                <option value="autonomous" ${tier === "autonomous" ? "selected" : ""}>autonomous</option>
+                <option value="assisted" ${tier === "assisted" ? "selected" : ""}>assisted</option>
+                <option value="human_only" ${tier === "human_only" ? "selected" : ""}>human_only</option>
+              </select>
+            </label>
+          </div>
         `;
       } else if (sel.kind === "door") {
         const door = state.unitMap.doors.find((d) => d.id === sel.id);
@@ -1395,6 +1504,16 @@
           </div>
           <div class="inspector-chips">
             <span class="inspector-chip">Connects: ${escapeHtml(roomNames.join(" ↔ "))}</span>
+          </div>
+          <div class="inspector-edit">
+            <label>
+              <input type="checkbox" data-edit-door-passable="${escapeHtml(door.id)}" ${passable ? "checked" : ""} />
+              <span>Robot Passable</span>
+            </label>
+            <label>
+              <span>Width (m)</span>
+              <input type="number" step="0.05" min="0.3" max="4.0" data-edit-door-width="${escapeHtml(door.id)}" value="${widthStr}" />
+            </label>
           </div>
         `;
       }
@@ -3192,6 +3311,9 @@
             scenario_mode: els.scenarioSelect ? els.scenarioSelect.value : state.scenarioMode,
             seed: state.seed,
             ems_preposition: Boolean(els.emsPrepositionToggle && els.emsPrepositionToggle.checked),
+            nurse_speed_mps: state.calibration ? state.calibration.nurse_speed_mps : 1.2,
+            robot_speed_mps: state.calibration ? state.calibration.robot_speed_mps : 0.76,
+            handoff_seconds: state.calibration ? state.calibration.handoff_seconds : 20,
           }),
         });
         const data = await res.json();
@@ -3374,6 +3496,52 @@
       }
     });
 
+    document.addEventListener("change", (e) => {
+      if (!state.unitMap) return;
+      const roomTierEl = e.target.closest("[data-edit-room-tier]");
+      if (roomTierEl) {
+        const room = (state.unitMap.rooms || []).find((r) => r.id === roomTierEl.dataset.editRoomTier);
+        if (!room) return;
+        room.autonomy_tier = roomTierEl.value;
+        state.unitVersion++;
+        renderAutonomyHighlights();
+        renderInspectorCards();
+        if (!els.singleView.classList.contains("hidden")) drawSingleMap();
+        else renderSimulationFrame();
+        if (state.comparison) runSimulation();
+        return;
+      }
+
+      const doorPassEl = e.target.closest("[data-edit-door-passable]");
+      if (doorPassEl) {
+        const door = (state.unitMap.doors || []).find((d) => d.id === doorPassEl.dataset.editDoorPassable);
+        if (!door) return;
+        door.robot_passable = Boolean(doorPassEl.checked);
+        state.unitVersion++;
+        renderAutonomyHighlights();
+        renderInspectorCards();
+        if (!els.singleView.classList.contains("hidden")) drawSingleMap();
+        else renderSimulationFrame();
+        if (state.comparison) runSimulation();
+        return;
+      }
+
+      const doorWidthEl = e.target.closest("[data-edit-door-width]");
+      if (doorWidthEl) {
+        const door = (state.unitMap.doors || []).find((d) => d.id === doorWidthEl.dataset.editDoorWidth);
+        if (!door) return;
+        const val = Number(doorWidthEl.value);
+        if (!Number.isFinite(val) || val <= 0) return;
+        door.width_m = val;
+        state.unitVersion++;
+        renderAutonomyHighlights();
+        renderInspectorCards();
+        if (!els.singleView.classList.contains("hidden")) drawSingleMap();
+        else renderSimulationFrame();
+        if (state.comparison) runSimulation();
+      }
+    });
+
     document.querySelectorAll("[data-cam]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const preset = btn.dataset.cam;
@@ -3443,6 +3611,58 @@
     els.bannerFallbackBtn.addEventListener("click", () => extractUnit(true));
     els.runSimBtn.addEventListener("click", runSimulation);
     if (els.stressSweepBtn) els.stressSweepBtn.addEventListener("click", runStressSweep);
+
+    async function applyCalibration() {
+      if (!els.applyCalibrationBtn) return;
+      hideBanner();
+      const nurseSpeed = Number(els.calNurseSpeed?.value);
+      const robotSpeed = Number(els.calRobotSpeed?.value);
+      const handoffSeconds = Number(els.calHandoffSeconds?.value);
+      const drillNotes = (els.calDrillNotes?.value || "").trim();
+
+      els.applyCalibrationBtn.disabled = true;
+      els.applyCalibrationBtn.textContent = "Applying...";
+      try {
+        const res = await fetch("/api/calibrate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            observed_nurse_speed_mps: Number.isFinite(nurseSpeed) ? nurseSpeed : null,
+            observed_robot_speed_mps: Number.isFinite(robotSpeed) ? robotSpeed : null,
+            observed_handoff_seconds: Number.isFinite(handoffSeconds) ? handoffSeconds : null,
+            drill_notes: drillNotes,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Calibration failed.");
+
+        state.calibration = {
+          nurse_speed_mps: data.nurse_speed_mps,
+          robot_speed_mps: data.robot_speed_mps,
+          handoff_seconds: data.handoff_seconds,
+        };
+        if (els.calibrationSummary) {
+          els.calibrationSummary.textContent = data.delta_summary || "Calibration applied.";
+        }
+        if (state.comparison && state.unitMap) {
+          await runSimulation();
+        }
+      } catch (err) {
+        showBanner(err.message, "error");
+      } finally {
+        els.applyCalibrationBtn.disabled = false;
+        els.applyCalibrationBtn.textContent = "Apply Calibration";
+      }
+    }
+
+    if (els.calibrateBtn && els.calibrationPanel) {
+      els.calibrateBtn.addEventListener("click", () => {
+        els.calibrationPanel.classList.toggle("hidden");
+      });
+    }
+    if (els.applyCalibrationBtn) {
+      els.applyCalibrationBtn.addEventListener("click", applyCalibration);
+    }
 
     els.micBtn.addEventListener("click", () => {
       if (!recognition) {

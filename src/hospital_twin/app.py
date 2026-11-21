@@ -21,9 +21,14 @@ except ImportError:
 from hospital_twin.schemas import (
     CalibrationInput,
     CalibrationResult,
+    CoalitionSurgeReport,
+    CoalitionSurgeRequest,
+    EmsArrivalSignal,
+    EmsDispatchPlan,
     SimulationComparison,
     StressTestReport,
     UnitMap,
+    UnitReviewRequest,
 )
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -74,6 +79,11 @@ class StressSweepRequest(BaseModel):
         "staffing_gap",
         "crash_cart_missing",
     ] = "surge"
+
+
+class EmsFeedRequest(BaseModel):
+    unit_map: UnitMap
+    signal: EmsArrivalSignal
 
 
 def _list_demo_plans() -> list[dict[str, str]]:
@@ -331,6 +341,37 @@ async def calibrate(req: CalibrationInput) -> CalibrationResult:
     from hospital_twin.world_model import calibrate_from_drill
 
     return calibrate_from_drill(req)
+
+
+@app.post("/api/review-unit", response_model=UnitMap)
+async def review_unit(req: UnitReviewRequest) -> UnitMap:
+    from hospital_twin.world_model import apply_staff_edits
+
+    return apply_staff_edits(req.unit_map, req.room_overrides, req.door_overrides)
+
+
+@app.post("/api/ems-feed", response_model=EmsDispatchPlan)
+async def ems_feed(req: EmsFeedRequest) -> EmsDispatchPlan:
+    from hospital_twin.world_model import plan_ems_prestaging
+
+    try:
+        return plan_ems_prestaging(req.unit_map, req.signal)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"EMS pre-staging failed: {exc}") from exc
+
+
+@app.post("/api/coalition-surge", response_model=CoalitionSurgeReport)
+async def coalition_surge(req: CoalitionSurgeRequest) -> CoalitionSurgeReport:
+    from hospital_twin.world_model import evaluate_coalition_surge
+
+    try:
+        return evaluate_coalition_surge(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Coalition surge evaluation failed: {exc}") from exc
 
 
 if __name__ == "__main__":

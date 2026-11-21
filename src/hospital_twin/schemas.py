@@ -152,3 +152,52 @@ class CalibrationResult(BaseModel):
     robot_speed_mps: float
     handoff_seconds: float
     delta_summary: str
+
+
+class RoomOverride(BaseModel):
+    id: str
+    autonomy_tier: Optional[Literal["autonomous", "assisted", "human_only"]] = None
+    label: Optional[str] = None
+
+
+class DoorOverride(BaseModel):
+    id: str
+    width_m: Optional[float] = None
+    robot_passable: Optional[bool] = None
+
+
+class UnitReviewRequest(BaseModel):
+    unit_map: UnitMap
+    room_overrides: list[RoomOverride] = Field(default_factory=list)
+    door_overrides: list[DoorOverride] = Field(default_factory=list)
+
+
+class EmsArrivalSignal(BaseModel):
+    incident_id: str
+    acuity: Literal["routine", "urgent", "critical"]
+    eta_minutes: float
+    needed_runs: list[RunType]
+
+
+class EmsDispatchPlan(BaseModel):
+    incident_id: str
+    pre_stage_minutes: float
+    scheduled_runs: list[ScheduledRun]
+    summary: str
+
+
+class CoalitionUnitInput(BaseModel):
+    hospital_name: str
+    unit_map: UnitMap
+    num_robots: int = 1
+
+
+class CoalitionSurgeRequest(BaseModel):
+    hospitals: list[CoalitionUnitInput]
+    run_description: str
+    shift_hours: float = 8.0
+
+
+class CoalitionSurgeReport(BaseModel):
+    hospitals: list[dict]
+    recommended_diversion: str

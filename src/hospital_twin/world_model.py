@@ -5,11 +5,19 @@ from __future__ import annotations
 from collections import defaultdict
 
 from hospital_twin.routing import DEFAULT_ROBOT_CLEARANCE_M
+from hospital_twin.schedule_parser import parse_run_description
 from hospital_twin.schemas import (
     AutonomyRecommendation,
     BottleneckItem,
     CalibrationInput,
     CalibrationResult,
+    CoalitionSurgeReport,
+    CoalitionSurgeRequest,
+    DoorOverride,
+    EmsArrivalSignal,
+    EmsDispatchPlan,
+    RoomOverride,
+    RoomType,
     ScheduledRun,
     SimulationComparison,
     StressTestReport,
@@ -251,4 +259,149 @@ def calibrate_from_drill(cal: CalibrationInput) -> CalibrationResult:
         robot_speed_mps=round(robot_speed, 3),
         handoff_seconds=round(handoff_s, 3),
         delta_summary=summary,
+    )
+
+
+def apply_staff_edits(
+    unit: UnitMap,
+    room_overrides: list[RoomOverride],
+    door_overrides: list[DoorOverride],
+) -> UnitMap:
+    """Return a deep-copied UnitMap with staff room and door overrides applied."""
+    updated = unit.model_copy(deep=True)
+    room_map = {ov.id: ov for ov in room_overrides}
+    for room in updated.rooms:
+        ov = room_map.get(room.id)
+        if ov is None:
+            continue
+        if ov.autonomy_tier is not None:
+            room.autonomy_tier = ov.autonomy_tier
+        if ov.label is not None:
+            room.label = ov.label
+
+    door_map = {ov.id: ov for ov in door_overrides}
+    for door in updated.doors:
+        ov = door_map.get(door.id)
+        if ov is None:
+            continue
+        if ov.width_m is not None:
+            door.width_m = ov.width_m
+        if ov.robot_passable is not None:
+            door.robot_passable = ov.robot_passable
+
+    return updated
+
+
+def _find_room_id(
+    unit: UnitMap,
+    preferred_type: RoomType,
+    keywords: tuple[str, ...],
+    fallback_id: str,
+) -> str:
+    """Resolve a room ID by RoomType first, then by keyword match, then fallback."""
+    for room in unit.rooms:
+        if room.type == preferred_type:
+            return room.id
+    for room in unit.rooms:
+        haystack = f"{room.id} {room.label}".lower()
+        if any(kw in haystack for kw in keywords):
+            return room.id
+    for room in unit.rooms:
+        if room.type != "corridor" and room.id != fallback_id:
+            return room.id
+    return fallback_id
+
+
+def plan_ems_prestaging(unit: UnitMap, signal: EmsArrivalSignal) -> EmsDispatchPlan:
+    """Map an incoming NEMSIS-style EMS arrival signal to pre-staged courier runs."""
+    if not unit.rooms:
+        raise ValueError("UnitMap contains no rooms.")
+
+    non_corridor = next((r.id for r in unit.rooms if r.type != "corridor"), unit.rooms[0].id)
+    nurse_station = _find_room_id(unit, "nurse_station", ("nurse", "station", "hub"), non_corridor)
+    med_room = _find_room_id(unit, "medication_room", ("med", "pharm", "rx"), nurse_station)
+    supply_room = _find_room_id(unit, "supply_room", ("supply", "stor", "closet"), nurse_station)
+    lab_drop = _find_room_id(unit, "lab_drop", ("lab", "spec", "path"), nurse_station)
+
+    acuity_cap = {"critical": 5.0, "urgent": 10.0, "routine": signal.eta_minutes}
+    pre_stage_minutes = round(max(1.0, min(signal.eta_minutes, acuity_cap[signal.acuity])), 1)
+    freq_minutes = max(5.0, round(signal.eta_minutes, 1))
+
+    endpoints = {
+        "pharmacy_pickup": (med_room, nurse_station),
+        "supply_restock": (supply_room, nurse_station),
+        "lab_specimen_drop": (nurse_station, lab_drop),
+    }
+
+    scheduled_runs: list[ScheduledRun] = []
+    for run_type in signal.needed_runs:
+        origin, destination = endpoints[run_type]
+        scheduled_runs.append(
+            ScheduledRun(
+                run_type=run_type,
+                origin=origin,
+                destination=destination,
+                frequency_minutes=freq_minutes,
+                label=f"EMS {signal.incident_id} ({signal.acuity}): {run_type.replace('_', ' ')}",
+            )
+        )
+
+    run_list = ", ".join(r.replace("_", " ") for r in signal.needed_runs) or "none"
+    summary = (
+        f"Incident {signal.incident_id} [{signal.acuity.upper()}], ETA {signal.eta_minutes:.1f}m: "
+        f"pre-staging {len(scheduled_runs)} run(s) ({run_list}) within {pre_stage_minutes:.1f}m."
+    )
+    return EmsDispatchPlan(
+        incident_id=signal.incident_id,
+        pre_stage_minutes=pre_stage_minutes,
+        scheduled_runs=scheduled_runs,
+        summary=summary,
+    )
+
+
+def evaluate_coalition_surge(req: CoalitionSurgeRequest) -> CoalitionSurgeReport:
+    """Run surge simulations across coalition hospitals and recommend diversion to lowest p95_wait_s."""
+    if not req.hospitals:
+        raise ValueError("At least one hospital must be provided.")
+
+    results: list[dict] = []
+    for hosp in req.hospitals:
+        available_rooms = [r.id for r in hosp.unit_map.rooms]
+        if not available_rooms:
+            raise ValueError(f"Hospital '{hosp.hospital_name}' UnitMap contains no rooms.")
+        schedule = parse_run_description(req.run_description, available_rooms)
+        if not schedule:
+            raise ValueError(f"Could not parse any scheduled runs for '{hosp.hospital_name}'.")
+
+        comp = simulate_shift(
+            unit=hosp.unit_map,
+            schedule=schedule,
+            shift_hours=req.shift_hours,
+            num_robots=hosp.num_robots,
+            scenario_mode="surge",
+        )
+        p95_wait_s = float(comp.assumptions.get("p95_wait_s", 0.0))
+        results.append(
+            {
+                "hospital_name": hosp.hospital_name,
+                "num_robots": hosp.num_robots,
+                "p95_wait_s": round(p95_wait_s, 2),
+                "avg_delivery_wait_s": comp.robot_assisted.avg_delivery_wait_s,
+                "nurse_minutes_saved": comp.nurse_minutes_saved,
+                "flagged_exceptions": comp.robot_assisted.flagged_exceptions,
+                "total_trips": comp.robot_assisted.total_trips,
+            }
+        )
+
+    best = min(
+        results,
+        key=lambda item: (
+            item["p95_wait_s"],
+            item["flagged_exceptions"],
+            -item["nurse_minutes_saved"],
+        ),
+    )
+    return CoalitionSurgeReport(
+        hospitals=results,
+        recommended_diversion=str(best["hospital_name"]),
     )
