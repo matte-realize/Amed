@@ -3302,159 +3302,351 @@
     function createRobot3D(tagText = "R1", profileId = "aethon_tug") {
       const group = new THREE.Group();
 
-      const haloGeo = new THREE.RingGeometry(1.0, 1.65, 28);
+      const haloGeo = new THREE.RingGeometry(1.05, 1.65, 32);
       haloGeo.rotateX(-Math.PI / 2);
       const haloColor = profileId === "amed_prestage_pod" ? 0xf59e0b : 0x14b8a6;
       const haloMat = new THREE.MeshBasicMaterial({
         color: haloColor,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.55,
         side: THREE.DoubleSide,
       });
       const halo = new THREE.Mesh(haloGeo, haloMat);
-      halo.position.y = 0.08;
+      halo.position.y = 0.04;
       group.add(halo);
 
-      const darkMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.55 });
-      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.15 });
+      const darkMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.42, metalness: 0.6 });
+      const rubberMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.85, metalness: 0.1 });
+      const steelMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.28, metalness: 0.8 });
+      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.24, metalness: 0.12 });
       const tealMat = new THREE.MeshStandardMaterial({
         color: 0x0d9488,
         emissive: 0x14b8a6,
-        emissiveIntensity: 0.55,
+        emissiveIntensity: 0.45,
         roughness: 0.25,
+        metalness: 0.25,
+      });
+      const glassMat = new THREE.MeshStandardMaterial({
+        color: 0xe0f2fe,
+        transparent: true,
+        opacity: 0.38,
+        roughness: 0.1,
+        metalness: 0.1,
       });
 
+      const addWheel = (wx, wy, wz, radius = 0.18, width = 0.12) => {
+        const tire = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, 18), rubberMat);
+        tire.rotation.z = Math.PI / 2;
+        tire.position.set(wx, wy, wz);
+        group.add(tire);
+        const rim = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.58, radius * 0.58, width + 0.02, 14), steelMat);
+        rim.rotation.z = Math.PI / 2;
+        rim.position.set(wx, wy, wz);
+        group.add(rim);
+      };
+
       if (profileId === "diligent_moxi") {
-        // Slim base + vertical column + articulated arm + LED visor
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.88, 0.48, 22), darkMat);
-        base.position.y = 0.28;
-        group.add(base);
-
-        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 1.95, 16), whiteMat);
-        col.position.y = 1.48;
-        group.add(col);
-
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.56, 0.68), whiteMat);
-        head.position.y = 2.65;
-        group.add(head);
-
-        const visor = new THREE.Mesh(
-          new THREE.BoxGeometry(0.82, 0.24, 0.12),
+        // Omnidirectional base + perimeter ring + tapered torso + rear basket + 7-DOF cobot arm + visor head
+        const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.84, 0.90, 0.36, 28), darkMat);
+        skirt.position.y = 0.22;
+        group.add(skirt);
+        const ledRing = new THREE.Mesh(
+          new THREE.TorusGeometry(0.85, 0.035, 10, 32),
           new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
         );
-        visor.position.set(0, 2.65, 0.34);
-        group.add(visor);
+        ledRing.rotation.x = Math.PI / 2;
+        ledRing.position.y = 0.40;
+        group.add(ledRing);
+        const deck = new THREE.Mesh(new THREE.CylinderGeometry(0.76, 0.82, 0.12, 28), whiteMat);
+        deck.position.y = 0.45;
+        group.add(deck);
 
-        // Articulated Arm
-        const upperArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.85, 0.18), darkMat);
-        upperArm.position.set(0.55, 1.95, 0.22);
-        upperArm.rotation.x = -0.5;
+        // Tapered column & chest plate
+        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.42, 1.85, 22), whiteMat);
+        col.position.y = 1.42;
+        group.add(col);
+        const chest = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.65, 0.38), darkMat);
+        chest.position.set(0, 1.85, 0.16);
+        group.add(chest);
+
+        // Rear payload basket
+        const basket = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.44, 0.48), steelMat);
+        basket.position.set(0, 1.15, -0.45);
+        group.add(basket);
+        const basketBin = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.36, 0.38), tealMat);
+        basketBin.position.set(0, 1.25, -0.45);
+        group.add(basketBin);
+
+        // Neck & rounded visor head
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.22, 14), steelMat);
+        neck.position.y = 2.42;
+        group.add(neck);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.52, 0.66), whiteMat);
+        head.position.y = 2.74;
+        group.add(head);
+        const visorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.30, 0.10), darkMat);
+        visorFrame.position.set(0, 2.74, 0.31);
+        group.add(visorFrame);
+        [-0.20, 0.20].forEach((ex) => {
+          const eye = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.075, 0.075, 0.05, 14),
+            new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+          );
+          eye.rotation.x = Math.PI / 2;
+          eye.position.set(ex, 2.74, 0.36);
+          group.add(eye);
+        });
+
+        // 7-DOF Articulated Cobot Arm with joints & 2-finger gripper
+        const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.16, 14, 14), steelMat);
+        shoulder.position.set(0.46, 2.08, 0.08);
+        group.add(shoulder);
+        const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.11, 0.78, 14), darkMat);
+        upperArm.position.set(0.56, 1.78, 0.24);
+        upperArm.rotation.x = -0.55;
         group.add(upperArm);
-
-        const forearm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.72, 0.15), tealMat);
-        forearm.position.set(0.55, 1.68, 0.65);
-        forearm.rotation.x = 0.85;
+        const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 12), tealMat);
+        elbow.position.set(0.56, 1.48, 0.44);
+        group.add(elbow);
+        const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 0.68, 14), whiteMat);
+        forearm.position.set(0.56, 1.46, 0.78);
+        forearm.rotation.x = 1.42;
         group.add(forearm);
+        const wrist = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.14, 12), steelMat);
+        wrist.rotation.x = Math.PI / 2;
+        wrist.position.set(0.56, 1.42, 1.12);
+        group.add(wrist);
+        [-0.07, 0.07].forEach((gx) => {
+          const finger = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.18), darkMat);
+          finger.position.set(0.56 + gx, 1.42, 1.24);
+          group.add(finger);
+        });
       } else if (profileId === "amed_prestage_pod") {
-        // Wide 4-bay emergency cart + amber strobe beacon
-        const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.4, 1.65), darkMat);
-        chassis.position.y = 0.25;
+        // Custom 4-bay emergency pre-stage cart: AMR base + 4 wheels + red/white bays + AED dock + IV mast + amber beacon
+        const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.24, 0.32, 1.68), darkMat);
+        chassis.position.y = 0.26;
         group.add(chassis);
+        const bumper = new THREE.Mesh(new THREE.BoxGeometry(2.34, 0.10, 1.78), rubberMat);
+        bumper.position.y = 0.16;
+        group.add(bumper);
+        [[-0.95, 0.56], [0.95, 0.56], [-0.95, -0.56], [0.95, -0.56]].forEach(([wx, wz]) => {
+          addWheel(wx, 0.16, wz, 0.16, 0.12);
+        });
 
         const cartBody = new THREE.Mesh(
-          new THREE.BoxGeometry(2.05, 1.5, 1.5),
-          new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.3, metalness: 0.2 })
+          new THREE.BoxGeometry(2.08, 1.48, 1.52),
+          new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.28, metalness: 0.22 })
         );
-        cartBody.position.y = 1.2;
+        cartBody.position.y = 1.16;
         group.add(cartBody);
 
-        // 4-bay drawer fronts
-        [-0.45, 0.45].forEach((bx) => {
-          [0.85, 1.52].forEach((by) => {
-            const bay = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.52, 0.12), whiteMat);
+        // Stainless top tray & push rail
+        const topTray = new THREE.Mesh(new THREE.BoxGeometry(2.14, 0.08, 1.58), steelMat);
+        topTray.position.y = 1.94;
+        group.add(topTray);
+        const pushBar = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.9, 12), steelMat);
+        pushBar.rotation.z = Math.PI / 2;
+        pushBar.position.set(0, 2.08, -0.78);
+        group.add(pushBar);
+
+        // 4 modular drawer bays with metallic latches
+        [-0.48, 0.48].forEach((bx) => {
+          [0.82, 1.48].forEach((by) => {
+            const bay = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.52, 0.10), whiteMat);
             bay.position.set(bx, by, 0.76);
             group.add(bay);
+            const handle = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.06, 0.06), steelMat);
+            handle.position.set(bx, by + 0.14, 0.82);
+            group.add(handle);
           });
         });
 
-        // Amber strobe beacon
+        // Top Defibrillator / AED unit & IV mast + amber strobe beacon
+        const aed = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.34, 0.48), darkMat);
+        aed.position.set(-0.52, 2.15, 0.15);
+        group.add(aed);
+        const aedScreen = new THREE.Mesh(
+          new THREE.BoxGeometry(0.42, 0.20, 0.04),
+          new THREE.MeshBasicMaterial({ color: 0x22c55e })
+        );
+        aedScreen.position.set(-0.52, 2.18, 0.40);
+        group.add(aedScreen);
+
+        const beaconBase = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.12, 16), darkMat);
+        beaconBase.position.set(0.55, 2.04, 0);
+        group.add(beaconBase);
         const beacon = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.24, 0.28, 0.36, 16),
+          new THREE.CylinderGeometry(0.18, 0.22, 0.30, 16),
           new THREE.MeshStandardMaterial({
             color: 0xf59e0b,
             emissive: 0xf59e0b,
             emissiveIntensity: 0.95,
           })
         );
-        beacon.position.y = 2.15;
+        beacon.position.set(0.55, 2.24, 0);
         group.add(beacon);
       } else if (profileId === "amed_narrow_rover") {
-        // Compact slim-chassis rover (0.72m) + dual specimen/med canisters
-        const slimChassis = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.42, 1.45), darkMat);
-        slimChassis.position.y = 0.25;
+        // Custom 0.72m slim-chassis rover: narrow 4-wheel track, side rub-rails, dual sealed canisters, telemetry mast
+        const slimChassis = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.34, 1.54), darkMat);
+        slimChassis.position.y = 0.28;
         group.add(slimChassis);
+        [[-0.56, 0.52], [0.56, 0.52], [-0.56, -0.52], [0.56, -0.52]].forEach(([wx, wz]) => {
+          addWheel(wx, 0.17, wz, 0.17, 0.11);
+        });
 
-        [-0.38, 0.38].forEach((czOff, idx) => {
+        // Protective side rub-rails
+        [-0.56, 0.56].forEach((rx) => {
+          const rail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 1.48), tealMat);
+          rail.position.set(rx, 0.44, 0);
+          group.add(rail);
+        });
+
+        // Front optical depth bar
+        const depthBar = new THREE.Mesh(
+          new THREE.BoxGeometry(0.74, 0.12, 0.10),
+          new THREE.MeshBasicMaterial({ color: 0x5eead4 })
+        );
+        depthBar.position.set(0, 0.34, 0.78);
+        group.add(depthBar);
+
+        // Dual sealed specimen & medication canisters with metallic clamp rings
+        [-0.36, 0.36].forEach((czOff, idx) => {
           const canister = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.32, 0.32, 1.15, 16),
+            new THREE.CylinderGeometry(0.34, 0.34, 1.12, 22),
             idx === 0 ? whiteMat : tealMat
           );
           canister.position.set(0, 1.02, czOff);
           group.add(canister);
+
+          const clamp = new THREE.Mesh(new THREE.CylinderGeometry(0.365, 0.365, 0.10, 22), steelMat);
+          clamp.position.set(0, 1.38, czOff);
+          group.add(clamp);
+
+          const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.12, 20), darkMat);
+          cap.position.set(0, 1.62, czOff);
+          group.add(cap);
         });
 
-        const lidar = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.22, 16), tealMat);
-        lidar.position.set(0, 1.72, 0.38);
+        // Central LiDAR mast
+        const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.45, 12), steelMat);
+        mast.position.set(0, 1.72, 0);
+        group.add(mast);
+        const lidar = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.18, 18), darkMat);
+        lidar.position.set(0, 1.98, 0);
         group.add(lidar);
-      } else if (profileId === "pneumatic_tube") {
-        // Pneumatic Tube Hybrid: sleek transfer capsule carrier
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.76, 0.85, 0.46, 20), darkMat);
-        base.position.y = 0.26;
-        group.add(base);
-
-        const capsule = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.45, 0.45, 1.65, 20),
-          new THREE.MeshStandardMaterial({
-            color: 0x38bdf8,
-            emissive: 0x0284c7,
-            emissiveIntensity: 0.45,
-            transparent: true,
-            opacity: 0.9,
-          })
+        const lidarLens = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.225, 0.225, 0.07, 18),
+          new THREE.MeshBasicMaterial({ color: 0x14b8a6 })
         );
-        capsule.position.y = 1.3;
-        group.add(capsule);
+        lidarLens.position.set(0, 1.98, 0);
+        group.add(lidarLens);
+      } else if (profileId === "pneumatic_tube") {
+        // Pneumatic Tube Station + transparent acrylic column + inner pressurized carrier capsule
+        const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.76, 0.88, 0.56, 24), darkMat);
+        pedestal.position.y = 0.28;
+        group.add(pedestal);
+        const consoleFace = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.36, 0.12), steelMat);
+        consoleFace.position.set(0, 0.42, 0.78);
+        group.add(consoleFace);
+        const consoleScreen = new THREE.Mesh(
+          new THREE.BoxGeometry(0.44, 0.18, 0.04),
+          new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+        );
+        consoleScreen.position.set(0, 0.45, 0.84);
+        group.add(consoleScreen);
 
-        const capTop = new THREE.Mesh(new THREE.SphereGeometry(0.45, 16, 12), darkMat);
-        capTop.position.y = 2.12;
-        group.add(capTop);
+        // Lower & upper brushed steel flange rings
+        [0.62, 2.38].forEach((fy) => {
+          const flange = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.14, 24), steelMat);
+          flange.position.y = fy;
+          group.add(flange);
+        });
+
+        // Transparent acrylic tube
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 1.76, 24), glassMat);
+        tube.position.y = 1.50;
+        group.add(tube);
+
+        // Internal pressurized capsule carrier
+        const capsule = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.92, 20), tealMat);
+        capsule.position.y = 1.48;
+        group.add(capsule);
+        [1.04, 1.92].forEach((cy) => {
+          const oRing = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.045, 10, 22), darkMat);
+          oRing.rotation.x = Math.PI / 2;
+          oRing.position.y = cy;
+          group.add(oRing);
+        });
+
+        const capDome = new THREE.Mesh(new THREE.SphereGeometry(0.50, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), darkMat);
+        capDome.position.y = 2.44;
+        group.add(capDome);
       } else {
-        // Default: aethon_tug — AMR base + LiDAR puck + 3-compartment custodial pod
-        const amrBase = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.48, 1.95), darkMat);
+        // Default: aethon_tug — Layered AMR base, 4 wheels, LiDAR turret, 3-compartment custodial pod with badge pads
+        const amrBase = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.38, 1.96), darkMat);
         amrBase.position.y = 0.28;
         group.add(amrBase);
-
-        const lidarPuck = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 0.24, 18), tealMat);
-        lidarPuck.position.set(0, 0.64, 0.78);
-        group.add(lidarPuck);
-
-        // 3-compartment custodial pod
-        [0.85, 1.42, 1.98].forEach((py, idx) => {
-          const comp = new THREE.Mesh(
-            new THREE.BoxGeometry(1.48, 0.48, 1.52),
-            idx === 1 ? tealMat : whiteMat
-          );
-          comp.position.set(0, py, -0.08);
-          group.add(comp);
+        const bumper = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.10, 2.06), rubberMat);
+        bumper.position.y = 0.14;
+        group.add(bumper);
+        [[-0.84, 0.62], [0.84, 0.62], [-0.84, -0.62], [0.84, -0.62]].forEach(([wx, wz]) => {
+          addWheel(wx, 0.16, wz, 0.16, 0.11);
         });
 
+        // Front depth camera bar & status eye
         const eye = new THREE.Mesh(
-          new THREE.BoxGeometry(0.68, 0.16, 0.16),
+          new THREE.BoxGeometry(0.76, 0.14, 0.12),
           new THREE.MeshBasicMaterial({ color: 0x5eead4 })
         );
-        eye.position.set(0, 0.42, 0.98);
+        eye.position.set(0, 0.34, 0.99);
         group.add(eye);
+
+        // Front LiDAR turret
+        const lidarMount = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.14, 20), steelMat);
+        lidarMount.position.set(0, 0.54, 0.76);
+        group.add(lidarMount);
+        const lidarPuck = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.30, 0.20, 20), darkMat);
+        lidarPuck.position.set(0, 0.68, 0.76);
+        group.add(lidarPuck);
+        const lidarGlow = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.29, 0.29, 0.06, 20),
+          new THREE.MeshBasicMaterial({ color: 0x14b8a6 })
+        );
+        lidarGlow.position.set(0, 0.68, 0.76);
+        group.add(lidarGlow);
+
+        // 3-compartment custodial pod (Pharmacy, Specimens, Supplies) + side locker doors & badge readers
+        const podFrame = new THREE.Mesh(new THREE.BoxGeometry(1.52, 1.76, 1.56), darkMat);
+        podFrame.position.set(0, 1.38, -0.10);
+        group.add(podFrame);
+
+        [0.80, 1.38, 1.96].forEach((py, idx) => {
+          const bay = new THREE.Mesh(
+            new THREE.BoxGeometry(1.56, 0.46, 1.44),
+            idx === 1 ? tealMat : whiteMat
+          );
+          bay.position.set(0, py, -0.10);
+          group.add(bay);
+
+          // Side badge-reader pad & handle
+          const latch = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.18, 0.26), steelMat);
+          latch.position.set(0.80, py, 0.18);
+          group.add(latch);
+        });
+
+        // Rear push handle
+        const rearHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.36, 12), steelMat);
+        rearHandle.rotation.z = Math.PI / 2;
+        rearHandle.position.set(0, 2.34, -0.84);
+        group.add(rearHandle);
       }
+
+      group.traverse((obj) => {
+        if (obj.isMesh && obj !== halo) {
+          obj.castShadow = true;
+          obj.receiveShadow = true;
+        }
+      });
 
       const label = makeLabelSprite(tagText, "rgba(15, 118, 110, 0.94)", "#5eead4", 0.75);
       label.position.y = 3.65;
