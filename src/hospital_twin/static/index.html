@@ -23,9 +23,10 @@
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="amedMark" viewBox="0 0 32 32">
-      <path d="M11.5 3.5h9v8h8v9h-8v8h-9v-8h-8v-9h8z" fill="none" stroke="currentColor" stroke-width="1.8"/>
-      <path d="M5.5 16H11l1.8-3.6 2.7 7.2 2-4.6H22" fill="none" stroke="#cf3f55" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="22.5" y="13.5" width="5" height="5" fill="#0b6e66"/>
+      <rect width="32" height="32" rx="7" fill="#17262b"/>
+      <path d="M8.5 25L16 7.5L23.5 25" fill="none" stroke="#fbf8f5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M11.6 19.2H20.4" fill="none" stroke="#5eead4" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="16" cy="7.5" r="2.6" fill="#0d9488" stroke="#fbf8f5" stroke-width="1.2"/>
     </symbol>
   </svg>
   <!-- Site nav -->
@@ -40,6 +41,7 @@
         <button type="button" class="nav-tab active" data-page-tab="overview" role="tab" aria-selected="true"><span class="n">01</span>Overview</button>
         <button type="button" class="nav-tab" data-page-tab="demo" role="tab" aria-selected="false"><span class="n">02</span>See it work</button>
         <button type="button" class="nav-tab" data-page-tab="engine" role="tab" aria-selected="false"><span class="n">03</span>Try it</button>
+        <button type="button" class="nav-tab" data-page-tab="lab" role="tab" aria-selected="false"><span class="n">04</span>Robot lab</button>
       </div>
       <button type="button" class="nav-cta" id="launchTwinBtn">Try your floor plan →</button>
     </div>
@@ -386,6 +388,89 @@
     </section>
   </div>
 
+  <!-- TAB 4: ROBOT LAB (custom robots designed for the loaded unit) -->
+  <div id="tabLab" class="page-tab hidden" data-tab-panel="lab">
+    <section class="lp-section lab" style="padding-top:48px;">
+      <div class="lab-head">
+        <div class="lp-head" style="margin-bottom:0;">
+          <span class="eyebrow">Robot lab</span>
+          <h2>Custom robots, designed for <span id="labUnitName">your unit</span>.</h2>
+          <p class="lp-lede">Where no robot on the market fits your doors or your tasks, Amed designs one. Each design shows how it is built, what it does, what it costs to make one and to make a thousand, and what it takes to certify.</p>
+        </div>
+        <div class="lab-actions">
+          <button type="button" class="lp-btn primary lg" id="labDesignBtn">Design robots for this unit</button>
+          <span class="lab-source" id="labSource"></span>
+        </div>
+      </div>
+
+      <div class="lab-constraints" id="labConstraints"></div>
+      <div class="lab-picker" id="labPicker"></div>
+
+      <div class="lab-main hidden" id="labMain">
+        <div class="lab-viewer sheet">
+          <span class="tk tl"></span><span class="tk tr"></span><span class="tk bl"></span><span class="tk br"></span>
+          <span class="sheet-tag">How it is built</span>
+          <div class="lab-canvas" id="labCanvas"><span class="showcase-hint">Drag to orbit · scroll to zoom</span></div>
+          <div class="lab-explode">
+            <span>Assembled</span>
+            <input type="range" id="labExplode" min="0" max="100" value="55" aria-label="Explode the robot into its parts" />
+            <span>Exploded</span>
+          </div>
+          <dl class="lab-dims" id="labDims"></dl>
+        </div>
+
+        <div class="lab-spec">
+          <section class="lab-block">
+            <h3 id="labName">Design</h3>
+            <p class="lab-tagline" id="labTagline"></p>
+            <p class="lab-why" id="labWhy"></p>
+            <div class="lab-tasks" id="labTasks"></div>
+          </section>
+
+          <section class="lab-block">
+            <div class="lab-block-h">Bill of materials <span class="lab-note">prototype prices, planning estimates</span></div>
+            <table class="lab-bom" id="labBom"></table>
+          </section>
+
+          <section class="lab-block">
+            <div class="lab-block-h">Cost to build <span class="lab-note">per unit, by production volume</span></div>
+            <div class="lab-volume" id="labVolume"></div>
+            <p class="lab-note block" id="labVolumeNote"></p>
+          </section>
+
+          <section class="lab-block lab-two">
+            <div>
+              <div class="lab-block-h">Buildability</div>
+              <div class="lab-meter" id="labBuildMeter"></div>
+              <ul class="lab-list" id="labBuild"></ul>
+            </div>
+            <div>
+              <div class="lab-block-h">Path to mass production</div>
+              <ol class="lab-path" id="labPath"></ol>
+            </div>
+          </section>
+
+          <section class="lab-block lab-two">
+            <div>
+              <div class="lab-block-h">Standards to check</div>
+              <ul class="lab-list" id="labStandards"></ul>
+            </div>
+            <div>
+              <div class="lab-block-h">Risks</div>
+              <ul class="lab-list warn" id="labRisks"></ul>
+            </div>
+          </section>
+
+          <div class="lab-foot">
+            <button type="button" class="lp-btn primary" id="labSimBtn">Simulate this robot on the unit →</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="lab-empty" id="labEmpty">Load a unit in the engine first, or press the button above to design for the sample unit.</p>
+    </section>
+  </div>
+
   <!-- TAB 3: ENGINE (editor layout: toolbar / properties / viewport / results / timeline) -->
   <div id="tabEngine" class="page-tab hidden" data-tab-panel="engine">
     <div class="engine" id="workspaceRoot">
@@ -416,6 +501,7 @@
             <button type="button" data-colormode="room_type">Rooms</button>
           </div>
           <button class="btn" id="resetBtn" title="Reset simulation view">Reset</button>
+          <button class="btn" data-page-tab-link="lab" title="Design custom robots for this unit">Robot lab →</button>
           <span class="engine-status-badge" id="engineStatusBadge"><span class="engine-status-dot"></span>3D engine ready</span>
         </div>
         <div id="emtDispatchBar" style="flex-basis: 100%; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--rule);">
@@ -4982,7 +5068,7 @@
     });
 
     function switchPageTab(tabName = "overview") {
-      const targetTab = ["overview", "engine", "demo"].includes(tabName) ? tabName : "overview";
+      const targetTab = ["overview", "engine", "demo", "lab"].includes(tabName) ? tabName : "overview";
       document.querySelectorAll(".nav-tab[data-page-tab]").forEach((btn) => {
         const isActive = btn.dataset.pageTab === targetTab;
         btn.classList.toggle("active", isActive);
@@ -4992,6 +5078,7 @@
         overview: document.getElementById("tabOverview"),
         engine: document.getElementById("tabEngine"),
         demo: document.getElementById("tabDemo"),
+        lab: document.getElementById("tabLab"),
       };
       Object.entries(panels).forEach(([key, panel]) => {
         if (panel) panel.classList.toggle("hidden", key !== targetTab);
@@ -5009,6 +5096,8 @@
         };
         resizeEngineCanvases();
         requestAnimationFrame(resizeEngineCanvases);
+      } else if (targetTab === "lab") {
+        if (typeof labOnShow === "function") labOnShow();
       } else if (targetTab === "overview") {
         requestAnimationFrame(() => {
           robotShowcase?.resize();
@@ -5903,6 +5992,252 @@
         </article>`).join("");
     }
     renderRoomAutomationLanding();
+
+    // =========================================================================
+    // ROBOT LAB: custom robots designed for the loaded unit (Gemini 4 Carbon)
+    // =========================================================================
+    const lab = { report: null, idx: 0, viewer: null, unitKey: null, loading: false };
+    const labEl = (id) => document.getElementById(id);
+
+    // Per-unit cost at a production volume. Catalog parts get volume discounts, custom
+    // fabricated parts follow an 85% learning curve, molded parts drop to ~20% of their
+    // prototype price once tooled (tooling spread across the run), and assembly labour
+    // follows the same learning curve at $65/h.
+    function labUnitCost(design, n) {
+      const learn = Math.max(0.35, Math.pow(n, Math.log2(0.85)));
+      const otsFactor = n >= 1000 ? 0.75 : n >= 100 ? 0.88 : 1;
+      let ots = 0, fab = 0, molded = 0;
+      design.bom.forEach((b) => {
+        const line = b.qty * b.unit_cost_usd;
+        if (b.source === "off_the_shelf") ots += line;
+        else if (b.source === "custom_molded") molded += line;
+        else fab += line;
+      });
+      const moldedUnit = n >= 100 ? molded * 0.2 + design.tooling_cost_usd / n : molded;
+      const labour = design.assembly_hours * 65 * learn;
+      return { total: ots * otsFactor + fab * learn + moldedUnit + labour, ots, fab, molded };
+    }
+
+    function labMoney(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+
+    class LabViewer {
+      constructor(mount) {
+        this.mount = mount;
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xfbf8f5);
+        const w = Math.max(280, mount.clientWidth || 520), h = Math.max(260, mount.clientHeight || 420);
+        this.camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 200);
+        this.camera.position.set(5.2, 4.2, 6.4);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.setSize(w, h, false);
+        applyRealisticRendering(this.renderer, this.scene, 1.0);
+        const hint = mount.querySelector(".showcase-hint");
+        mount.innerHTML = "";
+        mount.appendChild(this.renderer.domElement);
+        if (hint) mount.appendChild(hint);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.target.set(0, 1.2, 0);
+        this.controls.autoRotate = true;
+        this.controls.autoRotateSpeed = 0.8;
+        this.scene.add(new THREE.HemisphereLight(0xffffff, 0xd6d0c8, 0.7));
+        const key = new THREE.DirectionalLight(0xfff6ea, 1.6);
+        key.position.set(6, 10, 7);
+        key.castShadow = true;
+        key.shadow.mapSize.set(1024, 1024);
+        this.scene.add(key);
+        const floor = new THREE.Mesh(new THREE.CircleGeometry(7, 48), new THREE.MeshStandardMaterial({ color: 0xf3ede6, roughness: 0.9 }));
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        this.scene.add(floor);
+        const grid = new THREE.GridHelper(14, 28, 0xe8c4c8, 0xf1e3e2);
+        grid.position.y = 0.002;
+        this.scene.add(grid);
+        this.robot = null;
+        this.parts = [];
+        this.explode = 0.55;
+        const loop = () => {
+          this.raf = requestAnimationFrame(loop);
+          if (labEl("tabLab")?.classList.contains("hidden")) return;
+          this.controls.update();
+          this.renderer.render(this.scene, this.camera);
+        };
+        loop();
+        this.renderer.domElement.addEventListener("pointerdown", () => { this.controls.autoRotate = false; });
+      }
+
+      resize() {
+        const w = this.mount.clientWidth, h = this.mount.clientHeight;
+        if (w < 50 || h < 50) return;
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h, false);
+      }
+
+      show(design) {
+        if (this.robot) this.scene.remove(this.robot);
+        const tag = design.name.replace(/^Amed\s+/i, "").split(/\s+/)[0].toUpperCase().slice(0, 6);
+        this.robot = createRobot3D(tag, design.base_model);
+        this.robot.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        const box = new THREE.Box3().setFromObject(this.robot);
+        const size = box.getSize(new THREE.Vector3());
+        const s = 2.6 / Math.max(size.x, size.y, size.z, 0.01);
+        this.robot.scale.setScalar(s);
+        this.scene.add(this.robot);
+        // Each direct child is a sub-assembly; explode them outward from the centre.
+        const center = new THREE.Box3().setFromObject(this.robot).getCenter(new THREE.Vector3());
+        this.parts = this.robot.children.map((child) => {
+          const c = new THREE.Box3().setFromObject(child).getCenter(new THREE.Vector3());
+          const dir = c.sub(center);
+          dir.y *= 1.4;
+          if (dir.lengthSq() < 1e-4) dir.set(0, 1, 0);
+          return { obj: child, home: child.position.clone(), dir: dir.normalize() };
+        });
+        this.setExplode(this.explode);
+        this.controls.autoRotate = true;
+      }
+
+      setExplode(t) {
+        this.explode = t;
+        const scale = this.robot ? this.robot.scale.x : 1;
+        this.parts.forEach((p) => {
+          p.obj.position.copy(p.home).addScaledVector(p.dir, (t * 1.4) / scale);
+        });
+      }
+    }
+
+    function labRender() {
+      const r = lab.report;
+      const picker = labEl("labPicker");
+      if (!r) return;
+      const c = r.constraints || {};
+      labEl("labConstraints").innerHTML = `
+        <span><b>${c.narrowest_door_m ?? "?"} m</b> narrowest door</span>
+        <span><b>${c.doors_under_0_90_m ?? 0}</b> doors too narrow for standard couriers</span>
+        <span><b>${c.rooms ?? "?"}</b> rooms · ${escapeHtml(String(c.room_types || ""))}</span>`;
+      labEl("labSource").innerHTML = r.source === "gemini"
+        ? `Designed by <span class="m">${escapeHtml(r.model)}</span>`
+        : `Amed reference designs, sized to this unit <span class="m">(offline)</span>`;
+      picker.innerHTML = r.designs.map((d, i) => `
+        <button type="button" class="lab-pick ${i === lab.idx ? "active" : ""}" data-lab-idx="${i}">
+          <span class="n">${String(i + 1).padStart(2, "0")}</span>
+          <b>${escapeHtml(d.name)}</b>
+          <span>${escapeHtml(d.tagline)}</span>
+          <span class="c">${labMoney(labUnitCost(d, 1000).total)} each at 1,000</span>
+        </button>`).join("");
+      labEl("labEmpty").classList.add("hidden");
+      labEl("labMain").classList.remove("hidden");
+      labShowDesign(lab.idx);
+    }
+
+    function labShowDesign(i) {
+      const d = lab.report.designs[i];
+      if (!d) return;
+      lab.idx = i;
+      document.querySelectorAll(".lab-pick").forEach((b) => b.classList.toggle("active", Number(b.dataset.labIdx) === i));
+      labEl("labName").textContent = d.name;
+      labEl("labTagline").textContent = d.tagline;
+      labEl("labWhy").innerHTML = `<b>Why custom:</b> ${escapeHtml(d.why_custom)}`;
+      labEl("labTasks").innerHTML = d.tasks.map((t) => `<span>${escapeHtml(t)}</span>`).join("") +
+        d.rooms_served.map((r) => `<span class="room">${escapeHtml(r.replace(/_/g, " "))}</span>`).join("");
+      labEl("labDims").innerHTML = [
+        ["Footprint", `${d.width_m.toFixed(2)} × ${d.length_m.toFixed(2)} m`],
+        ["Height", `${d.height_m.toFixed(2)} m`],
+        ["Fits doors", `≥ ${d.min_door_m.toFixed(2)} m`],
+        ["Payload", `${Math.round(d.payload_kg)} kg`],
+        ["Speed", d.speed_mps > 0 ? `${d.speed_mps.toFixed(2)} m/s` : "Fixed cell"],
+      ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+
+      const srcLabel = { off_the_shelf: "Catalog", custom_fabricated: "Custom fab", custom_molded: "Molded" };
+      const bomTotal = d.bom.reduce((s, b) => s + b.qty * b.unit_cost_usd, 0);
+      labEl("labBom").innerHTML = `
+        <thead><tr><th>Part</th><th>Qty</th><th>Source</th><th>Cost</th></tr></thead>
+        <tbody>${d.bom.map((b) => `<tr><td>${escapeHtml(b.part)}${b.notes ? `<small>${escapeHtml(b.notes)}</small>` : ""}</td><td>${b.qty}</td><td class="src ${b.source}">${srcLabel[b.source]}</td><td>${labMoney(b.qty * b.unit_cost_usd)}</td></tr>`).join("")}</tbody>
+        <tfoot><tr><td>Parts, one prototype</td><td></td><td></td><td>${labMoney(bomTotal)}</td></tr></tfoot>`;
+
+      const vols = [1, 10, 100, 1000];
+      const costs = vols.map((n) => labUnitCost(d, n).total);
+      const max = Math.max(...costs);
+      labEl("labVolume").innerHTML = vols.map((n, k) => `
+        <div class="vol"><span class="k">${n.toLocaleString("en-US")} unit${n === 1 ? "" : "s"}</span>
+        <span class="bar"><i style="width:${Math.max(6, (costs[k] / max) * 100)}%"></i></span>
+        <span class="v">${labMoney(costs[k])}</span></div>`).join("");
+      labEl("labVolumeNote").textContent = `Includes parts, assembly (${d.assembly_hours} h at $65/h on the first unit) and ${labMoney(d.tooling_cost_usd)} of molds and fixtures spread over the run. Catalog parts get volume pricing; custom parts follow an 85% learning curve.`;
+
+      const otsShare = bomTotal > 0 ? d.bom.filter((b) => b.source === "off_the_shelf").reduce((s, b) => s + b.qty * b.unit_cost_usd, 0) / bomTotal : 0;
+      const customCount = d.bom.filter((b) => b.source !== "off_the_shelf").length;
+      labEl("labBuildMeter").innerHTML = `<span class="bar"><i style="width:${Math.round(otsShare * 100)}%"></i></span>
+        <span class="t">${Math.round(otsShare * 100)}% of parts cost is catalog parts · ${customCount} custom part${customCount === 1 ? "" : "s"} · ${d.assembly_hours} h to assemble</span>`;
+      labEl("labBuild").innerHTML = d.buildability_notes.map((x) => `<li>${escapeHtml(x)}</li>`).join("");
+      labEl("labPath").innerHTML = [
+        ["Prototype", `1–3 units from catalog parts and a local fab shop. ~${labMoney(costs[0])} each.`],
+        ["Hospital pilot", `10 units on one unit for a supervised trial and safety testing. ~${labMoney(costs[1])} each.`],
+        ["Volume", `Tooled panels and fixtures (${labMoney(d.tooling_cost_usd)}), contract assembly. ~${labMoney(costs[3])} each at 1,000.`],
+      ].map(([k, v]) => `<li><b>${k}</b><span>${v}</span></li>`).join("");
+      labEl("labStandards").innerHTML = d.standards.map((x) => `<li>${escapeHtml(x)}</li>`).join("");
+      labEl("labRisks").innerHTML = d.risks.map((x) => `<li>${escapeHtml(x)}</li>`).join("");
+
+      if (lab.viewer) lab.viewer.show(d);
+    }
+
+    async function labDesign() {
+      if (lab.loading) return;
+      if (!state.unitMap) {
+        await extractUnit(true);
+        if (!state.unitMap) return;
+      }
+      lab.loading = true;
+      const btn = labEl("labDesignBtn");
+      btn.disabled = true;
+      btn.textContent = "Designing…";
+      labEl("labSource").textContent = "Reading the unit's doors and rooms…";
+      try {
+        const res = await fetch("/api/robot-designs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(state.unitMap),
+        });
+        if (!res.ok) throw new Error((await res.json()).detail || "Design failed");
+        lab.report = await res.json();
+        lab.idx = 0;
+        lab.unitKey = state.unitVersion;
+        labRender();
+      } catch (err) {
+        labEl("labSource").textContent = `Could not design robots: ${err.message}`;
+      } finally {
+        lab.loading = false;
+        btn.disabled = false;
+        btn.textContent = "Redesign for this unit";
+      }
+    }
+
+    function labOnShow() {
+      labEl("labUnitName").textContent = state.unitMap ? (els.mapTitle?.textContent || "your unit") : "your unit";
+      if (state.threeReady && !lab.viewer) {
+        try { lab.viewer = new LabViewer(labEl("labCanvas")); } catch { lab.viewer = null; }
+      }
+      requestAnimationFrame(() => lab.viewer?.resize());
+      if (!lab.report || lab.unitKey !== state.unitVersion) labDesign();
+      else if (lab.viewer && lab.report) lab.viewer.show(lab.report.designs[lab.idx]);
+    }
+
+    labEl("labDesignBtn")?.addEventListener("click", labDesign);
+    labEl("labPicker")?.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-lab-idx]");
+      if (b) labShowDesign(Number(b.dataset.labIdx));
+    });
+    labEl("labExplode")?.addEventListener("input", (e) => lab.viewer?.setExplode(Number(e.target.value) / 100));
+    labEl("labSimBtn")?.addEventListener("click", () => {
+      const d = lab.report?.designs[lab.idx];
+      if (!d) return;
+      setRobotProfile(d.base_model, false);
+      switchPageTab("engine");
+      if (state.unitMap) runSimulation();
+    });
+    window.addEventListener("resize", () => lab.viewer?.resize());
   </script>
 </body>
 </html>
