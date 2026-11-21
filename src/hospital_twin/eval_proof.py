@@ -486,9 +486,11 @@ def load_eval_dataset(eval_dir: str | Path = "data/eval") -> list[EvalSample]:
             except Exception:
                 pass
             gt_raw = row.get("gt", {})
+            frame = float(gt_raw.get("meta", {}).get("frame", 0) or 0)
+            scale = (max(width, height) / frame) if frame > 0 and max(width, height) > 0 else 1.0
             rooms: list[Room] = []
             for idx, r in enumerate(gt_raw.get("rooms", [])):
-                poly = [Point(x=float(p[0]), y=float(p[1])) for p in r.get("polygon", [])]
+                poly = [Point(x=float(p[0]) * scale, y=float(p[1]) * scale) for p in r.get("polygon", [])]
                 if len(poly) >= 3:
                     rooms.append(
                         Room(
@@ -509,7 +511,7 @@ def load_eval_dataset(eval_dir: str | Path = "data/eval") -> list[EvalSample]:
                         doors.append(
                             Door(
                                 id=f"door_{d_idx}",
-                                position=Point(x=float(c[0]), y=float(c[1])),
+                                position=Point(x=float(c[0]) * scale, y=float(c[1]) * scale),
                                 rooms_connected=["unknown", "unknown"],
                             )
                         )
