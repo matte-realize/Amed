@@ -1994,7 +1994,7 @@
           <input
             type="text"
             id="runDesc"
-            value="pharmacy pickup every 30 minutes, lab specimen drop hourly, supply restock twice a shift"
+            value="pharmacy pickup every 20 minutes, lab specimen drop every 30 minutes, supply restock hourly"
             placeholder="e.g. pharmacy pickup every 30 min, specimens hourly..."
           />
           <button class="btn btn-mic" id="micBtn" title="Speak run schedule (Web Speech API)">Mic</button>
@@ -2031,8 +2031,8 @@
 
           <label class="inline-label">Robots</label>
           <div class="segmented" id="robotCountGroup">
-            <button type="button" class="active" data-robots="1">1</button>
-            <button type="button" data-robots="2">2</button>
+            <button type="button" data-robots="1">1</button>
+            <button type="button" class="active" data-robots="2">2</button>
             <button type="button" data-robots="3">3</button>
           </div>
 
@@ -2167,10 +2167,10 @@
         <input type="range" class="scrubber" id="scrubber" min="0" max="28800" value="0" step="10" />
         <span class="clock-readout" id="clockReadout">00:00 / 08:00</span>
         <div class="segmented" id="speedGroup">
-          <button type="button" data-speed="60">60x</button>
-          <button type="button" data-speed="150">150x</button>
-          <button type="button" class="active" data-speed="300">300x</button>
+          <button type="button" data-speed="300">300x</button>
           <button type="button" data-speed="600">600x</button>
+          <button type="button" class="active" data-speed="1200">1200x</button>
+          <button type="button" data-speed="2400">2400x</button>
         </div>
       </section>
 
@@ -2309,7 +2309,7 @@
       revealedDoors: 0,
       revealTimer: null,
       selectedSelection: null, // { kind: "room" | "door", id: string }
-      numRobots: 1,
+      numRobots: 2,
       robotProfileId: "aethon_tug",
       scenarioMode: "chaotic",
       seed: 42,
@@ -2317,7 +2317,7 @@
       simVersion: 0,
       simTime: 0,
       playing: false,
-      speed: 300,
+      speed: 1200,
       lastFrameTs: null,
       rafId: null,
       calibration: null,
@@ -4029,18 +4029,18 @@
       }
 
       fitCameraToUnit(preset = "iso", animate = true) {
-        const endTarget = new THREE.Vector3(0, 0, 0);
+        const endTarget = new THREE.Vector3(0, 0.6, 0);
         const fovRad = (this.camera.fov || 44) * (Math.PI / 180);
-        const aspect = Math.max(0.75, this.camera.aspect || 1.6);
-        const margin = 1.14;
+        const aspect = Math.max(0.85, this.camera.aspect || 1.6);
+        const margin = 0.88;
         const worldW = this.worldW || 100;
         const worldH = this.worldH || 65;
         const halfSpan = Math.max(worldH * margin, (worldW * margin) / aspect) * 0.5;
-        const dist = Math.max(58, halfSpan / Math.tan(fovRad / 2));
+        const dist = Math.max(38, halfSpan / Math.tan(fovRad / 2));
         const dir = preset === "top"
-          ? new THREE.Vector3(0, 0.98, 0.18).normalize()
-          : new THREE.Vector3(0.08, 0.72, 0.69).normalize();
-        const endCamPos = dir.multiplyScalar(preset === "top" ? dist * 1.02 : dist);
+          ? new THREE.Vector3(0, 0.98, 0.16).normalize()
+          : new THREE.Vector3(0.18, 0.78, 0.60).normalize();
+        const endCamPos = dir.multiplyScalar(preset === "top" ? dist * 0.96 : dist);
 
         if (animate) {
           this.animateCameraTo(endTarget, endCamPos, 480);
@@ -4067,7 +4067,7 @@
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(w, h, false);
-        if (!this.hasValidFrame) {
+        if (this.hasUnitLoaded && !this.hasValidFrame) {
           this.fitCameraToUnit("iso", false);
           this.hasValidFrame = true;
         }
@@ -4142,8 +4142,10 @@
           this.scene.add(this.studioGrid);
         }
 
-        if (!this.hasValidFrame && this.mountEl.clientWidth > 220 && this.mountEl.clientHeight > 220) {
+        this.hasUnitLoaded = true;
+        if (!this.hasFramedUnit && this.mountEl.clientWidth > 220 && this.mountEl.clientHeight > 220) {
           this.fitCameraToUnit("iso", false);
+          this.hasFramedUnit = true;
           this.hasValidFrame = true;
         }
 
