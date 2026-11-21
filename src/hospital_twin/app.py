@@ -9,6 +9,7 @@ from typing import Any, Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 try:
@@ -42,6 +43,9 @@ app = FastAPI(
     description="Floor plan extraction, run schedule parsing, and nurse vs. courier-robot shift simulation.",
     version="0.1.0",
 )
+
+if STATIC_DIR.is_dir():
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 class SimulateRequest(BaseModel):

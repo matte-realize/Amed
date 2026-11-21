@@ -1236,14 +1236,72 @@
       padding: 56px 24px 36px;
     }
     .lp-hero {
-      text-align: center;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 40px;
+      padding: 48px 24px 44px;
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+    @media (max-width: 960px) {
+      .lp-hero { grid-template-columns: 1fr; text-align: center; }
+      .lp-hero-left { align-items: center; }
+      .lp-cta-row { justify-content: center; }
+    }
+    .lp-hero-left {
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .lp-hero-visual {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+      overflow: hidden;
+    }
+    .lp-visual-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      display: inline-flex;
       align-items: center;
-      gap: 18px;
-      padding: 64px 24px 44px;
-      max-width: 920px;
-      margin: 0 auto;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    }
+    .lp-visual-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #0d9488;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.22);
+    }
+    .lp-visual-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .fleet-svg-wrap {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
     }
     .lp-pill {
       display: inline-flex;
@@ -1422,14 +1480,102 @@
     </div>
   </nav>
 
-  <!-- Spacious Hero -->
+  <!-- Split Hero with Animated Isometric Hospital Twin Preview -->
   <header class="lp-hero" id="amedLandingHero">
-    <span class="lp-pill">Hospital Logistics World Model</span>
-    <h1 class="lp-h1">Simulate hospital robots on your floor plan before you deploy.</h1>
-    <p class="lp-lead">Upload any unit floor plan, catch narrow-door blockers in 3D, and measure how much nurse walking a courier fleet saves—even on surge days.</p>
-    <div class="lp-cta-row">
-      <button type="button" class="lp-btn-primary" onclick="document.getElementById('workspaceRoot').scrollIntoView({behavior:'smooth'})">Launch Interactive 3D Twin</button>
-      <a href="#targets" class="lp-btn-secondary">See Market Research &amp; Targets</a>
+    <div class="lp-hero-left">
+      <span class="lp-pill">Hospital Logistics World Model</span>
+      <h1 class="lp-h1">Simulate hospital robots on your floor plan before you deploy.</h1>
+      <p class="lp-lead">Upload any unit floor plan, catch narrow-door blockers in 3D, and measure how much nurse walking a courier fleet saves—even on surge days.</p>
+      <div class="lp-cta-row" style="justify-content:flex-start;">
+        <button type="button" class="lp-btn-primary" onclick="document.getElementById('workspaceRoot').scrollIntoView({behavior:'smooth'})">Launch Interactive 3D Twin</button>
+        <a href="#targets" class="lp-btn-secondary">Market Research &amp; Targets</a>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+        Validated on 10 unseen CubiCasa5K plans (100% door precision) · VA Design Guide scale · 5 robot platforms
+      </div>
+    </div>
+
+    <div class="lp-hero-visual">
+      <div class="lp-visual-badge"><span class="lp-visual-pulse"></span>Live 3D Engine Preview</div>
+      <svg viewBox="0 0 560 340" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Isometric Hospital Unit Digital Twin">
+        <defs>
+          <pattern id="isoGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e2e8f0" stroke-width="0.8"/>
+          </pattern>
+          <linearGradient id="corridorGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+          </linearGradient>
+        </defs>
+        <rect width="560" height="340" rx="12" fill="#f8fafc"/>
+        <rect width="560" height="340" rx="12" fill="url(#isoGrid)"/>
+
+        <!-- Unit Outer Footprint -->
+        <rect x="44" y="48" width="472" height="236" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+
+        <!-- Top Row Rooms: Med Room, Nurse Station, Lab Drop -->
+        <rect x="56" y="60" width="136" height="84" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="124" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#1e3a8a" font-family="Inter,sans-serif">Medication Room</text>
+        <rect x="96" y="96" width="56" height="26" rx="3" fill="#3b82f6" opacity="0.22"/>
+        <text x="124" y="134" text-anchor="middle" font-size="9.5" fill="#1d4ed8" font-family="Inter,sans-serif">Pyxis · Badge Door</text>
+
+        <rect x="206" y="60" width="148" height="84" rx="6" fill="#f0fdfa" stroke="#5eead4" stroke-width="1.5"/>
+        <text x="280" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#115e59" font-family="Inter,sans-serif">Nurse Station</text>
+        <path d="M236 106 Q280 94 324 106" fill="none" stroke="#0d9488" stroke-width="5" stroke-linecap="round"/>
+        <text x="280" y="134" text-anchor="middle" font-size="9.5" fill="#0f766e" font-family="Inter,sans-serif">Outer Dock Pad</text>
+
+        <rect x="368" y="60" width="136" height="84" rx="6" fill="#fefce8" stroke="#fde047" stroke-width="1.5"/>
+        <text x="436" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#854d0e" font-family="Inter,sans-serif">Lab Drop</text>
+        <rect x="412" y="98" width="48" height="22" rx="3" fill="#eab308" opacity="0.25"/>
+        <text x="436" y="134" text-anchor="middle" font-size="9.5" fill="#a16207" font-family="Inter,sans-serif">Specimen Alcove</text>
+
+        <!-- Main Corridor -->
+        <rect x="56" y="154" width="448" height="44" rx="5" fill="url(#corridorGrad)" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="280" y="179" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b" font-family="Inter,sans-serif">3.0m Clear AMR Corridor</text>
+
+        <!-- Bottom Row Rooms: Patient 101 (Narrow Door!), Patient 102, Supply Room -->
+        <rect x="56" y="208" width="136" height="64" rx="6" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
+        <text x="124" y="232" text-anchor="middle" font-size="11" font-weight="700" fill="#9f1239" font-family="Inter,sans-serif">Patient 101</text>
+        <text x="124" y="254" text-anchor="middle" font-size="9.5" fill="#be123c" font-family="Inter,sans-serif">0.85m Door · Blocked</text>
+
+        <rect x="206" y="208" width="148" height="64" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="280" y="232" text-anchor="middle" font-size="11" font-weight="700" fill="#334155" font-family="Inter,sans-serif">Patient 102</text>
+        <text x="280" y="254" text-anchor="middle" font-size="9.5" fill="#64748b" font-family="Inter,sans-serif">Threshold Handoff</text>
+
+        <rect x="368" y="208" width="136" height="64" rx="6" fill="#f0fdfa" stroke="#5eead4" stroke-width="1.5"/>
+        <text x="436" y="232" text-anchor="middle" font-size="11" font-weight="700" fill="#115e59" font-family="Inter,sans-serif">Supply Room</text>
+        <text x="436" y="254" text-anchor="middle" font-size="9.5" fill="#0f766e" font-family="Inter,sans-serif">1.25m Clear Door</text>
+
+        <!-- Door Clearance Indicators (Green = Passable, Red = Blocked) -->
+        <circle cx="124" cy="149" r="5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="280" cy="149" r="5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="436" cy="149" r="5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="124" cy="203" r="6" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="436" cy="203" r="5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+
+        <!-- Animated Courier Route Path -->
+        <path id="heroRoutePath" d="M 124 108 L 124 176 L 436 176 L 436 108" fill="none" stroke="#0d9488" stroke-width="3" stroke-dasharray="6 5"/>
+        <circle r="7" fill="#0f766e" stroke="#ffffff" stroke-width="2">
+          <animateMotion dur="5s" repeatCount="indefinite" path="M 124 108 L 124 176 L 436 176 L 436 108 L 436 176 L 124 176 Z"/>
+        </circle>
+
+        <!-- Legend pills inside SVG -->
+        <rect x="56" y="296" width="128" height="24" rx="12" fill="#ecfdf5" stroke="#a7f3d0"/>
+        <circle cx="70" cy="308" r="4" fill="#10b981"/>
+        <text x="80" y="312" font-size="10" font-weight="600" fill="#065f46" font-family="Inter,sans-serif">Passable (&gt;=0.9m)</text>
+
+        <rect x="196" y="296" width="134" height="24" rx="12" fill="#fef2f2" stroke="#fecaca"/>
+        <circle cx="210" cy="308" r="4" fill="#ef4444"/>
+        <text x="220" y="312" font-size="10" font-weight="600" fill="#991b1b" font-family="Inter,sans-serif">Blocked (&lt;0.9m)</text>
+
+        <rect x="342" y="296" width="162" height="24" rx="12" fill="#f0fdfa" stroke="#99f6e4"/>
+        <circle cx="356" cy="308" r="4" fill="#0d9488"/>
+        <text x="366" y="312" font-size="10" font-weight="600" fill="#115e59" font-family="Inter,sans-serif">Active Courier Route</text>
+      </svg>
+      <div class="lp-visual-footer">
+        <span><strong>TUG + 3-Bay Pod</strong> · 20s Badge Handoff</span>
+        <span>Custody Log &amp; Stress Sweeps Included</span>
+      </div>
     </div>
   </header>
 
@@ -1483,26 +1629,73 @@
     <div class="amed-section-label">Select Robot Platform (Existing Commercial &amp; Custom Amed)</div>
     <div class="fleet-grid" id="landingFleetGrid">
       <button type="button" class="fleet-card active" data-robot-profile="aethon_tug">
+        <div class="fleet-svg-wrap">
+          <svg viewBox="0 0 80 48" width="72" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="32" width="64" height="10" rx="5" fill="#334155"/>
+            <rect x="14" y="12" width="52" height="20" rx="4" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+            <line x1="31" y1="12" x2="31" y2="32" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="49" y1="12" x2="49" y2="32" stroke="#cbd5e1" stroke-width="1.5"/>
+            <rect x="24" y="6" width="12" height="6" rx="2" fill="#0d9488"/>
+            <circle cx="20" cy="43" r="4" fill="#0f172a"/><circle cx="60" cy="43" r="4" fill="#0f172a"/>
+          </svg>
+        </div>
         <span class="fleet-card-tag">Existing</span>
         <div class="fleet-card-name">Aethon TUG + Pod</div>
         <div class="fleet-card-spec">0.76 m/s · 0.90m doors · 3-bay pod</div>
       </button>
       <button type="button" class="fleet-card" data-robot-profile="diligent_moxi">
+        <div class="fleet-svg-wrap">
+          <svg viewBox="0 0 80 48" width="72" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="34" width="40" height="8" rx="4" fill="#334155"/>
+            <rect x="33" y="14" width="14" height="20" rx="3" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+            <rect x="30" y="6" width="20" height="10" rx="4" fill="#0f172a"/>
+            <rect x="34" y="9" width="12" height="3" rx="1.5" fill="#5eead4"/>
+            <path d="M47 18 L58 14 L62 24" stroke="#0d9488" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="28" cy="43" r="3.5" fill="#0f172a"/><circle cx="52" cy="43" r="3.5" fill="#0f172a"/>
+          </svg>
+        </div>
         <span class="fleet-card-tag">Existing</span>
         <div class="fleet-card-name">Diligent Moxi</div>
         <div class="fleet-card-spec">0.90 m/s · 0.85m doors · cobot arm</div>
       </button>
       <button type="button" class="fleet-card" data-robot-profile="pneumatic_tube">
+        <div class="fleet-svg-wrap">
+          <svg viewBox="0 0 80 48" width="72" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="18" width="60" height="14" rx="7" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+            <rect x="24" y="20" width="26" height="10" rx="5" fill="#0d9488"/>
+            <path d="M54 25 L64 25 M60 21 L64 25 L60 29" stroke="#0f766e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <span class="fleet-card-tag">Existing</span>
         <div class="fleet-card-name">Pneumatic Tube Hybrid</div>
         <div class="fleet-card-spec">3.50 m/s · specimens &amp; meds only</div>
       </button>
       <button type="button" class="fleet-card" data-robot-profile="amed_prestage_pod">
+        <div class="fleet-svg-wrap">
+          <svg viewBox="0 0 80 48" width="72" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="32" width="68" height="10" rx="5" fill="#1e293b"/>
+            <rect x="10" y="10" width="60" height="22" rx="4" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+            <line x1="25" y1="10" x2="25" y2="32" stroke="#fcd34d" stroke-width="1.5"/>
+            <line x1="40" y1="10" x2="40" y2="32" stroke="#fcd34d" stroke-width="1.5"/>
+            <line x1="55" y1="10" x2="55" y2="32" stroke="#fcd34d" stroke-width="1.5"/>
+            <circle cx="40" cy="6" r="4" fill="#f59e0b"/>
+            <circle cx="18" cy="43" r="4" fill="#0f172a"/><circle cx="62" cy="43" r="4" fill="#0f172a"/>
+          </svg>
+        </div>
         <span class="fleet-card-tag custom">Custom Amed</span>
         <div class="fleet-card-name">Amed Pre-Stage Cart</div>
         <div class="fleet-card-spec">1.10 m/s · 4-bay emergency staging</div>
       </button>
       <button type="button" class="fleet-card" data-robot-profile="amed_narrow_rover">
+        <div class="fleet-svg-wrap">
+          <svg viewBox="0 0 80 48" width="72" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="18" y="33" width="44" height="9" rx="4.5" fill="#0f766e"/>
+            <rect x="24" y="14" width="14" height="19" rx="4" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5"/>
+            <rect x="42" y="14" width="14" height="19" rx="4" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5"/>
+            <rect x="30" y="8" width="20" height="5" rx="2.5" fill="#0f172a"/>
+            <circle cx="26" cy="43" r="3.5" fill="#0f172a"/><circle cx="54" cy="43" r="3.5" fill="#0f172a"/>
+          </svg>
+        </div>
         <span class="fleet-card-tag custom">Custom Amed</span>
         <div class="fleet-card-name">Amed Slim Rover</div>
         <div class="fleet-card-spec">0.85 m/s · fits 0.72m legacy doors</div>
