@@ -558,6 +558,24 @@
 
       <!-- Left: properties -->
       <aside class="eng-panel eng-left" aria-label="Simulation setup">
+        <section class="eng-sec whatif">
+          <h3 class="eng-sec-h"><span class="n">00</span>What if…</h3>
+          <textarea id="whatIfInput" rows="3" placeholder="Describe any situation, e.g. a bus crash brings 12 patients in at 2am and one robot is broken."></textarea>
+          <div class="whatif-chips" id="whatIfChips">
+            <button type="button" data-whatif="A bus crash brings 12 trauma patients in at 2am, ambulances call ahead.">Mass-casualty event</button>
+            <button type="button" data-whatif="A patient in a far room goes into cardiac arrest during a busy evening.">Cardiac arrest</button>
+            <button type="button" data-whatif="An outbreak is found in two patient rooms and they must be quarantined.">Contamination</button>
+            <button type="button" data-whatif="One of our two robots breaks down halfway through a busy day.">Robot breakdown</button>
+            <button type="button" data-whatif="The pharmacy is running 30 minutes behind on urgent orders.">Pharmacy delay</button>
+            <button type="button" data-whatif="Two nurses call in sick, so the unit is short-staffed all shift.">Short-staffed</button>
+            <button type="button" data-whatif="The crash cart is missing items and the defibrillator battery is dead.">Crash cart not ready</button>
+            <button type="button" data-whatif="Flu season surge: the unit is full and admissions keep coming.">Patient surge</button>
+            <button type="button" data-whatif="A quiet weekend night shift with routine deliveries.">Quiet night</button>
+          </div>
+          <button type="button" class="btn btn-primary eng-run" id="whatIfBtn">Simulate this →</button>
+          <p class="whatif-out" id="whatIfOut"></p>
+        </section>
+
         <section class="eng-sec">
           <h3 class="eng-sec-h"><span class="n">01</span>Unit</h3>
           <label class="eng-field"><span>Floor plan</span><select id="planSelect"></select></label>
@@ -5688,6 +5706,53 @@
         }
       });
     }
+
+    // "What if": an unrehearsed prompt becomes simulation settings, shown back to the user.
+    document.querySelectorAll("[data-whatif]").forEach((b) => b.addEventListener("click", () => {
+      const box = document.getElementById("whatIfInput");
+      box.value = b.dataset.whatif;
+      box.focus();
+    }));
+    document.getElementById("whatIfBtn")?.addEventListener("click", async () => {
+      const box = document.getElementById("whatIfInput");
+      const out = document.getElementById("whatIfOut");
+      const btn = document.getElementById("whatIfBtn");
+      const prompt = box.value.trim();
+      if (prompt.length < 3) { out.textContent = "Describe a situation, or pick one of the suggestions."; return; }
+      btn.disabled = true;
+      btn.textContent = "Setting it up…";
+      out.textContent = "Reading your situation…";
+      try {
+        const res = await fetch("/api/scenario-from-prompt", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Could not read that");
+        const st = data.settings;
+        if (els.scenarioSelect) {
+          if (![...els.scenarioSelect.options].some((o) => o.value === st.scenario_mode)) {
+            const o = document.createElement("option"); o.value = st.scenario_mode; o.textContent = st.scenario_mode.replace(/_/g, " ");
+            els.scenarioSelect.appendChild(o);
+          }
+          els.scenarioSelect.value = st.scenario_mode;
+        }
+        state.scenarioMode = st.scenario_mode;
+        state.numRobots = st.num_robots;
+        els.robotCountGroup.querySelectorAll("button").forEach((b) => b.classList.toggle("active", Number(b.dataset.robots) === st.num_robots));
+        if ([...els.robotProfileSelect.options].some((o) => o.value === st.robot_profile_id)) setRobotProfile(st.robot_profile_id, false);
+        if (els.emsPrepositionToggle) els.emsPrepositionToggle.checked = !!st.ems_preposition;
+        if (els.shiftHours) els.shiftHours.value = String(st.shift_hours);
+        els.runDesc.value = st.run_description;
+        out.innerHTML = `<b>Understood as:</b> ${escapeHtml(st.understood_as)}`;
+        if (!state.unitMap) await extractUnit(true);
+        if (state.unitMap) await runSimulation();
+      } catch (err) {
+        out.textContent = `Couldn't set that up: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Simulate this →";
+      }
+    });
 
     const actFilterGroup = document.getElementById("actFilter");
     if (actFilterGroup) {

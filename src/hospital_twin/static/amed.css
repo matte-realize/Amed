@@ -774,3 +774,13 @@ body.wt-running .engine { margin-right: 0; }
 .act-log .what { color: var(--ink); }
 .act-log li.act-empty { display: block; border-left-color: var(--rule-2); color: var(--ink-3); }
 .act-folded { display: none !important; }
+
+/* ---------- what if (unrehearsed scenario prompt) ---------- */
+.whatif { background: var(--accent-soft); }
+.whatif textarea { height: auto; min-height: 66px; padding: 8px 10px; font-size: 12.5px; line-height: 1.45; resize: vertical; width: 100%; }
+.whatif-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.whatif-chips button { border: 1px solid var(--rule-2); background: var(--paper-3); padding: 3px 7px; font: inherit; font-size: 11px; color: var(--ink-2); cursor: pointer; }
+.whatif-chips button:hover { border-color: var(--accent); color: var(--accent); }
+.whatif-out { margin: 0; font-size: 12px; color: var(--ink-2); line-height: 1.45; }
+.whatif-out:empty { display: none; }
+.whatif-out b { color: var(--ink); }

@@ -187,6 +187,18 @@ def robot_design_brief(req: BriefRequest) -> dict[str, Any]:
     return design_from_brief(req.unit_map, brief).model_dump()
 
 
+class ScenarioPromptRequest(BaseModel):
+    prompt: str = Field(min_length=3, max_length=1500)
+
+
+@app.post("/api/scenario-from-prompt")
+def scenario_from_prompt_route(req: ScenarioPromptRequest) -> dict[str, Any]:
+    """Free-text 'what if' -> simulation settings (Gemini 4 Hydrogen, keyword fallback)."""
+    from hospital_twin.scenario_prompt import scenario_from_prompt
+
+    return scenario_from_prompt(req.prompt).model_dump()
+
+
 @app.get("/api/plans")
 async def list_plans() -> dict[str, list[dict[str, str]]]:
     return {"plans": _list_demo_plans()}
